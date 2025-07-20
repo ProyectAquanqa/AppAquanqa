@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/navigation_home"
+            android:icon="@drawable/ic_home_black_24dp"
+            android:title="@string/title_home" />
+        <item
+            android:id="@+id/navigation_beneficios"
+            android:icon="@drawable/ic_dashboard_black_24dp"
+            android:title="@string/title_beneficios" />
+        <item
+            android:id="@+id/navigation_chatbot"
+            android:icon="@drawable/ic_chatboot"
+            android:title="@string/menu_chatbot" />
+        <item
+            android:id="@+id/navigation_profile"
+            android:icon="@drawable/ic_profile"
+            android:title="@string/title_profile" />
+    </group>
+</menu> 

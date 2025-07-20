@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">Aquanqa</string>
+
+    <!-- Textos para la barra de navegación inferior y títulos de las páginas -->
+    <string name="title_home">Inicio</string>
+    <string name="title_access">Acceso</string>
+    <string name="title_beneficios">Beneficios</string>
+    <string name="title_profile">Perfil</string>
+
+    <!-- Textos para el menú lateral (Navigation Drawer) -->
+    <string name="navigation_drawer_open">Abrir menú de navegación</string>
+    <string name="navigation_drawer_close">Cerrar menú de navegación</string>
+    <string name="nav_header_title">Nombre de Usuario</string>
+    <string name="nav_header_subtitle">usuario@email.com</string>
+    <string name="nav_header_desc">Cabecera de navegación</string>
+
+    <!-- Textos para los elementos del menú lateral -->
+    <string name="menu_home">Inicio</string>
+    <string name="menu_report">Reportes</string>
+    <string name="menu_chatbot">Chatbot</string>
+    <string name="menu_profile">Perfil</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome !"</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
+</resources>
