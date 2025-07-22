@@ -15,10 +15,10 @@ class LoginViewModelFactory(private val context: Context) : ViewModelProvider.Fa
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
-            val userPreferences = UserPreferences(context)
+            val userPreferences = UserPreferences(context.applicationContext)
             val loginDataSource = LoginDataSource(userPreferences)
             val loginRepository = LoginRepository(loginDataSource, userPreferences)
-            return LoginViewModel(loginRepository, context) as T
+            return LoginViewModel(loginRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

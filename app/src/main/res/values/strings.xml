@@ -3,7 +3,7 @@
 
     <!-- Textos para la barra de navegación inferior y títulos de las páginas -->
     <string name="title_home">Inicio</string>
-    <string name="title_access">Acceso</string>
+    <string name="title_anuncios">Anuncios</string>
     <string name="title_beneficios">Beneficios</string>
     <string name="title_profile">Perfil</string>
 
@@ -28,4 +28,27 @@
     <string name="invalid_username">Not a valid username</string>
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="login_failed">"Login failed"</string>
+    
+    <!-- Textos para la pantalla de login -->
+    <string name="login_title">Iniciar sesión</string>
+    <string name="dni_hint">DNI</string>
+    <string name="password_hint">Contraseña</string>
+    <string name="login_button">Ingresar</string>
+    <string name="invalid_dni">El DNI debe tener 8 dígitos</string>
+    <string name="invalid_password_hint">La contraseña debe tener al menos 6 caracteres</string>
+    
+    <!-- Mensajes de error de login -->
+    <string name="error_user_not_found">Usuario no registrado</string>
+    <string name="error_user_not_found_detail">El usuario con este DNI no está registrado en el sistema</string>
+    <string name="error_invalid_password">Contraseña incorrecta</string>
+    <string name="error_invalid_password_detail">La contraseña ingresada es incorrecta</string>
+    <string name="error_authentication">Error de autenticación</string>
+    
+    <!-- Textos para el chatbot -->
+    <string name="chatbot_title">Ara, tu asistente virtual</string>
+    <string name="chatbot_hint">Escribe una pregunta</string>
+    <string name="send_message">Enviar mensaje</string>
+    <string name="user_label">User</string>
+    <string name="chatbot_label">Ara</string>
+    <string name="chatbot_welcome_message">¡Hola! Soy Ara, tu asistente virtual de la empresa Aquanca. ¿En qué puedo ayudarte hoy?</string>
 </resources>

@@ -44,4 +44,11 @@ object RetrofitClient {
     val apiService: ApiService by lazy {
         retrofit.create(ApiService::class.java)
     }
+
+    /**
+     * Proporciona una implementación de la interfaz ChatbotApiService
+     */
+    val chatbotApiService: ChatbotApiService by lazy {
+        retrofit.create(ChatbotApiService::class.java)
+    }
 } 

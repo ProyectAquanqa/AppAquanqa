@@ -6,9 +6,9 @@
         android:icon="@drawable/ic_home_black_24dp"
         android:title="@string/title_home" />
     <item
-        android:id="@+id/navigation_access"
+        android:id="@+id/navigation_anuncios"
         android:icon="@drawable/ic_access"
-        android:title="@string/title_access" />
+        android:title="@string/title_anuncios" />
 
     <item
         android:id="@+id/navigation_beneficios"

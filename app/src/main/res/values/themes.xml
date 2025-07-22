@@ -1,20 +1,18 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.Aquanqa" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <style name="Theme.Aquanqa" parent="Theme.Material3.Light.NoActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/blue_aquanqa</item>
-        <item name="colorPrimaryVariant">@color/blue_aquanqa</item>
+        <item name="colorPrimary">@android:color/transparent</item>
         <item name="colorOnPrimary">@color/white</item>
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/green_aquanqa</item>
-        <item name="colorSecondaryVariant">@color/green_aquanqa</item>
         <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor">@android:color/transparent</item>
+
         <!-- Customize your theme here. -->
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowLightNavigationBar">true</item>
     </style>
 
     <style name="Theme.Aquanqa.NoActionBar">

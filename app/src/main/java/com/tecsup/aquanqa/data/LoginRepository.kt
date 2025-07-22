@@ -31,8 +31,7 @@ class LoginRepository(
     }
 
     init {
-        // Si las credenciales de usuario se almacenarán en el almacenamiento local, se recomienda cifrarlas
-        // @see https://developer.android.com/training/articles/keystore
+
         user = null
     }
 

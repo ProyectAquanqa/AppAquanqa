@@ -3,6 +3,9 @@ package com.tecsup.aquanqa.data
 import com.tecsup.aquanqa.data.api.RetrofitClient
 import com.tecsup.aquanqa.data.model.LoggedInUser
 import com.tecsup.aquanqa.data.model.LoginRequest
+import com.tecsup.aquanqa.data.network.AuthenticationException
+import com.tecsup.aquanqa.data.network.InvalidPasswordException
+import com.tecsup.aquanqa.data.network.UserNotFoundException
 import com.tecsup.aquanqa.data.preferences.UserPreferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -18,6 +21,9 @@ class LoginDataSource(private val userPreferences: UserPreferences) {
      * @param dni DNI del usuario
      * @param password Contraseña del usuario
      * @return Resultado con información del usuario o error
+     * @throws UserNotFoundException si el usuario no está registrado
+     * @throws InvalidPasswordException si la contraseña es incorrecta
+     * @throws AuthenticationException para otros errores de autenticación
      */
     suspend fun login(dni: String, password: String): Result<LoggedInUser> {
         return withContext(Dispatchers.IO) {
@@ -46,8 +52,24 @@ class LoginDataSource(private val userPreferences: UserPreferences) {
                         Result.Error(IOException("Respuesta vacía del servidor"))
                     }
                 } else {
-                    val errorBody = response.errorBody()?.string() ?: "Error desconocido"
-                    Result.Error(IOException("Error de autenticación: $errorBody"))
+                    // Analizar el código de error para proporcionar mensajes específicos
+                    when (response.code()) {
+                        401 -> {
+                            // Verificar si es por contraseña incorrecta o usuario no encontrado
+                            val errorBody = response.errorBody()?.string() ?: ""
+                            if (errorBody.contains("credentials", ignoreCase = true) || 
+                                errorBody.contains("password", ignoreCase = true)) {
+                                Result.Error(InvalidPasswordException())
+                            } else {
+                                Result.Error(UserNotFoundException())
+                            }
+                        }
+                        404 -> Result.Error(UserNotFoundException())
+                        else -> {
+                            val errorBody = response.errorBody()?.string() ?: "Error desconocido"
+                            Result.Error(AuthenticationException("Error de autenticación: $errorBody"))
+                        }
+                    }
                 }
             } catch (e: Exception) {
                 Result.Error(IOException("Error al iniciar sesión", e))

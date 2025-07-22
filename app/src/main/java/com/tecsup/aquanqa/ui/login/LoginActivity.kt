@@ -20,12 +20,17 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 
 import com.tecsup.aquanqa.MainActivity
 import com.tecsup.aquanqa.R
 
+/**
+ * Actividad para la pantalla de inicio de sesión
+ * Maneja la interfaz de usuario para el proceso de autenticación
+ */
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var loginViewModel: LoginViewModel
@@ -75,18 +80,15 @@ class LoginActivity : AppCompatActivity() {
         loginViewModel.loginFormState.observe(this@LoginActivity, Observer {
             val loginState = it ?: return@Observer
 
-            // Deshabilitar el botón de login a menos que los datos sean válidos
-            btnLogin.isEnabled = loginState.isDataValid
-
             // Mostrar errores de validación si los hay
             if (loginState.dniError != null) {
-                dniLayout.error = loginState.dniError
+                dniLayout.error = getString(loginState.dniError)
             } else {
                 dniLayout.error = null
             }
 
             if (loginState.passwordError != null) {
-                passwordLayout.error = loginState.passwordError
+                passwordLayout.error = getString(loginState.passwordError)
             } else {
                 passwordLayout.error = null
             }
@@ -106,7 +108,7 @@ class LoginActivity : AppCompatActivity() {
 
             // Manejar el resultado del login
             if (loginResult.error != null) {
-                // Mostrar mensaje de error
+                // Mostrar mensaje de error específico
                 showLoginFailed(loginResult.error)
             }
             
@@ -118,24 +120,32 @@ class LoginActivity : AppCompatActivity() {
             }
         })
 
-        // Configurar TextWatcher para validar los datos mientras se escriben
-        val afterTextChangedListener = object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable) {
-                loginViewModel.loginDataChanged(
-                    textDni.text.toString(),
-                    textClave.text.toString()
-                )
+        // Limpiar errores al empezar a escribir en los campos
+        textDni.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                // Limpiar el error cuando el usuario empieza a escribir
+                if (dniLayout.error != null) {
+                    dniLayout.error = null
+                }
             }
-        }
-        
-        textDni.addTextChangedListener(afterTextChangedListener)
-        textClave.addTextChangedListener(afterTextChangedListener)
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
+        textClave.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                // Limpiar el error cuando el usuario empieza a escribir
+                if (passwordLayout.error != null) {
+                    passwordLayout.error = null
+                }
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
         
         // Configurar acción para el botón IME Done
         textClave.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_DONE && btnLogin.isEnabled) {
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
                 attemptLogin()
                 true
             } else {
@@ -151,8 +161,17 @@ class LoginActivity : AppCompatActivity() {
 
     /**
      * Intenta iniciar sesión con los datos ingresados
+     * Muestra un indicador de progreso y deshabilita los controles durante el proceso
      */
     private fun attemptLogin() {
+        val dni = textDni.text.toString()
+        val password = textClave.text.toString()
+
+        // Validar el formulario antes de intentar el login
+        if (!loginViewModel.validateForm(dni, password)) {
+            return // Detener si el formulario no es válido
+        }
+
         // Mostrar indicador de progreso
         progressBar.visibility = View.VISIBLE
         
@@ -162,16 +181,33 @@ class LoginActivity : AppCompatActivity() {
         textClave.isEnabled = false
         
         // Iniciar el proceso de login
-        loginViewModel.login(
-            textDni.text.toString(),
-            textClave.text.toString()
-        )
+        loginViewModel.login(dni, password)
     }
 
     /**
-     * Muestra un mensaje de error al fallar el login
+     * Muestra un mensaje de error específico según el tipo de error de autenticación
+     * @param errorMsg El mensaje de error a mostrar
      */
     private fun showLoginFailed(errorMsg: String) {
-        Toast.makeText(applicationContext, "Error de autenticación: $errorMsg", Toast.LENGTH_LONG).show()
+        // Determinar qué tipo de mensaje mostrar según el contenido
+        val (errorMessageRes, errorDetailRes) = when {
+            errorMsg.contains("no registrado", ignoreCase = true) -> {
+                // Resaltar el campo de DNI con error
+                dniLayout.error = getString(R.string.error_user_not_found)
+                Pair(R.string.error_user_not_found, R.string.error_user_not_found_detail)
+            }
+            errorMsg.contains("contraseña", ignoreCase = true) -> {
+                // Resaltar el campo de contraseña con error
+                passwordLayout.error = getString(R.string.error_invalid_password)
+                Pair(R.string.error_invalid_password, R.string.error_invalid_password_detail)
+            }
+            else -> {
+                Pair(R.string.error_authentication, 0)
+            }
+        }
+        
+        // Mostrar un Snackbar con el mensaje de error
+        val message = if (errorDetailRes != 0) getString(errorDetailRes) else "$errorMsg"
+        Snackbar.make(findViewById(R.id.login_container), message, Snackbar.LENGTH_LONG).show()
     }
 }

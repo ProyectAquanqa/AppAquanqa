@@ -82,18 +82,13 @@
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/dniInputLayout"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/dni_hint"
-            app:boxCornerRadiusBottomEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp"
             app:boxStrokeColor="@color/blue_aquanqa"
             app:hintTextColor="@color/blue_aquanqa"
-            app:startIconDrawable="@drawable/ic_person_outline"
-           >
+            app:startIconDrawable="@drawable/ic_person_outline">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/txtDni"
@@ -106,21 +101,15 @@
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/passwordInputLayout"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:hint="@string/password_hint"
-            app:boxCornerRadiusBottomEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp"
             app:boxStrokeColor="@color/blue_aquanqa"
             app:endIconMode="password_toggle"
-
             app:hintTextColor="@color/blue_aquanqa"
-            app:startIconDrawable="@drawable/ic_lock_outline"
-           >
+            app:startIconDrawable="@drawable/ic_lock_outline">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/txtPassword"

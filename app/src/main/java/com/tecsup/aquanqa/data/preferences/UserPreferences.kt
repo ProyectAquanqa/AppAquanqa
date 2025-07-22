@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 /**
- * Clase para manejar el almacenamiento seguro de tokens y datos de usuario
+ * Clase para manejar el almacenamiento de tokens y datos de usuario
  * utilizando DataStore de Android.
  */
 class UserPreferences(private val context: Context) {

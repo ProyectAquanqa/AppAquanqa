@@ -12,10 +12,10 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/navigation_access"
-        android:name="com.tecsup.aquanqa.ui.access.AccessFragment"
-        android:label="@string/title_access"
-        tools:layout="@layout/fragment_access" />
+        android:id="@+id/navigation_anuncios"
+        android:name="com.tecsup.aquanqa.ui.anuncios.AnunciosFragment"
+        android:label="@string/title_anuncios"
+        tools:layout="@layout/fragment_anuncios" />
 
     <fragment
         android:id="@+id/navigation_beneficios"
