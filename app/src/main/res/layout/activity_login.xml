@@ -22,7 +22,7 @@
     <View
         android:id="@+id/top_curve2"
         android:layout_width="252dp"
-        android:layout_height="121dp"
+        android:layout_height="123dp"
         android:layout_marginBottom="5dp"
         android:background="@drawable/login_background"
         app:layout_constraintBottom_toTopOf="@+id/top_curve"
@@ -52,95 +52,99 @@
         android:layout_marginTop="108dp"
         android:src="@drawable/logo_aq"
         android:contentDescription="@string/app_name"
-        app:layout_constraintBottom_toTopOf="@+id/card_container"
+        app:layout_constraintBottom_toTopOf="@+id/login_container"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.6" />
 
     <LinearLayout
-        android:id="@+id/card_container"
+        android:id="@+id/login_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="32dp"
+        android:paddingBottom="20dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/logo"
         android:layout_marginTop="16dp">
 
         <TextView
-            android:id="@+id/tvLoginHeader"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Ingresa tus datos: "
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@color/blue_aquanqa" />
+            android:layout_marginBottom="24dp"
+            android:text="@string/login_title"
+            android:textColor="@color/blue_aquanqa"
+            android:textSize="19sp"
+            android:textStyle="bold" />
 
-        <!-- Campo DNI -->
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/username_layout"
+            android:id="@+id/dniInputLayout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:boxBackgroundMode="none"
-            android:layout_marginTop="8dp">
+            android:hint="@string/dni_hint"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxStrokeColor="@color/blue_aquanqa"
+            app:hintTextColor="@color/blue_aquanqa"
+            app:startIconDrawable="@drawable/ic_person_outline"
+           >
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/txtDni"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/input_background"
-                android:drawableStart="@drawable/ic_person"
-                android:drawablePadding="12dp"
-                android:hint="DNI"
                 android:inputType="number"
                 android:maxLength="8"
-                android:padding="16dp" />
+                android:textColor="@color/black" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Espacio entre campos -->
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="16dp" />
-
-        <!-- Campo Contraseña -->
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/password_layout"
+            android:id="@+id/passwordInputLayout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:boxBackgroundMode="none"
-            app:passwordToggleEnabled="true">
+            android:layout_marginTop="16dp"
+            android:hint="@string/password_hint"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxStrokeColor="@color/blue_aquanqa"
+            app:endIconMode="password_toggle"
+
+            app:hintTextColor="@color/blue_aquanqa"
+            app:startIconDrawable="@drawable/ic_lock_outline"
+           >
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/txtPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/input_background"
-                android:drawableStart="@drawable/ic_lock"
-                android:drawablePadding="12dp"
-                android:hint="Contraseña"
                 android:inputType="textPassword"
-                android:padding="16dp" />
+                android:textColor="@color/black" />
         </com.google.android.material.textfield.TextInputLayout>
-    </LinearLayout>
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btnLogin"
-        android:layout_width="0dp"
-        android:layout_height="56dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginStart="25dp"
-        android:layout_marginEnd="25dp"
-        android:background="@drawable/button_background"
-        android:text="Iniciar sesión"
-        android:textColor="@android:color/white"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/card_container" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLogin"
+            android:layout_width="match_parent"
+            android:layout_height="66dp"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="@color/green_aquanqa"
+            android:text="@string/login_button"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            app:cornerRadius="10dp"
+
+            />
+
+    </LinearLayout>
 
     <TextView
         android:id="@+id/tvFooter"
@@ -152,6 +156,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btnLogin"
+        app:layout_constraintTop_toBottomOf="@id/login_container"
         app:layout_constraintVertical_bias="0.898" />
 </androidx.constraintlayout.widget.ConstraintLayout>
