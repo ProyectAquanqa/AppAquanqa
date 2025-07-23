@@ -25,7 +25,7 @@ class ChatbotFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        viewModel = ViewModelProvider(this)[ChatbotViewModel::class.java]
+        viewModel = ViewModelProvider(requireActivity())[ChatbotViewModel::class.java]
         _binding = FragmentChatbotBinding.inflate(inflater, container, false)
         return binding.root
     }

@@ -5,7 +5,7 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tecsup.aquanqa.data.api.RetrofitClient
+import com.tecsup.aquanqa.data.api.ApiClient
 import com.tecsup.aquanqa.ui.chatbot.model.ChatbotRequest
 import com.tecsup.aquanqa.ui.chatbot.model.RecommendedQuestion
 import kotlinx.coroutines.launch
@@ -26,8 +26,11 @@ class ChatbotViewModel : ViewModel() {
     val chatItems = MediatorLiveData<List<ChatItem>>()
 
     init {
-        addBotMessage("¡Hola! Soy Ara, tu asistente virtual de la empresa Aquanqa. ¿En qué puedo ayudarte hoy?")
-        fetchRecommendedQuestions()
+        // Ejecutar la inicialización solo si el historial está vacío.
+        if (_messages.value.isNullOrEmpty()) {
+            addBotMessage("¡Hola! Soy Ara, tu asistente virtual de la empresa Aquanqa. ¿En qué puedo ayudarte hoy?")
+            fetchRecommendedQuestions()
+        }
 
         chatItems.addSource(_messages) { messages ->
             combineChatItems(messages, _recommendedQuestions.value)
@@ -63,7 +66,7 @@ class ChatbotViewModel : ViewModel() {
      */
     fun sendMessage(messageText: String) {
         if (messageText.isBlank()) return
-
+        
         addUserMessage(messageText)
         getBotResponse(messageText)
     }
@@ -71,7 +74,7 @@ class ChatbotViewModel : ViewModel() {
     private fun fetchRecommendedQuestions() {
         viewModelScope.launch {
             try {
-                val questions = RetrofitClient.chatbotApiService.getRecommendedQuestions()
+                val questions = ApiClient.chatbotApiService.getRecommendedQuestions()
                 _recommendedQuestions.postValue(questions)
             } catch (e: Exception) {
                 // Silently fail, no questions will be shown
@@ -111,7 +114,7 @@ class ChatbotViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val request = ChatbotRequest(question = userMessage, sessionId = sessionId)
-                val response = RetrofitClient.chatbotApiService.sendMessage(request)
+                val response = ApiClient.chatbotApiService.sendMessage(request)
                 sessionId = response.sessionId
                 addBotMessage(response.answer)
 

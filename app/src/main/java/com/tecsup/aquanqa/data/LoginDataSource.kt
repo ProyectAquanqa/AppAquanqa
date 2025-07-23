@@ -1,85 +1,52 @@
 package com.tecsup.aquanqa.data
 
-import com.tecsup.aquanqa.data.api.RetrofitClient
+import com.tecsup.aquanqa.data.api.ApiClient
 import com.tecsup.aquanqa.data.model.LoggedInUser
 import com.tecsup.aquanqa.data.model.LoginRequest
-import com.tecsup.aquanqa.data.network.AuthenticationException
-import com.tecsup.aquanqa.data.network.InvalidPasswordException
-import com.tecsup.aquanqa.data.network.UserNotFoundException
+import com.tecsup.aquanqa.data.model.LoginResponse
+import com.tecsup.aquanqa.data.model.UserResponse
 import com.tecsup.aquanqa.data.preferences.UserPreferences
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.io.IOException
 
 /**
- * Clase que maneja la autenticación con credenciales de login y recupera información del usuario.
+ * Class that handles authentication w/ login credentials and retrieves user information.
  */
 class LoginDataSource(private val userPreferences: UserPreferences) {
 
-    /**
-     * Intenta autenticar al usuario con la API.
-     * @param dni DNI del usuario
-     * @param password Contraseña del usuario
-     * @return Resultado con información del usuario o error
-     * @throws UserNotFoundException si el usuario no está registrado
-     * @throws InvalidPasswordException si la contraseña es incorrecta
-     * @throws AuthenticationException para otros errores de autenticación
-     */
-    suspend fun login(dni: String, password: String): Result<LoggedInUser> {
-        return withContext(Dispatchers.IO) {
+    suspend fun login(loginRequest: LoginRequest): Result<LoggedInUser> {
             try {
-                val loginRequest = LoginRequest(username = dni, password = password)
-                val response = RetrofitClient.apiService.login(loginRequest)
+            val response = ApiClient.apiService.login(loginRequest)
                 
                 if (response.isSuccessful) {
-                    val tokenResponse = response.body()
-                    if (tokenResponse != null) {
-                        // Guardar tokens en DataStore
-                        userPreferences.saveTokens(
-                            accessToken = tokenResponse.access,
-                            refreshToken = tokenResponse.refresh
-                        )
-                        userPreferences.saveUserDni(dni)
-                        
-                        // Crear objeto de usuario autenticado
-                        val user = LoggedInUser(
-                            userId = dni,
-                            displayName = dni // Por ahora usamos el DNI como nombre, luego se puede actualizar con el perfil
-                        )
-                        
-                        Result.Success(user)
-                    } else {
-                        Result.Error(IOException("Respuesta vacía del servidor"))
-                    }
+                val loginResponse: LoginResponse? = response.body()
+
+                if (loginResponse != null) {
+                    // Descomponer la respuesta para mayor claridad
+                    val userData: UserResponse = loginResponse.user
+                    val accessToken: String = loginResponse.access
+                    val refreshToken: String = loginResponse.refresh
+
+                    // Guardar tokens y DNI del usuario
+                    userPreferences.saveTokens(accessToken, refreshToken)
+                    userPreferences.saveUserDni(userData.dni)
+                    
+                    val loggedInUser = LoggedInUser(
+                        userId = userData.id.toString(),
+                        displayName = userData.firstName,
+                        token = accessToken
+                    )
+                    return Result.Success(loggedInUser)
                 } else {
-                    // Analizar el código de error para proporcionar mensajes específicos
-                    when (response.code()) {
-                        401 -> {
-                            // Verificar si es por contraseña incorrecta o usuario no encontrado
-                            val errorBody = response.errorBody()?.string() ?: ""
-                            if (errorBody.contains("credentials", ignoreCase = true) || 
-                                errorBody.contains("password", ignoreCase = true)) {
-                                Result.Error(InvalidPasswordException())
-                            } else {
-                                Result.Error(UserNotFoundException())
-                            }
-                        }
-                        404 -> Result.Error(UserNotFoundException())
-                        else -> {
-                            val errorBody = response.errorBody()?.string() ?: "Error desconocido"
-                            Result.Error(AuthenticationException("Error de autenticación: $errorBody"))
-                        }
-                    }
+                    return Result.Error(IOException("Error logging in: Empty response body"))
+                }
+            } else {
+                return Result.Error(IOException("Error logging in: ${response.code()} ${response.message()}"))
                 }
             } catch (e: Exception) {
-                Result.Error(IOException("Error al iniciar sesión", e))
+            return Result.Error(IOException("Error logging in", e))
             }
         }
-    }
 
-    /**
-     * Cierra la sesión del usuario
-     */
     suspend fun logout() {
         userPreferences.clear()
     }

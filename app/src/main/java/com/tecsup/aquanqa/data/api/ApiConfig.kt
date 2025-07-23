@@ -5,7 +5,7 @@ package com.tecsup.aquanqa.data.api
  */
 object ApiConfig {
 
-    const val BASE_URL = "http://10.232.127.44:8000/"
+    const val BASE_URL = "http://192.168.18.13:8000/"
     //espera en segundos
     const val TIMEOUT = 30L
    //prefijo del token

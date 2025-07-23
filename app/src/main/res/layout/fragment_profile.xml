@@ -1,26 +1,170 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
-
-    <androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+    android:background="?attr/colorSurfaceContainerLowest"
         tools:context=".ui.profile.ProfileFragment">
 
-        <TextView
-            android:id="@+id/text_profile"
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="@android:color/white">
+
+        <!-- Sección de Cabecera -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/profileImageView"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:padding="4dp"
+                android:scaleType="centerCrop"
+                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CircleImageView"
+                app:strokeColor="@color/blue_aquanqa"
+                app:strokeWidth="2dp"
+                tools:src="@tools:sample/avatars" />
+
+            <TextView
+                android:id="@+id/nameTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                android:textStyle="bold"
+                tools:text="Carlos García" />
+
+        <TextView
+                android:id="@+id/roleTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textColor="?android:attr/textColorSecondary"
+                tools:text="Trabajador" />
+        </LinearLayout>
+
+        <!-- Línea divisoria principal con márgenes -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginHorizontal="16dp"
+            android:background="?attr/colorOutlineVariant" />
+
+        <!-- Filas de información del perfil con sus divisores -->
+        <LinearLayout
+            android:id="@+id/fullNameContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <include
+                android:id="@+id/fullNameRow"
+                layout="@layout/item_profile_detail" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="16dp"
+                android:background="?attr/colorOutlineVariant" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/dniContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <include
+                android:id="@+id/dniRow"
+                layout="@layout/item_profile_detail" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="16dp"
+                android:background="?attr/colorOutlineVariant" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/emailContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <include
+                android:id="@+id/emailRow"
+                layout="@layout/item_profile_detail" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="16dp"
+                android:background="?attr/colorOutlineVariant" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/passwordContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <include
+                android:id="@+id/passwordRow"
+                layout="@layout/item_profile_detail" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="16dp"
+                android:background="?attr/colorOutlineVariant" />
+        </LinearLayout>
+
+        <!-- Sección de Firma -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Firma"
+                android:textAppearance="?attr/textAppearanceBody2"
+                android:textColor="?android:attr/textColorSecondary" />
+
+            <ImageView
+                android:id="@+id/signatureImageView"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
             android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:textAlignment="center"
-            android:text="Profile"
-            android:textSize="20sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</layout> 
+                android:background="@drawable/dotted_border"
+                android:padding="8dp"
+                android:scaleType="fitCenter"
+                tools:src="@tools:sample/backgrounds/scenic" />
+        </LinearLayout>
+        
+        <!-- Botón Editar -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/editButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:backgroundTint="@color/blue_aquanqa"
+            android:paddingVertical="12dp"
+            android:text="Editar"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            app:cornerRadius="8dp" />
+        
+    </LinearLayout>
+</ScrollView> 
