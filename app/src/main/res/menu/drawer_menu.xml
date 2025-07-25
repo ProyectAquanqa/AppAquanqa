@@ -7,11 +7,11 @@
         <item
             android:id="@+id/navigation_home"
             android:icon="@drawable/ic_home_black_24dp"
-            android:title="@string/title_home" />
+            android:title="@string/menu_home" />
         <item
-            android:id="@+id/navigation_beneficios"
+            android:id="@+id/nav_report"
             android:icon="@drawable/ic_dashboard_black_24dp"
-            android:title="@string/title_beneficios" />
+            android:title="@string/menu_report" />
         <item
             android:id="@+id/navigation_chatbot"
             android:icon="@drawable/ic_chatboot"
@@ -19,6 +19,13 @@
         <item
             android:id="@+id/navigation_profile"
             android:icon="@drawable/ic_profile"
-            android:title="@string/title_profile" />
+            android:title="@string/menu_profile" />
     </group>
+
+    <!-- Elemento de Salir al final -->
+    <item
+        android:id="@+id/nav_logout"
+        android:icon="@drawable/ic_logout"
+        android:title="Salir" />
+
 </menu> 

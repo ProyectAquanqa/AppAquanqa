@@ -51,4 +51,19 @@
     <string name="user_label">User</string>
     <string name="chatbot_label">Ara</string>
     <string name="chatbot_welcome_message">¡Hola! Soy Ara, tu asistente virtual de la empresa Aquanca. ¿En qué puedo ayudarte hoy?</string>
+
+    <!-- Strings para el perfil de usuario -->
+    <string name="full_name_label">Nombre Completo</string>
+    <string name="dni_label">DNI</string>
+    <string name="email_label">Correo Electrónico</string>
+    <string name="password_label">Contraseña</string>
+    <string name="password_value">••••••••</string>
+    <string name="no_email">No especificado</string>
+    <string name="api_base_url">https://aquanqa.com/</string>
+    <string name="profile_updated">Perfil actualizado correctamente</string>
+    <string name="profile_update_error">Error al actualizar el perfil</string>
+    <string name="email_hint">Introduce tu correo electrónico</string>
+    <string name="new_password_hint">Nueva contraseña (dejar en blanco para no cambiar)</string>
+    <string name="password_updated">Contraseña actualizada correctamente</string>
+    <string name="email_updated">Correo electrónico actualizado correctamente</string>
 </resources>

@@ -13,6 +13,10 @@
         <!-- Customize your theme here. -->
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
+        
+        <!-- Establecer color de fondo predeterminado para toda la app -->
+        <item name="android:windowBackground">@color/white</item>
+        <item name="android:colorBackground">@color/white</item>
     </style>
 
     <style name="Theme.Aquanqa.NoActionBar">
@@ -29,5 +33,10 @@
     <style name="ShapeAppearanceOverlay.App.CircleImageView" parent="">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">50%</item>
+    </style>
+    
+    <!-- Estilo base para todos los fragments -->
+    <style name="FragmentStyle">
+        <item name="android:background">@color/white</item>
     </style>
 </resources>

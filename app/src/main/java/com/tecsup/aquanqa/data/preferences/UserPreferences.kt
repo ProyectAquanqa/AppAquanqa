@@ -22,6 +22,7 @@ class UserPreferences(private val context: Context) {
         private val ACCESS_TOKEN = stringPreferencesKey("access_token")
         private val REFRESH_TOKEN = stringPreferencesKey("refresh_token")
         private val USER_DNI = stringPreferencesKey("user_dni")
+        private val USER_EMAIL = stringPreferencesKey("user_email")
     }
 
     // Obtener el token de acceso
@@ -39,6 +40,11 @@ class UserPreferences(private val context: Context) {
         preferences[USER_DNI]
     }
 
+    // Obtener el email del usuario
+    val userEmail: Flow<String?> = context.dataStore.data.map { preferences ->
+        preferences[USER_EMAIL]
+    }
+
     // Guardar tokens de autenticación
     suspend fun saveTokens(accessToken: String, refreshToken: String) {
         context.dataStore.edit { preferences ->
@@ -51,6 +57,13 @@ class UserPreferences(private val context: Context) {
     suspend fun saveUserDni(dni: String) {
         context.dataStore.edit { preferences ->
             preferences[USER_DNI] = dni
+        }
+    }
+
+    // Guardar email del usuario
+    suspend fun saveUserEmail(email: String) {
+        context.dataStore.edit { preferences ->
+            preferences[USER_EMAIL] = email
         }
     }
 

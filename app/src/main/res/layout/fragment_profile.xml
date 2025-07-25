@@ -2,169 +2,272 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-    android:background="?attr/colorSurfaceContainerLowest"
-        tools:context=".ui.profile.ProfileFragment">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    tools:context=".ui.profile.ProfileFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp"
-        android:background="@android:color/white">
+        android:orientation="vertical">
 
-        <!-- Sección de Cabecera -->
+        <!-- Cabecera con foto de perfil, nombre y cargo -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
+            android:background="@android:color/white"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:gravity="center"
+            android:paddingVertical="20dp">
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/profileImageView"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:padding="4dp"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
                 android:scaleType="centerCrop"
                 app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CircleImageView"
-                app:strokeColor="@color/blue_aquanqa"
-                app:strokeWidth="2dp"
+                android:background="#FFECD9"
                 tools:src="@tools:sample/avatars" />
 
             <TextView
                 android:id="@+id/nameTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                android:layout_marginTop="12dp"
+                android:textSize="18sp"
+                android:textColor="#222222"
                 android:textStyle="bold"
                 tools:text="Carlos García" />
 
-        <TextView
+            <TextView
                 android:id="@+id/roleTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textAppearance="?attr/textAppearanceTitleMedium"
-                android:textColor="?android:attr/textColorSecondary"
+                android:layout_marginTop="2dp"
+                android:textSize="14sp"
+                android:textColor="#666666"
                 tools:text="Trabajador" />
         </LinearLayout>
 
-        <!-- Línea divisoria principal con márgenes -->
+        <!-- Línea divisoria -->
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_marginHorizontal="16dp"
-            android:background="?attr/colorOutlineVariant" />
+            android:layout_marginHorizontal="10dp"
+            android:background="#E5E8EB" />
 
-        <!-- Filas de información del perfil con sus divisores -->
+        <!-- Detalles del perfil - Tabla de 2 columnas -->
+        <!-- Nombres Completos -->
         <LinearLayout
-            android:id="@+id/fullNameContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:paddingHorizontal="18dp"
+            android:paddingVertical="12dp"
+            android:orientation="horizontal">
 
-            <include
-                android:id="@+id/fullNameRow"
-                layout="@layout/item_profile_detail" />
+            <TextView
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:text="Nombres\nCompletos"
+                android:fontFamily="@font/montserrat_medium"
+                android:textSize="14sp"
+                android:textColor="@color/black" />
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginHorizontal="16dp"
-                android:background="?attr/colorOutlineVariant" />
+            <TextView
+                android:id="@+id/fullNameValueTextView"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:fontFamily="@font/montserrat"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:textColor="@color/text_secondary"
+                tools:text="Carlos alangarcia perez Sanchez" />
         </LinearLayout>
 
+        <!-- Línea divisoria -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginHorizontal="10dp"
+            android:background="#E5E8EB" />
+
+        <!-- DNI -->
         <LinearLayout
-            android:id="@+id/dniContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:paddingHorizontal="18dp"
+            android:paddingVertical="12dp"
+            android:orientation="horizontal">
 
-            <include
-                android:id="@+id/dniRow"
-                layout="@layout/item_profile_detail" />
+            <TextView
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:text="DNI"
+                android:textSize="14sp"
+                android:fontFamily="@font/montserrat_medium"
+                android:textColor="@color/black" />
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginHorizontal="16dp"
-                android:background="?attr/colorOutlineVariant" />
+            <TextView
+                android:id="@+id/dniValueTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:fontFamily="@font/montserrat"
+                android:textColor="@color/text_secondary"
+                tools:text="12345678A" />
         </LinearLayout>
 
+        <!-- Línea divisoria -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginHorizontal="10dp"
+            android:background="#E5E8EB" />
+
+        <!-- Email -->
         <LinearLayout
-            android:id="@+id/emailContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:paddingHorizontal="18dp"
+            android:paddingVertical="12dp"
+            android:orientation="horizontal">
 
-            <include
-                android:id="@+id/emailRow"
-                layout="@layout/item_profile_detail" />
+            <TextView
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:text="Email:"
+                android:fontFamily="@font/montserrat_medium"
+                android:textSize="14sp"
+                android:textColor="@color/black"  />
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginHorizontal="16dp"
-                android:background="?attr/colorOutlineVariant" />
+            <TextView
+                android:id="@+id/emailValueTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:fontFamily="@font/montserrat"
+                android:textColor="@color/black"
+                tools:text="ana@gmail.com" />
         </LinearLayout>
 
+        <!-- Línea divisoria -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginHorizontal="10dp"
+            android:background="#E5E8EB" />
+
+        <!-- Contraseña -->
         <LinearLayout
-            android:id="@+id/passwordContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:paddingHorizontal="18dp"
+            android:paddingVertical="12dp"
+            android:orientation="horizontal">
 
-            <include
-                android:id="@+id/passwordRow"
-                layout="@layout/item_profile_detail" />
+            <TextView
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:text="Contraseña:"
+                android:fontFamily="@font/montserrat_medium"
+                android:textSize="14sp"
+                android:textColor="@color/black"  />
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginHorizontal="16dp"
-                android:background="?attr/colorOutlineVariant" />
+            <TextView
+                android:id="@+id/passwordValueTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:fontFamily="@font/montserrat"
+                android:textColor="@color/text_secondary"
+                android:text="*********" />
         </LinearLayout>
 
-        <!-- Sección de Firma -->
+        <!-- Línea divisoria -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginHorizontal="10dp"
+            android:background="#E5E8EB" />
+
+        <!-- Firma -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingHorizontal="18dp"
+            android:paddingVertical="12dp"
+            android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Firma"
-                android:textAppearance="?attr/textAppearanceBody2"
-                android:textColor="?android:attr/textColorSecondary" />
+                android:text="Firma:"
+                android:textSize="14sp"
+                android:textColor="@color/black"
+                android:fontFamily="@font/montserrat_medium"
+                android:layout_marginBottom="8dp" />
 
-            <ImageView
-                android:id="@+id/signatureImageView"
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="100dp"
-            android:layout_marginTop="8dp"
-                android:background="@drawable/dotted_border"
-                android:padding="8dp"
-                android:scaleType="fitCenter"
-                tools:src="@tools:sample/backgrounds/scenic" />
+                android:layout_height="wrap_content"
+                android:background="@drawable/dotted_border">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="12dp">
+
+                    <ImageView
+                        android:id="@+id/signatureImageView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="70dp"
+                        android:adjustViewBounds="true"
+                        android:scaleType="centerInside"
+                        tools:src="@tools:sample/backgrounds/scenic" />
+
+                    <View
+                        android:layout_width="200dp"
+                        android:layout_height="1dp"
+                        android:background="#CCCCCC"
+                        android:layout_marginTop="4dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Firma digitalizada"
+                        android:textSize="10sp"
+                        android:textColor="#AAAAAA"
+                        android:fontFamily="@font/montserrat"
+                        android:layout_marginTop="2dp"/>
+                </LinearLayout>
+            </FrameLayout>
         </LinearLayout>
-        
+
+        <!-- Línea divisoria -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#E5E8EB" />
+
         <!-- Botón Editar -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/editButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:backgroundTint="@color/blue_aquanqa"
-            android:paddingVertical="12dp"
+            android:layout_marginHorizontal="18dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="#2196F3"
+            android:fontFamily="@font/montserrat_bold"
+            android:paddingVertical="10dp"
             android:text="Editar"
             android:textAllCaps="false"
-            android:textSize="16sp"
+            android:textSize="14sp"
             app:cornerRadius="8dp" />
-        
     </LinearLayout>
 </ScrollView> 

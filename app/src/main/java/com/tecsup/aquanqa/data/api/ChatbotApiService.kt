@@ -8,25 +8,27 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 
 /**
- * Interfaz de servicio de Retrofit para las interacciones con el chatbot.
+ * Interfaz de Retrofit para los servicios relacionados con el Chatbot.
  */
 interface ChatbotApiService {
 
     /**
-     * Envía un mensaje al chatbot y recibe una respuesta.
+     * Envía una pregunta al chatbot y recibe una respuesta.
+     * La respuesta ahora incluye la respuesta principal y una lista de preguntas
+     * recomendadas contextualmente.
      *
-     * @param request El cuerpo de la solicitud, que contiene la pregunta y el ID de sesión.
-     * @return La respuesta del chatbot.
+     * @param request El objeto que contiene la pregunta del usuario y el ID de sesión.
+     * @return Un objeto [ChatbotResponse] con la respuesta y sugerencias.
      */
     @POST("api/chatbot/")
     suspend fun sendMessage(@Body request: ChatbotRequest): ChatbotResponse
 
     /**
-     * Obtiene una lista de preguntas recomendadas para mostrar al usuario.
+     * Obtiene una lista de las preguntas más frecuentes para mostrar al inicio del chat.
+     * Reemplaza al antiguo endpoint de preguntas recomendadas.
      *
-     * @return Una lista de preguntas recomendadas.
+     * @return Una lista de objetos [RecommendedQuestion].
      */
-    @GET("api/chatbot/recommended-questions/")
-    suspend fun getRecommendedQuestions(): List<RecommendedQuestion>
-
+    @GET("api/chatbot/frequent-questions/")
+    suspend fun getFrequentQuestions(): List<RecommendedQuestion>
 } 

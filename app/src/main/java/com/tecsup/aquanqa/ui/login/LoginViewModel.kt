@@ -32,6 +32,7 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
         const val ERROR_USER_NOT_FOUND = "Usuario no registrado"
         const val ERROR_INVALID_PASSWORD = "Contraseña incorrecta"
         const val ERROR_UNKNOWN = "Error desconocido"
+        private const val TAG = "LoginViewModel"
     }
 
     /**
@@ -46,21 +47,36 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
                 val result = loginRepository.login(dni, password)
 
                 if (result is Result.Success) {
+                    Log.d(TAG, "Login exitoso para usuario: ${result.data.displayName}")
                     _loginResult.value = LoginResult(success = LoggedInUserView(displayName = result.data.displayName))
                 } else {
                     // Manejar diferentes tipos de errores
                     val exception = (result as Result.Error).exception
+                    
+                    // Log detallado del error
+                    Log.e(TAG, "Error en login. Tipo de excepción: ${exception.javaClass.simpleName}")
+                    
+                    // Verificar primero si el usuario existe, siguiendo la prioridad indicada
                     val errorMessage = when (exception) {
-                        is UserNotFoundException -> ERROR_USER_NOT_FOUND
-                        is InvalidPasswordException -> ERROR_INVALID_PASSWORD
-                        else -> exception.message ?: ERROR_UNKNOWN
+                        is UserNotFoundException -> {
+                            Log.e(TAG, "Usuario no encontrado: $dni")
+                            ERROR_USER_NOT_FOUND
+                        }
+                        is InvalidPasswordException -> {
+                            Log.e(TAG, "Contraseña incorrecta para: $dni")
+                            ERROR_INVALID_PASSWORD
+                        }
+                        else -> {
+                            Log.e(TAG, "Error desconocido: ${exception.message}")
+                            exception.message ?: ERROR_UNKNOWN
+                        }
                     }
                     
-                    Log.e("LoginViewModel", "Error de login: $errorMessage", exception)
+                    Log.e(TAG, "Error final de login: $errorMessage", exception)
                     _loginResult.value = LoginResult(error = errorMessage)
                 }
             } catch (e: Exception) {
-                Log.e("LoginViewModel", "Excepción durante login", e)
+                Log.e(TAG, "Excepción no controlada durante login", e)
                 _loginResult.value = LoginResult(error = e.message ?: ERROR_UNKNOWN)
             }
         }

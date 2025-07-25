@@ -16,6 +16,7 @@ class RetrofitClient(private val context: Context) {
 
     private val userPreferences = UserPreferences(context)
 
+    // Interceptor para agregar el token de autorización a todas las solicitudes
     private val authInterceptor = Interceptor { chain ->
         val token = runBlocking { userPreferences.accessToken.first() }
         val request = if (token != null) {
@@ -28,20 +29,28 @@ class RetrofitClient(private val context: Context) {
         chain.proceed(request)
     }
 
-    private val okHttpClient = OkHttpClient.Builder()
-        .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
-        .addInterceptor(authInterceptor)
-            .connectTimeout(ApiConfig.TIMEOUT, TimeUnit.SECONDS)
-            .readTimeout(ApiConfig.TIMEOUT, TimeUnit.SECONDS)
-            .writeTimeout(ApiConfig.TIMEOUT, TimeUnit.SECONDS)
-            .build()
+    // Configurar interceptor de logging con máximo detalle
+    private val loggingInterceptor = HttpLoggingInterceptor().apply {
+        level = HttpLoggingInterceptor.Level.BODY
+    }
 
+    // Cliente HTTP con tiempos de espera más largos para carga de archivos
+    private val okHttpClient = OkHttpClient.Builder()
+        .addInterceptor(loggingInterceptor)
+        .addInterceptor(authInterceptor)
+        .connectTimeout(ApiConfig.TIMEOUT, TimeUnit.SECONDS)
+        .readTimeout(60, TimeUnit.SECONDS)     // Tiempo de lectura más largo
+        .writeTimeout(60, TimeUnit.SECONDS)    // Tiempo de escritura más largo para subidas
+        .build()
+
+    // Cliente Retrofit configurado
     private val retrofit = Retrofit.Builder()
-            .baseUrl(ApiConfig.BASE_URL)
+        .baseUrl(ApiConfig.BASE_URL)
         .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
     
+    // Servicios API expuestos
     val apiService: ApiService by lazy {
         retrofit.create(ApiService::class.java)
     }

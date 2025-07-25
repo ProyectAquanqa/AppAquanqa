@@ -1,90 +1,87 @@
 package com.tecsup.aquanqa.ui.chatbot
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethodManager
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.tecsup.aquanqa.data.api.ApiClient
 import com.tecsup.aquanqa.databinding.FragmentChatbotBinding
 
+/**
+ * Fragmento que representa la pantalla del chatbot.
+ * Su responsabilidad es simple: observar la lista de 'ChatItems' del ViewModel
+ * y enviarla al 'ChatAdapter' para que se dibuje en la pantalla.
+ */
 class ChatbotFragment : Fragment() {
 
     private var _binding: FragmentChatbotBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var viewModel: ChatbotViewModel
-    private lateinit var messageAdapter: MessageAdapter
+    private lateinit var chatAdapter: ChatAdapter
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
+        inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        viewModel = ViewModelProvider(requireActivity())[ChatbotViewModel::class.java]
+        // Configuración de la inyección de dependencias manual
+        val apiService = ApiClient.apiService
+        val repository = ChatbotRepository(apiService)
+        val factory = ChatbotViewModelFactory(repository)
+        viewModel = ViewModelProvider(this, factory)[ChatbotViewModel::class.java]
+        
         _binding = FragmentChatbotBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupRecyclerView()
-        setupMessageInput()
-        observeViewModel()
-    }
 
-    private fun setupRecyclerView() {
-        messageAdapter = MessageAdapter { question ->
-            viewModel.sendMessage(question)
+        // El adapter ahora maneja todos los tipos de ítems.
+        chatAdapter = ChatAdapter { questionText ->
+            viewModel.sendMessage(questionText)
         }
-        binding.messagesRecyclerView.apply {
-            adapter = messageAdapter
+
+        binding.rvMessages.apply {
             layoutManager = LinearLayoutManager(context)
+            adapter = chatAdapter
         }
-    }
 
-    private fun setupMessageInput() {
-        binding.sendButton.setOnClickListener { sendMessageAndClearInput() }
-        binding.messageInput.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_SEND) {
-                sendMessageAndClearInput()
-                return@setOnEditorActionListener true
-            }
-            false
-        }
-    }
-
-    private fun observeViewModel() {
-        viewModel.chatItems.observe(viewLifecycleOwner) { items ->
-            messageAdapter.submitList(items) {
-                // Desplazarse al final de la lista después de la actualización.
-                if (items.isNotEmpty()) {
-                    binding.messagesRecyclerView.scrollToPosition(items.size - 1)
+        // Observar el nuevo estado de la UI (ChatUiState).
+        viewModel.chatUiState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is ChatUiState.Loading -> {
+                    // Opcional: Podrías mostrar un ProgressBar general aquí
+                }
+                is ChatUiState.Success -> {
+                    // Ocultar cualquier ProgressBar general
+                    chatAdapter.submitList(state.items) {
+                        // Desplazarse al final para ver los mensajes más recientes.
+                        binding.rvMessages.scrollToPosition(state.items.size - 1)
+                    }
+                }
+                is ChatUiState.Error -> {
+                    // Opcional: Mostrar un Snackbar o Toast con state.message
                 }
             }
         }
-    }
 
-    private fun sendMessageAndClearInput() {
-        val messageText = binding.messageInput.text.toString().trim()
-        if (messageText.isNotEmpty()) {
+        binding.sendButton.setOnClickListener {
+            val messageText = binding.messageInput.text.toString()
+            if (messageText.isNotBlank()) {
             viewModel.sendMessage(messageText)
-            binding.messageInput.text.clear()
-            hideKeyboard()
+                binding.messageInput.text?.clear()
+            }
         }
-    }
-
-    private fun hideKeyboard() {
-        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        // Limpiar la referencia al binding para evitar fugas de memoria.
+        binding.rvMessages.adapter = null
         _binding = null
     }
 } 

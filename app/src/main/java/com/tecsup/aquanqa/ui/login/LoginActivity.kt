@@ -189,25 +189,25 @@ class LoginActivity : AppCompatActivity() {
      * @param errorMsg El mensaje de error a mostrar
      */
     private fun showLoginFailed(errorMsg: String) {
+        // Limpiar errores anteriores
+        dniLayout.error = null
+        passwordLayout.error = null
+        
         // Determinar qué tipo de mensaje mostrar según el contenido
-        val (errorMessageRes, errorDetailRes) = when {
-            errorMsg.contains("no registrado", ignoreCase = true) -> {
-                // Resaltar el campo de DNI con error
+        when (errorMsg) {
+            LoginViewModel.ERROR_USER_NOT_FOUND -> {
+                // Mostrar error en el campo de DNI
                 dniLayout.error = getString(R.string.error_user_not_found)
-                Pair(R.string.error_user_not_found, R.string.error_user_not_found_detail)
+                // No verificar la contraseña si el usuario no existe
             }
-            errorMsg.contains("contraseña", ignoreCase = true) -> {
-                // Resaltar el campo de contraseña con error
+            LoginViewModel.ERROR_INVALID_PASSWORD -> {
+                // Mostrar error en el campo de contraseña
                 passwordLayout.error = getString(R.string.error_invalid_password)
-                Pair(R.string.error_invalid_password, R.string.error_invalid_password_detail)
             }
             else -> {
-                Pair(R.string.error_authentication, 0)
+                // Para otros errores, mostrar un mensaje genérico
+                Snackbar.make(findViewById(R.id.login_container), errorMsg, Snackbar.LENGTH_LONG).show()
             }
         }
-        
-        // Mostrar un Snackbar con el mensaje de error
-        val message = if (errorDetailRes != 0) getString(errorDetailRes) else "$errorMsg"
-        Snackbar.make(findViewById(R.id.login_container), message, Snackbar.LENGTH_LONG).show()
     }
 }
