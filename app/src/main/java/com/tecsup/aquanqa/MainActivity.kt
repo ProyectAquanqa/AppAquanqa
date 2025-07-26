@@ -1,10 +1,12 @@
 package com.tecsup.aquanqa
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -71,12 +73,15 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         
-        // Configurar navegación para Drawer y BottomNav (¡esto es todo lo que se necesita!)
+        // Configurar navegación para Drawer y BottomNav
         navView.setupWithNavController(navController)
         binding.appBarMain.bottomNavView.setupWithNavController(navController)
 
         // Configurar la cabecera del Drawer
         setupDrawerHeader()
+
+        // Configurar listener para status bar transparente cuando se abre el drawer
+        setupDrawerStatusBar(drawerLayout)
 
         // Configurar listener de navegación SOLO para el item de logout
         navView.setNavigationItemSelectedListener { menuItem ->
@@ -134,8 +139,43 @@ class MainActivity : AppCompatActivity() {
         profileViewModel.loadUserProfile()
     }
     
-    private fun setupDrawerNavigation() {
-        // ¡Esta función ya no es necesaria! La eliminaremos.
+    /**
+     * Configura el status bar para que sea blanco cuando se abre el drawer
+     */
+    private fun setupDrawerStatusBar(drawerLayout: DrawerLayout) {
+        drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
+            override fun onDrawerOpened(drawerView: View) {
+                // Status bar blanco cuando se abre el drawer
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    window.statusBarColor = ContextCompat.getColor(this@MainActivity, R.color.white)
+                    window.navigationBarColor = ContextCompat.getColor(this@MainActivity, android.R.color.transparent)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        // Iconos del status bar oscuros para que se vean sobre fondo blanco
+                        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                    }
+                }
+            }
+
+            override fun onDrawerClosed(drawerView: View) {
+                // Restaurar status bar original cuando se cierra el drawer
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    window.statusBarColor = ContextCompat.getColor(this@MainActivity, android.R.color.transparent)
+                    window.navigationBarColor = ContextCompat.getColor(this@MainActivity, android.R.color.transparent)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        // Mantener iconos claros según el tema original
+                        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                    }
+                }
+            }
+
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
+                // Opcional: Puedes agregar animaciones durante el deslizamiento
+            }
+
+            override fun onDrawerStateChanged(newState: Int) {
+                // Opcional: Manejar cambios de estado del drawer
+            }
+        })
     }
 
     private fun logoutUser() {

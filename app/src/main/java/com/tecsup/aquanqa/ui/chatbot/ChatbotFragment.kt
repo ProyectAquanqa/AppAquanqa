@@ -29,7 +29,8 @@ class ChatbotFragment : Fragment() {
     ): View {
         // Configuración de la inyección de dependencias manual
         val apiService = ApiClient.apiService
-        val repository = ChatbotRepository(apiService)
+        val chatbotApiService = ApiClient.chatbotApiService
+        val repository = ChatbotRepository(apiService, chatbotApiService)
         val factory = ChatbotViewModelFactory(repository)
         viewModel = ViewModelProvider(this, factory)[ChatbotViewModel::class.java]
         
@@ -48,7 +49,7 @@ class ChatbotFragment : Fragment() {
         binding.rvMessages.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = chatAdapter
-        }
+    }
 
         // Observar el nuevo estado de la UI (ChatUiState).
         viewModel.chatUiState.observe(viewLifecycleOwner) { state ->
@@ -59,15 +60,15 @@ class ChatbotFragment : Fragment() {
                 is ChatUiState.Success -> {
                     // Ocultar cualquier ProgressBar general
                     chatAdapter.submitList(state.items) {
-                        // Desplazarse al final para ver los mensajes más recientes.
+                // Desplazarse al final para ver los mensajes más recientes.
                         binding.rvMessages.scrollToPosition(state.items.size - 1)
                     }
                 }
                 is ChatUiState.Error -> {
                     // Opcional: Mostrar un Snackbar o Toast con state.message
                 }
+                }
             }
-        }
 
         binding.sendButton.setOnClickListener {
             val messageText = binding.messageInput.text.toString()

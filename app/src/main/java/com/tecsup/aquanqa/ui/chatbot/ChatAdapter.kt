@@ -84,7 +84,7 @@ class ChatAdapter(
                 binding.messageText.text = "..." // O podrías usar un ValueAnimator para animar los puntos
                 // Podrías añadir una animación aquí si quieres
             } else {
-                binding.messageText.text = message.text
+            binding.messageText.text = message.text
             }
         }
     }

@@ -5,6 +5,38 @@
         <item name="android:textSize">10sp</item>
         <item name="android:textAllCaps">false</item>
         <item name="android:letterSpacing">0.0</item>
-
     </style>
+
+    <!-- Estilo moderno para el NavigationView -->
+    <style name="NavigationView.Modern" parent="Widget.MaterialComponents.NavigationView">
+        <item name="itemBackground">@drawable/nav_menu_item_selector</item>
+        <item name="itemTextAppearance">@style/NavigationView.TextAppearance</item>
+        <item name="itemIconTint">@color/nav_menu_icon_tint</item>
+        <item name="itemTextColor">@color/nav_menu_text_color</item>
+        <item name="itemHorizontalPadding">16dp</item>
+        <item name="itemVerticalPadding">12dp</item>
+        <item name="itemIconPadding">24dp</item>
+        <item name="itemMaxLines">1</item>
+        <item name="android:layout_marginStart">8dp</item>
+        <item name="android:layout_marginEnd">8dp</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+    </style>
+
+    <!-- Estilo para el texto de los items del NavigationView -->
+    <style name="NavigationView.TextAppearance" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:letterSpacing">0.01</item>
+        <item name="fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- Estilo para el DrawerLayout con status bar blanco -->
+    <style name="Theme.Aquanqa.DrawerOpen" parent="Theme.Aquanqa">
+        <item name="android:statusBarColor">@color/white</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowTranslucentNavigation">true</item>
+    </style>
+
 </resources> 

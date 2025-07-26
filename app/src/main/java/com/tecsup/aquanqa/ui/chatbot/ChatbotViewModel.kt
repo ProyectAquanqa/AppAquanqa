@@ -20,64 +20,85 @@ class ChatbotViewModel(private val repository: ChatbotRepository) : ViewModel() 
     private val _chatUiState = MutableLiveData<ChatUiState>()
     val chatUiState: LiveData<ChatUiState> = _chatUiState
 
-    private val currentMessages = mutableListOf<ChatItem>()
-
     init {
-        loadInitialWelcome()
+        // Inicializar la sesión de chat (solo se ejecuta una vez por app)
+        ChatSessionManager.initializeSession(repository)
+        
+        // Observar los cambios en la conversación desde el SessionManager
+        ChatSessionManager.chatItems.observeForever { items ->
+            _chatUiState.postValue(ChatUiState.Success(items))
+        }
     }
 
-    private fun loadInitialWelcome() {
-        currentMessages.add(ChatItem.MessageItem(
-            Message(UUID.randomUUID().toString(), "¡Hola! Soy AquaBot, tu asistente virtual. ¿En qué puedo ayudarte hoy?", Sender.CHATBOT)
-        ))
-        // Aquí podrías cargar preguntas frecuentes si lo deseas en el futuro
-        _chatUiState.value = ChatUiState.Success(currentMessages.toList())
-    }
+
 
     fun sendMessage(userMessageText: String) {
         if (userMessageText.isBlank()) return
 
-        // 1. Añadir el mensaje del usuario inmediatamente y mostrar estado de carga
-        val userMessage = ChatItem.MessageItem(Message(UUID.randomUUID().toString(), userMessageText, Sender.USER))
-        currentMessages.add(userMessage)
+        // 1. Añadir el mensaje del usuario usando el SessionManager
+        ChatSessionManager.addUserMessage(userMessageText)
         
-        // Añadir un indicador de que el bot está "escribiendo..."
-        val loadingIndicator = ChatItem.MessageItem(Message(UUID.randomUUID().toString(), "...", Sender.CHATBOT, isLoading = true))
-        currentMessages.add(loadingIndicator)
+        // 2. Añadir indicador de "escribiendo..." usando el SessionManager
+        val loadingId = ChatSessionManager.addLoadingIndicator()
 
-        _chatUiState.value = ChatUiState.Success(currentMessages.toList())
-
-
-        // 2. Lanzar la corrutina para obtener la respuesta del bot
+        // 3. Lanzar la corrutina para obtener la respuesta del bot
         viewModelScope.launch {
             val result = repository.postQuery(userMessageText)
             
             // Eliminar el indicador de "escribiendo..."
-            currentMessages.remove(loadingIndicator)
+            ChatSessionManager.removeLoadingIndicator(loadingId)
 
             result.fold(
                 onSuccess = { response ->
-                    // Añadir la respuesta del bot
-                    currentMessages.add(ChatItem.MessageItem(
-                        Message(UUID.randomUUID().toString(), response.answer, Sender.CHATBOT)
-                    ))
-                    // Si hay preguntas recomendadas, añadirlas
-                    if (response.recommendedQuestions.isNotEmpty()) {
-                        currentMessages.add(ChatItem.SuggestionHeader("Quizás quieras preguntar:"))
-                        response.recommendedQuestions.forEach {
-                            currentMessages.add(ChatItem.SuggestionItem(it))
-                        }
-                    }
-                    _chatUiState.postValue(ChatUiState.Success(currentMessages.toList()))
+                    // Añadir la respuesta del bot usando el SessionManager
+                    ChatSessionManager.addBotMessage(response.answer)
+                    
+                    // SIEMPRE mostrar preguntas sugeridas
+                    addSuggestionsAfterResponse(response)
                 },
                 onFailure = {
-                    // Manejar el error
-                    currentMessages.add(ChatItem.MessageItem(
-                        Message(UUID.randomUUID().toString(), "Lo siento, tuve un problema para conectarme. Por favor, inténtalo de nuevo.", Sender.CHATBOT)
-                    ))
-                    _chatUiState.postValue(ChatUiState.Success(currentMessages.toList()))
+                    // Manejar el error usando el SessionManager
+                    ChatSessionManager.addBotMessage("Lo siento, tuve un problema para conectarme. Por favor, inténtalo de nuevo.")
+                    
+                    // Incluso en caso de error, mostrar preguntas frecuentes para que el usuario pueda continuar
+                    addFallbackSuggestions()
                 }
             )
+        }
+    }
+
+    /**
+     * Añade preguntas sugeridas después de cada respuesta del bot.
+     * SIEMPRE muestra preguntas, usando la siguiente lógica de prioridad:
+     * 1. Si hay recommendedQuestions específicas → mostrar esas
+     * 2. Si NO hay recommendedQuestions → obtener las 4 preguntas más frecuentes de la base de datos
+     * 3. Si falla todo → mostrar preguntas por defecto
+     */
+    private fun addSuggestionsAfterResponse(response: com.tecsup.aquanqa.ui.chatbot.model.ChatbotResponse) {
+        viewModelScope.launch {
+            val suggestionsToShow = if (response.recommendedQuestions.isNotEmpty()) {
+                // Caso 1: Hay preguntas específicas recomendadas
+                response.recommendedQuestions
+            } else {
+                // Caso 2: No hay preguntas específicas, obtener las más frecuentes
+                repository.getFrequentQuestionsWithFallback().take(4)
+            }
+
+            // Añadir las sugerencias al chat usando el SessionManager
+            ChatSessionManager.addSuggestions(suggestionsToShow)
+        }
+    }
+
+    /**
+     * Añade preguntas de respaldo cuando hay un error en la API principal.
+     * Garantiza que el usuario siempre tenga opciones para continuar la conversación.
+     */
+    private fun addFallbackSuggestions() {
+        viewModelScope.launch {
+            val fallbackQuestions = repository.getFrequentQuestionsWithFallback().take(4)
+            
+            // Añadir las preguntas de respaldo usando el SessionManager
+            ChatSessionManager.addSuggestions(fallbackQuestions)
         }
     }
 } 

@@ -42,6 +42,6 @@
             android:src="@drawable/ic_arrow_forward"
             app:tint="@color/blue_aquanqa" />
 
-    </LinearLayout>
+</LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

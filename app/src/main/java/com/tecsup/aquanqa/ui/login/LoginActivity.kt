@@ -44,11 +44,7 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Configurar la barra de estado para que sea transparente con íconos oscuros
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-        window.statusBarColor = android.graphics.Color.TRANSPARENT
-        WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = true
-        
+
         setContentView(R.layout.activity_login)
 
         // Inicializar ViewModel
@@ -65,7 +61,7 @@ class LoginActivity : AppCompatActivity() {
         // Agregar ProgressBar para mostrar carga
         progressBar = ProgressBar(this, null, android.R.attr.progressBarStyleLarge)
         progressBar.visibility = View.GONE
-        val layout = findViewById<View>(R.id.login_container).parent as androidx.constraintlayout.widget.ConstraintLayout
+        val layout = findViewById<androidx.constraintlayout.widget.ConstraintLayout>(R.id.main_container)
         val params = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams(
             androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.WRAP_CONTENT,
             androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.WRAP_CONTENT
@@ -192,7 +188,7 @@ class LoginActivity : AppCompatActivity() {
         // Limpiar errores anteriores
         dniLayout.error = null
         passwordLayout.error = null
-        
+
         // Determinar qué tipo de mensaje mostrar según el contenido
         when (errorMsg) {
             LoginViewModel.ERROR_USER_NOT_FOUND -> {
@@ -206,7 +202,7 @@ class LoginActivity : AppCompatActivity() {
             }
             else -> {
                 // Para otros errores, mostrar un mensaje genérico
-                Snackbar.make(findViewById(R.id.login_container), errorMsg, Snackbar.LENGTH_LONG).show()
+                Snackbar.make(findViewById(android.R.id.content), errorMsg, Snackbar.LENGTH_LONG).show()
             }
         }
     }

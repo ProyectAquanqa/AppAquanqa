@@ -1,31 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:showIn="navigation_view">
+    tools:showIn="navigation_view"
+    >
 
-    <group android:checkableBehavior="single">
+    <!-- Grupo principal de navegación -->
+    <group 
+        android:id="@+id/nav_main_group"
+        android:checkableBehavior="single">
+        
         <item
             android:id="@+id/navigation_home"
-            android:icon="@drawable/ic_home_black_24dp"
-            android:title="@string/menu_home" />
+            android:icon="@drawable/ic_home_modern"
+            android:title="@string/menu_home"
+            android:titleCondensed="Inicio" />
+            
         <item
             android:id="@+id/nav_report"
-            android:icon="@drawable/ic_dashboard_black_24dp"
-            android:title="@string/menu_report" />
+            android:icon="@drawable/ic_dashboard_modern"
+            android:title="@string/menu_report"
+            android:titleCondensed="Reportes" />
+            
         <item
             android:id="@+id/navigation_chatbot"
-            android:icon="@drawable/ic_chatboot"
-            android:title="@string/menu_chatbot" />
+            android:icon="@drawable/ic_chatbot_modern"
+            android:title="@string/menu_chatbot"
+            android:titleCondensed="AquaBot" />
+            
         <item
             android:id="@+id/navigation_profile"
-            android:icon="@drawable/ic_profile"
-            android:title="@string/menu_profile" />
+            android:icon="@drawable/ic_profile_modern"
+            android:title="@string/menu_profile"
+            android:titleCondensed="Perfil" />
+            
     </group>
 
-    <!-- Elemento de Salir al final -->
-    <item
-        android:id="@+id/nav_logout"
-        android:icon="@drawable/ic_logout"
-        android:title="Salir" />
+    <!-- Separador visual -->
+    <group android:id="@+id/nav_secondary_group">
+        
+        <!-- Elemento de Salir con estilo diferenciado -->
+        <item
+            android:id="@+id/nav_logout"
+            android:icon="@drawable/ic_logout_modern"
+            android:title="Cerrar Sesión"
+            android:titleCondensed="Salir" />
+            
+    </group>
 
 </menu> 
