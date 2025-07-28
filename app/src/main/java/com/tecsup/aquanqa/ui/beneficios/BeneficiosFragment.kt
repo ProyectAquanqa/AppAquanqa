@@ -1,37 +1,24 @@
 package com.tecsup.aquanqa.ui.beneficios
 
-import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.tecsup.aquanqa.databinding.FragmentBeneficiosBinding
+import com.tecsup.aquanqa.ui.base.BaseFragment
 
-class BeneficiosFragment : Fragment() {
-
-    private var _binding: FragmentBeneficiosBinding? = null
-    // Esta propiedad solo es válida entre onCreateView y onDestroyView.
-    private val binding get() = _binding!!
+class BeneficiosFragment : BaseFragment<FragmentBeneficiosBinding>() {
 
     private val beneficiosViewModel: BeneficiosViewModel by viewModels()
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentBeneficiosBinding.inflate(inflater, container, false)
+    override fun getViewBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentBeneficiosBinding {
+        return FragmentBeneficiosBinding.inflate(inflater, container, false)
+    }
 
+    override fun setupObservers() {
+        super.setupObservers()
+        
         beneficiosViewModel.text.observe(viewLifecycleOwner) { newText ->
             binding.textBeneficios.text = newText
         }
-
-        return binding.root
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 } 

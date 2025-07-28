@@ -1,14 +1,10 @@
 package com.tecsup.aquanqa.ui.anuncios
 
-import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import com.tecsup.aquanqa.data.model.Anuncio
 import com.tecsup.aquanqa.databinding.FragmentAnunciosBinding
+import com.tecsup.aquanqa.ui.base.BaseFragment
 
 /**
  * Fragmento que muestra la lista de anuncios.
@@ -17,32 +13,24 @@ import com.tecsup.aquanqa.databinding.FragmentAnunciosBinding
  * y actualizando la UI en consecuencia. La UI consiste en un `RecyclerView`
  * que se puebla con los datos de los anuncios.
  */
-class AnunciosFragment : Fragment() {
-
-    private var _binding: FragmentAnunciosBinding? = null
-    private val binding get() = _binding!!
+class AnunciosFragment : BaseFragment<FragmentAnunciosBinding>() {
 
     // Instancia del ViewModel, delegada a la gestión del ciclo de vida del fragmento.
     private val viewModel: AnunciosViewModel by viewModels()
 
     private lateinit var adapter: AnunciosAdapter
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentAnunciosBinding.inflate(inflater, container, false)
-        return binding.root
+    override fun getViewBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentAnunciosBinding {
+        return FragmentAnunciosBinding.inflate(inflater, container, false)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        // Configurar el adapter del RecyclerView
+    override fun setupUI() {
+        super.setupUI()
         setupRecyclerView()
+    }
 
-        // Observar los cambios en los datos del ViewModel
+    override fun setupObservers() {
+        super.setupObservers()
         observeViewModel()
     }
 
@@ -73,15 +61,7 @@ class AnunciosFragment : Fragment() {
         }
 
         viewModel.error.observe(viewLifecycleOwner) { errorMsg ->
-            if (errorMsg.isNotEmpty()) {
-                // Mostrar un mensaje de error al usuario.
-                Toast.makeText(requireContext(), errorMsg, Toast.LENGTH_LONG).show()
-            }
+            showError(errorMsg)
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 } 

@@ -1,11 +1,7 @@
 package com.tecsup.aquanqa.ui.profile
 
-import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
@@ -13,29 +9,22 @@ import com.bumptech.glide.request.RequestOptions
 import com.tecsup.aquanqa.R
 import com.tecsup.aquanqa.databinding.FragmentProfileBinding
 import com.tecsup.aquanqa.data.model.UserProfile
+import com.tecsup.aquanqa.ui.base.BaseFragment
 
 /**
  * Fragment para mostrar el perfil del usuario.
  * Muestra la información del usuario y permite navegar a la pantalla de edición.
  */
-class ProfileFragment : Fragment() {
-
-    private var _binding: FragmentProfileBinding? = null
-    private val binding get() = _binding!!
+class ProfileFragment : BaseFragment<FragmentProfileBinding>() {
 
     private lateinit var viewModel: ProfileViewModel
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentProfileBinding.inflate(inflater, container, false)
-        return binding.root
+    override fun getViewBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentProfileBinding {
+        return FragmentProfileBinding.inflate(inflater, container, false)
     }
-    
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+
+    override fun setupUI() {
+        super.setupUI()
         
         // Inicializar ViewModel con el Factory
         viewModel = ViewModelProvider(
@@ -43,23 +32,16 @@ class ProfileFragment : Fragment() {
             ProfileViewModelFactory(requireActivity().application)
         )[ProfileViewModel::class.java]
         
-        // Configurar observadores
-        setupObservers()
-        
         // Configurar listeners
         setupListeners()
         
         // Cargar datos del perfil
         viewModel.loadUserProfile()
     }
-    
-    override fun onResume() {
-        super.onResume()
-        // Recargar perfil al regresar al fragmento (por ejemplo, después de editar)
-        viewModel.loadUserProfile()
-    }
-    
-    private fun setupObservers() {
+
+    override fun setupObservers() {
+        super.setupObservers()
+        
         // Observar cambios en el perfil del usuario
         viewModel.userProfile.observe(viewLifecycleOwner) { userProfile ->
             setupUserProfileData(userProfile)
@@ -67,9 +49,15 @@ class ProfileFragment : Fragment() {
         
         // Observar errores
         viewModel.error.observe(viewLifecycleOwner) { error ->
-            if (error.isNotEmpty()) {
-                Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
-            }
+            showError(error)
+        }
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        // Recargar perfil al regresar al fragmento (por ejemplo, después de editar)
+        if (::viewModel.isInitialized) {
+            viewModel.loadUserProfile()
         }
     }
     
@@ -159,8 +147,5 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
+
 } 
