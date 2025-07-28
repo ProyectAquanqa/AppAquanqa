@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     
-    <!-- Estado seleccionado -->
+    <!-- Estado seleccionado para tema claro -->
     <item android:state_checked="true">
         <shape android:shape="rectangle">
-            <solid android:color="@color/blue_aquanqa_light" />
+            <solid android:color="@color/aquanqa_blue_light" />
             <corners android:radius="12dp" />
             <stroke 
                 android:width="1dp" 
-                android:color="@color/blue_aquanqa" />
+                android:color="@color/aquanqa_blue" />
         </shape>
     </item>
     
-    <!-- Estado presionado -->
+    <!-- Estado presionado para tema claro -->
     <item android:state_pressed="true">
         <shape android:shape="rectangle">
-            <solid android:color="@color/ripple_effect" />
+            <solid android:color="@color/background_secondary" />
             <corners android:radius="12dp" />
         </shape>
     </item>
     
-    <!-- Estado normal -->
+    <!-- Estado normal para tema claro -->
     <item>
         <shape android:shape="rectangle">
             <solid android:color="@android:color/transparent" />

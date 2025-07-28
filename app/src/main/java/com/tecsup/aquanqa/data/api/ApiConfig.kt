@@ -5,7 +5,7 @@ package com.tecsup.aquanqa.data.api
  */
 object ApiConfig {
     // Asegurarse de que la URL base termina con '/' para evitar errores de Retrofit
-    const val BASE_URL = "http://192.168.68.100:8000/"
+    const val BASE_URL = "http://192.168.18.13:8000/"
     
     // Obtener la URL base para recursos como imágenes
     const val MEDIA_URL = "${BASE_URL}media/"

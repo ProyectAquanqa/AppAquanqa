@@ -10,10 +10,10 @@
     android:layout_marginBottom="4dp"
     android:clickable="true"
     android:focusable="true"
-    app:cardBackgroundColor="#E6F2FF"
+    app:cardBackgroundColor="@color/background_card"
     app:cardCornerRadius="16dp"
     app:cardElevation="0dp"
-    app:strokeColor="#C0D9FF"
+    app:strokeColor="@color/border_light"
     app:strokeWidth="1dp">
 
     <LinearLayout
@@ -31,16 +31,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/montserrat_medium"
-            android:textColor="@color/blue_aquanqa"
+            android:textColor="@color/primary_blue"
             android:textSize="14sp"
             tools:text="¿Qué hago si no llegó mi boleta?" />
 
-        <ImageView
-            android:layout_width="16dp"
-            android:layout_height="16dp"
-            android:layout_marginStart="8dp"
-            android:src="@drawable/ic_arrow_forward"
-            app:tint="@color/blue_aquanqa" />
+
 
 </LinearLayout>
 

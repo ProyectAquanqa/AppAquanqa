@@ -73,7 +73,9 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         
-        // Configurar navegación para Drawer y BottomNav
+        // Configurar navegación para Drawer y BottomNav <color name="dark_success">#10B981</color>
+        //    <color name="dark_warning">#F59E0B</color>
+        //    <color name="dark_error">#EF4444</color>
         navView.setupWithNavController(navController)
         binding.appBarMain.bottomNavView.setupWithNavController(navController)
 
@@ -101,9 +103,16 @@ class MainActivity : AppCompatActivity() {
         // Configurar la visibilidad de la UI basada en el destino de navegación
         navController.addOnDestinationChangedListener { _, destination, _ ->
             val isChatbot = destination.id == R.id.navigation_chatbot
-            binding.appBarMain.fabChatbot.visibility = if (isChatbot) View.GONE else View.VISIBLE
+            val isProfile = destination.id == R.id.navigation_profile
+            val isEditProfile = destination.id == R.id.editProfileFragment
+            
+            // Ocultar FAB en chatbot, perfil y editar perfil
+            val shouldHideFab = isChatbot || isProfile || isEditProfile
+            binding.appBarMain.fabChatbot.visibility = if (shouldHideFab) View.GONE else View.VISIBLE
+            
+            // Solo ocultar bottom nav en chatbot
             binding.appBarMain.bottomNavView.visibility = if (isChatbot) View.GONE else View.VISIBLE
-                }
+        }
 
         supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_menu_white)
     }

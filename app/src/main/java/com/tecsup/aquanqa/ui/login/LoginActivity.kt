@@ -23,6 +23,10 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import android.graphics.Color
+import android.os.Build
+import android.view.WindowInsets
+import android.view.WindowInsetsController
 
 import com.tecsup.aquanqa.MainActivity
 import com.tecsup.aquanqa.R
@@ -43,9 +47,11 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
 
         setContentView(R.layout.activity_login)
+        
+        // Configurar status bar transparente después de setContentView
+        setupTransparentStatusBar()
 
         // Inicializar ViewModel
         loginViewModel = ViewModelProvider(this, LoginViewModelFactory(this))
@@ -204,6 +210,43 @@ class LoginActivity : AppCompatActivity() {
                 // Para otros errores, mostrar un mensaje genérico
                 Snackbar.make(findViewById(android.R.id.content), errorMsg, Snackbar.LENGTH_LONG).show()
             }
+        }
+    }
+
+    /**
+     * Configura el status bar como transparente para diferentes versiones de Android
+     */
+    private fun setupTransparentStatusBar() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // Android 11+ (API 30+)
+            window.setDecorFitsSystemWindows(false)
+            window.statusBarColor = Color.TRANSPARENT
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // Android 5.0+ (API 21+)
+            window.decorView.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            )
+            window.statusBarColor = Color.TRANSPARENT
+        }
+    }
+
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Restaurar status bar al salir
+        restoreStatusBar()
+    }
+
+    /**
+     * Restaura la configuración normal del status bar
+     */
+    private fun restoreStatusBar() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.setDecorFitsSystemWindows(true)
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
         }
     }
 }

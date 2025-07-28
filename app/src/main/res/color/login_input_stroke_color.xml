@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Estado enfocado (cuando el usuario hace click para escribir) -->
+    <item android:state_focused="true" android:color="@color/border_focus" />
+    <!-- Estado activado (cuando hay texto) -->
+    <item android:state_activated="true" android:color="@color/border_focus" />
+    <!-- Estado normal (primera vista) -->
+    <item android:color="@color/border_medium" />
+</selector>

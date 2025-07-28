@@ -15,7 +15,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/user_label"
-        android:textColor="@android:color/darker_gray"
+        android:textColor="@color/text_secondary"
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -25,7 +25,7 @@
         android:id="@+id/message_card"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:cardBackgroundColor="#D1E7F7"
+        app:cardBackgroundColor="@color/primary_blue"
         app:cardCornerRadius="16dp"
         app:cardElevation="0dp"
         app:cardPreventCornerOverlap="false"
@@ -39,7 +39,7 @@
             android:layout_height="wrap_content"
             android:maxWidth="260dp"
             android:padding="12dp"
-            android:textColor="@android:color/black"
+            android:textColor="@color/background_primary"
             android:textSize="15sp"
             tools:text="Hola Ara, ¿puedes contarme sobre los últimos anuncios de la empresa?" />
     </androidx.cardview.widget.CardView>

@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="48dp"
         android:text="@string/chatbot_label"
-        android:textColor="@android:color/darker_gray"
+        android:textColor="@color/text_secondary"
         android:textSize="12sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -39,7 +39,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        app:cardBackgroundColor="#F0F2F5"
+        app:cardBackgroundColor="@color/primary_blue_light"
         app:cardCornerRadius="16dp"
         app:cardElevation="0dp"
         app:cardPreventCornerOverlap="false"
@@ -53,7 +53,7 @@
             android:layout_height="wrap_content"
             android:maxWidth="260dp"
             android:padding="11dp"
-            android:textColor="@android:color/black"
+            android:textColor="@color/text_primary"
             android:textSize="15sp"
             tools:text="@string/chatbot_welcome_message" />
     </androidx.cardview.widget.CardView>

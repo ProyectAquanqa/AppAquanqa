@@ -5,7 +5,7 @@
     android:id="@+id/main_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
+    android:fitsSystemWindows="false"
     tools:context=".ui.login.LoginActivity">
 
     <!-- Fondo con imagen -->
@@ -21,7 +21,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/gradient_overlay_background"
+        android:background="@drawable/gradient_dark_overlay"
         app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
@@ -92,7 +92,7 @@
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
 
-            android:background="@drawable/bg_form_container"
+             android:background="@drawable/bg_form_container"
 
             android:orientation="vertical"
             android:paddingHorizontal="24dp"
@@ -112,7 +112,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/login_title"
                     android:fontFamily="@font/montserrat_bold"
-                    android:textColor="@color/blue_aquanqa"
+                    android:textColor="@color/aquanqa_blue"
                     android:textSize="18sp"
                      />
 
@@ -121,8 +121,8 @@
                     android:layout_height="2dp"
                     android:layout_marginStart="16dp"
                     android:layout_weight="1"
-                    android:background="@color/black"
-                    android:alpha="0.1" />
+                    android:background="@color/white"
+                    android:alpha="0.2" />
 
             </LinearLayout>
 
@@ -132,8 +132,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/dni_hint"
-                app:boxStrokeColor="@color/blue_aquanqa"
-                app:hintTextColor="@color/blue_aquanqa"
+                app:boxStrokeColor="@color/login_input_stroke_color"
+                app:hintTextColor="@color/aquanqa_blue"
+                android:textColorHint="@color/text_hint"
+                app:startIconTint="@color/aquanqa_blue"
                 app:startIconDrawable="@drawable/ic_person_outline">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -141,9 +143,12 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="number"
+
+                    android:textColorHint="@color/text_hint"
                     android:fontFamily="@font/montserrat"
                     android:maxLength="8"
-                    android:textColor="@color/black" />
+
+                    android:textColor="@color/text_primary" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -154,17 +159,23 @@
                 android:layout_marginTop="16dp"
                 android:hint="@string/password_hint"
                 android:fontFamily="@font/montserrat"
-                app:boxStrokeColor="@color/blue_aquanqa"
+                app:boxStrokeColor="@color/login_input_stroke_color"
                 app:endIconMode="password_toggle"
-                app:hintTextColor="@color/blue_aquanqa"
-                app:startIconDrawable="@drawable/ic_lock_outline">
+                app:hintTextColor="@color/aquanqa_blue"
+                android:textColorHint="@color/text_hint"
+                app:endIconTint="@color/aquanqa_blue"
+                app:errorIconDrawable="@null"
+                app:startIconDrawable="@drawable/ic_lock_outline"
+                app:startIconTint="@color/aquanqa_blue"
+
+                 >
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/txtPassword"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textPassword"
-                    android:textColor="@color/black" />
+                    android:textColor="@color/text_primary" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <TextView
@@ -178,7 +189,7 @@
                 android:fontFamily="@font/montserrat"
                 android:padding="4dp"
                 android:text="¿Olvidaste tu contraseña?"
-                android:textColor="@color/blue_aquanqa"
+                android:textColor="@color/text_secondary"
                 android:textSize="14sp" />
 
             <com.google.android.material.button.MaterialButton
@@ -186,7 +197,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="66dp"
                 android:layout_marginTop="24dp"
-                android:backgroundTint="@color/blue_aquanqa"
+                android:backgroundTint="@color/aquanqa_blue"
                 android:text="@string/login_button"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
@@ -200,7 +211,7 @@
                 android:layout_height="wrap_content"
                 android:text="Version 1.0."
                 android:textAlignment="center"
-                android:textColor="@color/blue_aquanqa"
+                android:textColor="@color/text_secondary"
                 android:layout_gravity="center"
                 android:layout_marginTop="20dp"
 
