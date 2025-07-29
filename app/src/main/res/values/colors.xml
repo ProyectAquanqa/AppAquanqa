@@ -12,6 +12,7 @@
     <color name="aquanqa_green">#10B981</color>
     <color name="aquanqa_green_light">#E8F5E8</color>
     <!-- ========== COLORES PRIMARIOS (ALIAS) ========== -->
+    <color name="primary">#035594</color>
     <color name="primary_color">#4CAF50</color>
     <color name="primary_blue">#0C5892</color>
     <color name="primary_blue_dark">#1565C0</color>

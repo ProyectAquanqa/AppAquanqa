@@ -17,7 +17,11 @@ class LoginViewModelFactory(private val context: Context) : ViewModelProvider.Fa
         if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
             val userPreferences = UserPreferences(context.applicationContext)
             val loginDataSource = LoginDataSource(userPreferences)
-            val loginRepository = LoginRepository(loginDataSource, userPreferences)
+            val loginRepository = LoginRepository(
+                dataSource = loginDataSource, 
+                userPreferences = userPreferences,
+                context = context.applicationContext
+            )
             return LoginViewModel(loginRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")

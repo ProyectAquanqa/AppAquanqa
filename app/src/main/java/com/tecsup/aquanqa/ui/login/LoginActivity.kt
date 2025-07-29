@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import android.os.Bundle
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
@@ -30,6 +31,9 @@ import android.view.WindowInsetsController
 
 import com.tecsup.aquanqa.MainActivity
 import com.tecsup.aquanqa.R
+import com.tecsup.aquanqa.data.SessionManager
+import com.tecsup.aquanqa.data.preferences.UserPreferences
+import kotlinx.coroutines.launch
 
 /**
  * Actividad para la pantalla de inicio de sesión
@@ -44,6 +48,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var btnLogin: MaterialButton
     private lateinit var dniLayout: TextInputLayout
     private lateinit var passwordLayout: TextInputLayout
+    private lateinit var sessionManager: SessionManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +57,13 @@ class LoginActivity : AppCompatActivity() {
         
         // Configurar status bar transparente después de setContentView
         setupTransparentStatusBar()
+
+        // Inicializar SessionManager
+        val userPreferences = UserPreferences(applicationContext)
+        sessionManager = SessionManager(applicationContext, userPreferences)
+
+        // Verificar si ya hay una sesión activa antes de inicializar la UI
+        checkExistingSession()
 
         // Inicializar ViewModel
         loginViewModel = ViewModelProvider(this, LoginViewModelFactory(this))
@@ -247,6 +259,33 @@ class LoginActivity : AppCompatActivity() {
             window.setDecorFitsSystemWindows(true)
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+        }
+    }
+
+    /**
+     * Verifica si ya existe una sesión activa y redirige a MainActivity si es así
+     */
+    private fun checkExistingSession() {
+        lifecycleScope.launch {
+            try {
+                val hasActiveSession = sessionManager.isSessionActive()
+                
+                if (hasActiveSession) {
+                    val validToken = sessionManager.getValidAccessToken()
+                    
+                    if (!validToken.isNullOrEmpty()) {
+                        // Hay una sesión válida, ir directamente a MainActivity
+                        val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        startActivity(intent)
+                        finish()
+                        return@launch
+                    }
+                }
+                // Si no hay sesión activa, continuar con el flujo normal de login
+            } catch (e: Exception) {
+                // En caso de error, continuar con el flujo normal de login
+            }
         }
     }
 }

@@ -16,18 +16,8 @@ class RetrofitClient(private val context: Context) {
 
     private val userPreferences = UserPreferences(context)
 
-    // Interceptor para agregar el token de autorización a todas las solicitudes
-    private val authInterceptor = Interceptor { chain ->
-        val token = runBlocking { userPreferences.accessToken.first() }
-        val request = if (token != null) {
-            chain.request().newBuilder()
-                .header("Authorization", "${ApiConfig.TOKEN_PREFIX}$token")
-                .build()
-        } else {
-            chain.request()
-        }
-        chain.proceed(request)
-    }
+    // Interceptor avanzado para manejar autenticación y renovación de tokens
+    private val authInterceptor = AuthInterceptor(context)
 
     // Configurar interceptor de logging con máximo detalle
     private val loggingInterceptor = HttpLoggingInterceptor().apply {

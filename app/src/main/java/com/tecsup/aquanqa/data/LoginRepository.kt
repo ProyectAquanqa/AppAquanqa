@@ -1,5 +1,6 @@
 package com.tecsup.aquanqa.data
 
+import android.content.Context
 import com.tecsup.aquanqa.data.model.LoggedInUser
 import com.tecsup.aquanqa.data.model.LoginRequest
 import com.tecsup.aquanqa.data.preferences.UserPreferences
@@ -12,10 +13,15 @@ import kotlinx.coroutines.flow.map
  */
 class LoginRepository(
     private val dataSource: LoginDataSource,
-    private val userPreferences: UserPreferences
+    private val userPreferences: UserPreferences,
+    private val context: Context? = null
 ) {
     var user: LoggedInUser? = null
         private set
+
+    private val sessionManager: SessionManager? = context?.let { 
+        SessionManager(it, userPreferences) 
+    }
 
     val isLoggedIn: Boolean
         get() = user != null
@@ -30,9 +36,19 @@ class LoginRepository(
         }
     }
 
+    /**
+     * Verifica si hay una sesión activa usando SessionManager
+     */
+    suspend fun isSessionActive(): Boolean {
+        return sessionManager?.isSessionActive() ?: false
+    }
+
+    /**
+     * Cierra la sesión del usuario y limpia todos los datos
+     */
     suspend fun logout() {
         user = null
-        dataSource.logout()
+        sessionManager?.clearSession() ?: dataSource.logout()
     }
 
     suspend fun login(dni: String, password: String): Result<LoggedInUser> {
@@ -44,6 +60,13 @@ class LoginRepository(
         }
 
         return result
+    }
+
+    /**
+     * Obtiene un token de acceso válido, refrescándolo si es necesario
+     */
+    suspend fun getValidAccessToken(): String? {
+        return sessionManager?.getValidAccessToken()
     }
 
     private fun setLoggedInUser(loggedInUser: LoggedInUser) {

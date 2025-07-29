@@ -52,7 +52,11 @@ class MainActivity : AppCompatActivity() {
         // Inicialización de repositorios y preferencias
         val userPreferences = UserPreferences(applicationContext)
         val loginDataSource = LoginDataSource(userPreferences)
-        loginRepository = LoginRepository(dataSource = loginDataSource, userPreferences = userPreferences)
+        loginRepository = LoginRepository(
+            dataSource = loginDataSource, 
+            userPreferences = userPreferences,
+            context = applicationContext
+        )
         userRepository = UserRepository(applicationContext, userPreferences)
 
         // Inicializar el ViewModel compartido

@@ -5,6 +5,8 @@ import com.tecsup.aquanqa.data.model.Category
 import com.tecsup.aquanqa.data.model.LoginRequest
 import com.tecsup.aquanqa.data.model.LoginResponse
 import com.tecsup.aquanqa.data.model.PaginatedResponse
+import com.tecsup.aquanqa.data.model.RefreshTokenRequest
+import com.tecsup.aquanqa.data.model.RefreshTokenResponse
 import com.tecsup.aquanqa.data.model.UserProfile
 import com.tecsup.aquanqa.ui.chatbot.model.ChatbotRequest
 import com.tecsup.aquanqa.ui.chatbot.model.ChatbotResponse
@@ -44,11 +46,11 @@ interface ApiService {
     /**
      * Endpoint para refrescar el token de acceso cuando expira.
      * 
-     * @param refreshToken Mapa con la clave "refresh" y el token de refresco
-     * @return Response<LoginResponse> Nuevo token de acceso
+     * @param refreshToken Objeto con el token de refresco
+     * @return Response<RefreshTokenResponse> Nuevo token de acceso
      */
     @POST("api/token/refresh/")
-    suspend fun refreshToken(@Body refreshToken: Map<String, String>): Response<LoginResponse>
+    suspend fun refreshToken(@Body refreshToken: RefreshTokenRequest): Response<RefreshTokenResponse>
     
     // ================= PERFIL DE USUARIO =================
     
