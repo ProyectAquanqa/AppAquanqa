@@ -4,14 +4,180 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:fitsSystemWindows="true">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/background_primary"
+        android:fillViewport="true"
         tools:context=".ui.home.HomeFragment">
 
-        <!-- El fragment se ha dejado vacío según lo solicitado -->
-        <!-- Solo se ha mantenido el ConstraintLayout principal -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <!-- ===== SECCIÓN DE BIENVENIDA ===== -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/welcome_section"
+                android:layout_width="match_parent"
+                android:layout_height="220dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <!-- Imagen de fondo -->
+                <ImageView
+                    android:id="@+id/backgroundImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ima_ara"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <!-- Overlay gradiente -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/gradient_dark_overlay"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <!-- Contenido de bienvenida -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="24dp"
+                    android:layout_marginBottom="32dp"
+                    android:orientation="vertical"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent">
+
+                    <!-- Saludo -->
+                    <TextView
+                        android:id="@+id/tv_user_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/montserrat"
+                        android:text="¡Hola, [Nombre]! "
+                        android:textColor="@android:color/white"
+                        android:textSize="18sp"
+                        android:alpha="0.9" />
+
+                    <!-- Nombre del usuario -->
+                    <TextView
+                        android:id="@+id/tv_welcome_message"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:fontFamily="@font/montserrat_bold"
+                        android:text="¿Listo para descubrir lo último en Prize?"
+                        android:textColor="@android:color/white"
+                        android:textSize="26sp"
+                        android:textStyle="bold" />
+
+                    <!-- Mensaje de bienvenida -->
+                    <TextView
+                        android:id="@+id/tv_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:fontFamily="@font/montserrat"
+                        android:text="Miercoles, 16 de julio"
+                        android:textColor="@android:color/white"
+                        android:textSize="14sp"
+                        android:alpha="0.85"
+                        android:lineSpacingExtra="2dp" />
+
+                </LinearLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- ===== SECCIÓN DE CONTENIDO PRINCIPAL ===== -->
+            <LinearLayout
+                android:id="@+id/main_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@android:color/white"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/welcome_section">
+
+                <!-- ===== SECCIÓN DE CATEGORÍAS ===== -->
+                <LinearLayout
+                    android:id="@+id/categories_section"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="20dp"
+                    android:paddingVertical="24dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/montserrat_bold"
+                        android:text="Categorías"
+                        android:textColor="@android:color/black"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <!-- Grid de categorías mejorado -->
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_categories"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:orientation="horizontal"
+                        android:nestedScrollingEnabled="false"
+                        tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                        />
+
+                </LinearLayout>
+
+                <!-- Separador sutil -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="8dp"
+                    android:background="#F5F5F5" />
+
+                <!-- ===== SECCIÓN DE PUBLICACIONES RECIENTES ===== -->
+                <LinearLayout
+                    android:id="@+id/publications_section"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="20dp"
+                    android:paddingTop="24dp"
+                    android:paddingBottom="16dp">
+
+                    <!-- Título de publicaciones -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/montserrat_bold"
+                        android:text="Publicaciones Recientes"
+                        android:textColor="@android:color/black"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+                    <!-- RecyclerView para publicaciones -->
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_publications"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false"
+                        tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                        tools:itemCount="3" />
+
+                </LinearLayout>
+
+                <!-- Espaciado final -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="16dp" />
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
 </layout>

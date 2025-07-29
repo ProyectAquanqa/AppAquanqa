@@ -48,6 +48,9 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                 when (val result = userRepository.getUserProfile()) {
                 is Result.Success -> _userProfile.value = result.data
                 is Result.Error -> _error.value = result.exception.message ?: "Error desconocido al cargar el perfil."
+                is Result.Loading -> {
+                    // El loading ya se maneja manualmente arriba y abajo
+                }
             }
                 _isLoading.value = false
         }
@@ -79,6 +82,9 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                 when (val result = userRepository.updateProfileTextData(textData)) {
                     is Result.Success -> currentProfile = result.data
                     is Result.Error -> textUpdateError = result.exception.message
+                    is Result.Loading -> {
+                        // El loading se maneja en el nivel superior
+                    }
                 }
             }
 
@@ -97,6 +103,9 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                         _error.value = result.exception.message ?: "Error desconocido al subir imágenes."
                         _isLoading.value = false
                         return@launch
+                    }
+                    is Result.Loading -> {
+                        // El loading se maneja en el nivel superior
                     }
                 }
             }

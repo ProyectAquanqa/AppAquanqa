@@ -10,8 +10,9 @@
     <color name="aquanqa_blue_dark">#1565C0</color>
     <color name="aquanqa_blue_light">#ADC4E6</color>
     <color name="aquanqa_green">#10B981</color>
-
+    <color name="aquanqa_green_light">#E8F5E8</color>
     <!-- ========== COLORES PRIMARIOS (ALIAS) ========== -->
+    <color name="primary_color">#4CAF50</color>
     <color name="primary_blue">#0C5892</color>
     <color name="primary_blue_dark">#1565C0</color>
     <color name="primary_blue_light">#CBE2F6</color>
@@ -24,7 +25,7 @@
     <color name="background_input">#FFFFFF</color>
 
     <!-- ========== TEXTOS OSCUROS ========== -->
-    <color name="text_primary">#212529</color>
+    <color name="text_primary">#000000</color>
     <color name="text_secondary">#6C757D</color>
     <color name="text_hint">#68686B</color>
     <color name="text_disabled">#CED4DA</color>
@@ -37,16 +38,18 @@
 
     <!-- ========== COLORES DE ESTADO ========== -->
     <color name="success">#28A745</color>
-    <color name="success_light">#D4EDDA</color>
     <color name="warning">#FFC107</color>
-    <color name="warning_light">#FFF3CD</color>
     <color name="error">#DC3545</color>
-    <color name="error_light">#F8D7DA</color>
+
 
     <!-- ========== COLORES DE INTERACCIÓN ========== -->
     <color name="ripple_light">#1A1E88E5</color>
     <color name="selection">#E3F2FD</color>
     <color name="focus">#1E88E5</color>
     <color name="shadow">#1A000000</color>
+
+    <!-- ========== COLORES ESPECÍFICOS PARA CATEGORÍAS ========== -->
+
+    <color name="stroke_color">#E0E0E0</color>
 
 </resources>

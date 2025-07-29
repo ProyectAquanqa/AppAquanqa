@@ -28,9 +28,8 @@ class ChatbotFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         // Configuración de la inyección de dependencias manual
-        val apiService = ApiClient.apiService
         val chatbotApiService = ApiClient.chatbotApiService
-        val repository = ChatbotRepository(apiService, chatbotApiService)
+        val repository = ChatbotRepository(chatbotApiService)
         val factory = ChatbotViewModelFactory(repository)
         viewModel = ViewModelProvider(this, factory)[ChatbotViewModel::class.java]
         

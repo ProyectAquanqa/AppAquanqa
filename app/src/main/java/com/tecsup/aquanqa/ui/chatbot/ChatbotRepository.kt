@@ -1,20 +1,18 @@
 package com.tecsup.aquanqa.ui.chatbot
 
-import com.tecsup.aquanqa.data.api.ApiService
 import com.tecsup.aquanqa.data.api.ChatbotApiService
 import com.tecsup.aquanqa.ui.chatbot.model.ChatbotRequest
 import com.tecsup.aquanqa.ui.chatbot.model.ChatbotResponse
 import com.tecsup.aquanqa.ui.chatbot.model.RecommendedQuestion
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import retrofit2.Response
 import java.io.IOException
 
 /**
  * Repositorio para gestionar las interacciones con el chatbot.
  * Es el intermediario entre el ViewModel y el servicio de la API del chatbot.
  */
-class ChatbotRepository(private val apiService: ApiService, private val chatbotApiService: ChatbotApiService) {
+class ChatbotRepository(private val chatbotApiService: ChatbotApiService) {
 
     /**
      * Envía una pregunta al backend del chatbot y devuelve la respuesta.
@@ -27,14 +25,26 @@ class ChatbotRepository(private val apiService: ApiService, private val chatbotA
         return withContext(Dispatchers.IO) {
             try {
                 val request = ChatbotRequest(question = question)
-                val response = apiService.postChatbotQuery(request)
+                val response = chatbotApiService.sendMessage(request)
 
                 if (response.isSuccessful) {
-                    response.body()?.let {
-                        Result.success(it)
+                    response.body()?.let { apiResponse ->
+                        when (apiResponse.status) {
+                            "success" -> {
+                                apiResponse.data?.let { chatbotData ->
+                                    Result.success(chatbotData)
+                                } ?: Result.failure(Exception("Los datos del chatbot están vacíos."))
+                            }
+                            "error" -> {
+                                Result.failure(Exception(apiResponse.error ?: "Error desconocido del chatbot"))
+                            }
+                            else -> {
+                                Result.failure(Exception("Estado de respuesta desconocido: ${apiResponse.status}"))
+                            }
+                        }
                     } ?: Result.failure(Exception("La respuesta del chatbot está vacía."))
                 } else {
-                    Result.failure(IOException("Error en la respuesta del servidor: ${response.code()}"))
+                    Result.failure(IOException("Error en la respuesta del servidor: ${response.code()} - ${response.message()}"))
                 }
             } catch (e: IOException) {
                 Result.failure(e)
@@ -54,8 +64,27 @@ class ChatbotRepository(private val apiService: ApiService, private val chatbotA
     suspend fun getFrequentQuestions(): Result<List<RecommendedQuestion>> {
         return withContext(Dispatchers.IO) {
             try {
-                val questions = chatbotApiService.getFrequentQuestions()
-                Result.success(questions)
+                val response = chatbotApiService.getFrequentQuestions()
+                
+                if (response.isSuccessful) {
+                    response.body()?.let { apiResponse ->
+                        when (apiResponse.status) {
+                            "success" -> {
+                                apiResponse.data?.let { questionsData ->
+                                    Result.success(questionsData.recommendedQuestions)
+                                } ?: Result.failure(Exception("Los datos de preguntas frecuentes están vacíos."))
+                            }
+                            "error" -> {
+                                Result.failure(Exception(apiResponse.error ?: "Error desconocido al obtener preguntas"))
+                            }
+                            else -> {
+                                Result.failure(Exception("Estado de respuesta desconocido: ${apiResponse.status}"))
+                            }
+                        }
+                    } ?: Result.failure(Exception("La respuesta de preguntas frecuentes está vacía."))
+                } else {
+                    Result.failure(IOException("Error en la respuesta del servidor: ${response.code()} - ${response.message()}"))
+                }
             } catch (e: IOException) {
                 Result.failure(e)
             } catch (e: Exception) {

@@ -55,6 +55,9 @@ class AnunciosViewModel : ViewModel() {
                 is Result.Error -> {
                     _error.value = result.exception.message ?: "Ocurrió un error desconocido"
                 }
+                is Result.Loading -> {
+                    // El loading ya se maneja manualmente arriba y abajo
+                }
             }
             _isLoading.value = false
         }

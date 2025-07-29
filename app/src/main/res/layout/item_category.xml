@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Diseño horizontal tipo chip/tag moderno -->
+<com.google.android.material.card.MaterialCardView 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="4dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="#E0E0E0"
+    android:backgroundTint="@color/white"
+    android:background="?attr/selectableItemBackgroundBorderless"
+    android:clickable="true"
+
+    android:focusable="true">
+
+    <!-- Layout horizontal compacto tipo chip -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="8dp"
+        android:gravity="center_vertical"
+        android:minHeight="36dp">
+
+        <!-- Ícono pequeño -->
+        <ImageView
+            android:id="@+id/iv_category_icon"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_marginEnd="6dp"
+            android:src="@drawable/ic_announcement_filled"
+            android:scaleType="centerInside"
+            app:tint="@color/primary_color"
+            tools:src="@drawable/ic_announcement_filled" />
+
+        <!-- Título de la categoría -->
+        <TextView
+            android:id="@+id/tv_category_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/montserrat_bold"
+            android:text="Anuncios"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end"
+            tools:text="Anuncios" />
+
+
+
+        <!-- Fondo circular oculto para compatibilidad -->
+        <View
+            android:id="@+id/icon_background"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView> 

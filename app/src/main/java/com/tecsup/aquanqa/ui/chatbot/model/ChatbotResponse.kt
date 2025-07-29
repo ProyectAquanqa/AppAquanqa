@@ -3,6 +3,20 @@ package com.tecsup.aquanqa.ui.chatbot.model
 import com.google.gson.annotations.SerializedName
 
 /**
+ * Wrapper para las respuestas del backend que incluye status y data
+ */
+data class ApiResponse<T>(
+    @SerializedName("status")
+    val status: String,
+    
+    @SerializedName("data")
+    val data: T?,
+    
+    @SerializedName("error")
+    val error: String?
+)
+
+/**
  * Modelo de datos para la respuesta recibida del endpoint del chatbot.
  * Esta clase encapsula la respuesta del servidor, que ahora incluye
  * más contexto sobre la coincidencia encontrada.
@@ -24,4 +38,15 @@ data class ChatbotResponse(
 
     @SerializedName("recommended_questions")
     val recommendedQuestions: List<RecommendedQuestion> = emptyList()
+)
+
+/**
+ * Modelo para la respuesta de preguntas recomendadas del backend
+ */
+data class RecommendedQuestionsResponse(
+    @SerializedName("frequent_questions")
+    val recommendedQuestions: List<RecommendedQuestion>,
+    
+    @SerializedName("total")
+    val total: Int
 ) 

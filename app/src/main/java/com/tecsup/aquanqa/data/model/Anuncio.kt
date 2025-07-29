@@ -24,5 +24,13 @@ data class Anuncio(
     val descripcion: String,
     val fecha: Date,
     val imagen: String?,
-    val autor: Autor
+    val autor: Autor,
+    val categoria: Category,
+    val publicado: Boolean = true,
+    @SerializedName("is_pinned")
+    val isPinned: Boolean = false,
+    @SerializedName("created_at")
+    val createdAt: String? = null,
+    @SerializedName("updated_at")
+    val updatedAt: String? = null
 ) 
