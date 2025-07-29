@@ -2,6 +2,7 @@ package com.tecsup.aquanqa.ui.login
 
 import android.app.Activity
 import android.content.Intent
+import android.util.Log
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -31,6 +32,7 @@ import android.view.WindowInsetsController
 
 import com.tecsup.aquanqa.MainActivity
 import com.tecsup.aquanqa.R
+import com.tecsup.aquanqa.data.FirebaseManager
 import com.tecsup.aquanqa.data.SessionManager
 import com.tecsup.aquanqa.data.preferences.UserPreferences
 import kotlinx.coroutines.launch
@@ -40,6 +42,10 @@ import kotlinx.coroutines.launch
  * Maneja la interfaz de usuario para el proceso de autenticación
  */
 class LoginActivity : AppCompatActivity() {
+
+    companion object {
+        private const val TAG = "LoginActivity"
+    }
 
     private lateinit var loginViewModel: LoginViewModel
     private lateinit var progressBar: ProgressBar
@@ -127,6 +133,20 @@ class LoginActivity : AppCompatActivity() {
             }
             
             if (loginResult.success != null) {
+                // Inicializar Firebase después del login exitoso
+                lifecycleScope.launch {
+                    try {
+                        val userPreferences = UserPreferences(applicationContext)
+                        val sessionManager = SessionManager(applicationContext, userPreferences)
+                        val firebaseManager = FirebaseManager(applicationContext, userPreferences, sessionManager)
+                        
+                        // Registrar token FCM después del login
+                        firebaseManager.getAndRegisterFcmToken()
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error inicializando Firebase después del login", e)
+                    }
+                }
+                
                 // Iniciar la actividad principal si el login es exitoso
                 val intent = Intent(this, MainActivity::class.java)
                 startActivity(intent)

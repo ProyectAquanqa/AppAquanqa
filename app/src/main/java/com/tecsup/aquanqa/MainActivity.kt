@@ -3,6 +3,7 @@ package com.tecsup.aquanqa
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -19,15 +20,18 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.bumptech.glide.Glide
 import com.google.android.material.navigation.NavigationView
+import com.tecsup.aquanqa.data.FirebaseManager
 import com.tecsup.aquanqa.data.LoginDataSource
 import com.tecsup.aquanqa.data.LoginRepository
 import com.tecsup.aquanqa.data.Result
+import com.tecsup.aquanqa.data.SessionManager
 import com.tecsup.aquanqa.data.preferences.UserPreferences
 import com.tecsup.aquanqa.data.repository.UserRepository
 import com.tecsup.aquanqa.databinding.ActivityMainBinding
 import com.tecsup.aquanqa.ui.login.LoginActivity
 import com.tecsup.aquanqa.ui.profile.ProfileViewModel
 import com.tecsup.aquanqa.ui.profile.ProfileViewModelFactory
+import com.tecsup.aquanqa.utils.NotificationPermissionHelper
 import kotlinx.coroutines.launch
 import androidx.navigation.ui.NavigationUI
 import androidx.lifecycle.ViewModelProvider
@@ -40,6 +44,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var loginRepository: LoginRepository
     private lateinit var userRepository: UserRepository
     private lateinit var profileViewModel: ProfileViewModel
+    private lateinit var firebaseManager: FirebaseManager
+    private lateinit var notificationPermissionHelper: NotificationPermissionHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,6 +67,17 @@ class MainActivity : AppCompatActivity() {
 
         // Inicializar el ViewModel compartido
         profileViewModel = ViewModelProvider(this, ProfileViewModelFactory(application)).get(ProfileViewModel::class.java)
+
+        // Inicializar helper de permisos de notificaciones
+        notificationPermissionHelper = NotificationPermissionHelper(this)
+        notificationPermissionHelper.initialize()
+
+        // Inicializar Firebase Manager
+        val sessionManager = SessionManager(applicationContext, userPreferences)
+        firebaseManager = FirebaseManager(applicationContext, userPreferences, sessionManager)
+        
+        // Solicitar permisos de notificaciones y luego inicializar Firebase
+        requestNotificationPermissionsAndInitializeFirebase()
 
         binding.appBarMain.fabChatbot.setOnClickListener {
             navController.navigate(R.id.navigation_chatbot)
@@ -119,6 +136,20 @@ class MainActivity : AppCompatActivity() {
         }
 
         supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_menu_white)
+    }
+
+    /**
+     * Solicita permisos de notificaciones y luego inicializa Firebase
+     */
+    private fun requestNotificationPermissionsAndInitializeFirebase() {
+        notificationPermissionHelper.checkAndRequestPermission { granted ->
+            // Inicializar Firebase independientemente del permiso
+            firebaseManager.initializeFirebase()
+            
+            if (!granted) {
+                // Opcional: mostrar diálogo explicando la importancia de las notificaciones
+            }
+        }
     }
 
     private fun setupDrawerHeader() {
@@ -193,6 +224,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun logoutUser() {
         lifecycleScope.launch {
+            // Remover token FCM del servidor
+            firebaseManager.unregisterTokenFromServer()
+            // Logout del repositorio
             loginRepository.logout()
         }
         val intent = Intent(this, LoginActivity::class.java)

@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -75,4 +76,13 @@ dependencies {
     
     // Corrutinas
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    
+    // Firebase BOM (Bill of Materials) para gestionar versiones
+    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    
+    // Firebase Cloud Messaging
+    implementation("com.google.firebase:firebase-messaging-ktx")
+    
+    // Firebase Analytics (opcional pero recomendado)
+    implementation("com.google.firebase:firebase-analytics-ktx")
 }

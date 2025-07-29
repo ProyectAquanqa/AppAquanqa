@@ -2,6 +2,7 @@ package com.tecsup.aquanqa.data.api
 
 import com.tecsup.aquanqa.data.model.Anuncio
 import com.tecsup.aquanqa.data.model.Category
+import com.tecsup.aquanqa.data.model.FcmTokenResponse
 import com.tecsup.aquanqa.data.model.LoginRequest
 import com.tecsup.aquanqa.data.model.LoginResponse
 import com.tecsup.aquanqa.data.model.PaginatedResponse
@@ -21,6 +22,7 @@ import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Part
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 /**
@@ -213,4 +215,45 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Body request: ChatbotRequest
     ): Response<ChatbotResponse>
+
+    // ================= NOTIFICACIONES FCM =================
+
+    /**
+     * Endpoint para registrar un token FCM de dispositivo.
+     * 
+     * @param token Token de autenticación en formato "Bearer {token}"
+     * @param fcmTokenRequest Objeto que contiene el token FCM del dispositivo
+     * @return Response<Unit> Respuesta de confirmación del registro
+     */
+    @POST("api/fcm-token/")
+    suspend fun registerFcmToken(
+        @Header("Authorization") token: String,
+        @Body fcmTokenRequest: Map<String, String>
+    ): Response<Unit>
+
+    /**
+     * Endpoint para obtener los tokens FCM del usuario.
+     * 
+     * @param token Token de autenticación en formato "Bearer {token}"
+     * @return Response<List<FcmTokenResponse>> Lista de tokens del usuario
+     */
+    @GET("api/fcm-token/")
+    suspend fun getFcmTokens(
+        @Header("Authorization") token: String
+    ): Response<List<FcmTokenResponse>>
+
+    /**
+     * Endpoint para actualizar un token FCM específico.
+     * 
+     * @param token Token de autenticación en formato "Bearer {token}"
+     * @param tokenId ID del token a actualizar
+     * @param updateData Datos a actualizar (ej: is_active: false)
+     * @return Response<Unit> Respuesta de confirmación
+     */
+    @PATCH("api/fcm-token/{id}/")
+    suspend fun updateFcmToken(
+        @Header("Authorization") token: String,
+        @Path("id") tokenId: Int,
+        @Body updateData: Map<String, Any>
+    ): Response<Unit>
 } 

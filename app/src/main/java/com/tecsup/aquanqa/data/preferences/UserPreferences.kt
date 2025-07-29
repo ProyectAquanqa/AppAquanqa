@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 /**
@@ -34,6 +35,9 @@ class UserPreferences(private val context: Context) {
         private val USER_FIRST_NAME = stringPreferencesKey("user_first_name")
         private val USER_LAST_NAME = stringPreferencesKey("user_last_name")
         private val USER_PHOTO_URL = stringPreferencesKey("user_photo_url")
+        
+        // Clave para el token FCM
+        private val FCM_TOKEN = stringPreferencesKey("fcm_token")
     }
 
     // ================= TOKENS DE AUTENTICACIÓN =================
@@ -94,6 +98,14 @@ class UserPreferences(private val context: Context) {
      */
     val userPhotoUrl: Flow<String?> = context.dataStore.data.map { preferences ->
         preferences[USER_PHOTO_URL]
+    }
+
+    /**
+     * Flow que emite el token FCM del dispositivo.
+     * @return Flow<String?> Token FCM o null si no existe
+     */
+    val fcmToken: Flow<String?> = context.dataStore.data.map { preferences ->
+        preferences[FCM_TOKEN]
     }
 
     // ================= MÉTODOS DE GUARDADO =================
@@ -160,6 +172,16 @@ class UserPreferences(private val context: Context) {
         }
     }
 
+    /**
+     * Guarda el token FCM del dispositivo.
+     * @param token Token FCM del dispositivo
+     */
+    suspend fun saveFcmToken(token: String) {
+        context.dataStore.edit { preferences ->
+            preferences[FCM_TOKEN] = token
+        }
+    }
+
     // ================= UTILIDADES =================
 
     /**
@@ -189,5 +211,13 @@ class UserPreferences(private val context: Context) {
             preferences.remove(ACCESS_TOKEN)
             preferences.remove(REFRESH_TOKEN)
         }
+    }
+
+    /**
+     * Obtiene el token FCM actual del dispositivo.
+     * @return Token FCM o null si no existe
+     */
+    suspend fun getFcmToken(): String? {
+        return fcmToken.first()
     }
 } 

@@ -1,0 +1,29 @@
+{
+    "project_info": {
+      "project_number": "812173082124",
+      "project_id": "aquanqa-notifications",
+      "storage_bucket": "aquanqa-notifications.firebasestorage.app"
+    },
+    "client": [
+      {
+        "client_info": {
+          "mobilesdk_app_id": "1:812173082124:android:66a31c0dc7ff7978b43829",
+          "android_client_info": {
+            "package_name": "com.tecsup.aquanqa"
+          }
+        },
+        "oauth_client": [],
+        "api_key": [
+          {
+            "current_key": "AIzaSyB6Bqe70B-lUk-rs42L-W9NuFoHQEfWQ9o"
+          }
+        ],
+        "services": {
+          "appinvite_service": {
+            "other_platform_oauth_client": []
+          }
+        }
+      }
+    ],
+    "configuration_version": "1"
+  }
