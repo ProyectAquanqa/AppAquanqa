@@ -161,7 +161,7 @@
     
     <!-- Estilo principal del Bottom Navigation con fondo blanco y items focusables -->
     <style name="BottomNavigationView.Clean" parent="Widget.MaterialComponents.BottomNavigationView">
-        <item name="android:background">@color/white</item>
+
         <item name="android:elevation">4dp</item>
         <item name="itemIconTint">@color/bottom_nav_icon_color</item>
         <item name="itemTextColor">@color/bottom_nav_text_color</item>
@@ -170,6 +170,7 @@
         <item name="itemTextAppearanceActive">@style/BottomNavigationView.TextAppearance.Active</item>
         <item name="itemTextAppearanceInactive">@style/BottomNavigationView.TextAppearance.Inactive</item>
         <item name="labelVisibilityMode">labeled</item>
+
         <item name="itemIconSize">24dp</item>
     </style>
 

@@ -95,8 +95,7 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
         
         // Configurar navegación para Drawer y BottomNav <color name="dark_success">#10B981</color>
-        //    <color name="dark_warning">#F59E0B</color>
-        //    <color name="dark_error">#EF4444</color>
+
         navView.setupWithNavController(navController)
         binding.appBarMain.bottomNavView.setupWithNavController(navController)
 

@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.tecsup.aquanqa" />
+                  <option name="mobileSdkAppId" value="1:812173082124:android:66a31c0dc7ff7978b43829" />
+                  <option name="projectId" value="aquanqa-notifications" />
+                  <option name="projectNumber" value="812173082124" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
