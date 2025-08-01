@@ -17,21 +17,15 @@ interface ChatbotApiService {
 
     /**
      * Envía una pregunta al chatbot y recibe una respuesta.
-     * La respuesta ahora incluye la respuesta principal y una lista de preguntas
-     * recomendadas contextualmente.
-     *
+
      * @param request El objeto que contiene la pregunta del usuario y el ID de sesión.
      * @return Un objeto [ApiResponse] con la respuesta del chatbot envuelta.
      */
     @POST("api/chatbot/query/")
     suspend fun sendMessage(@Body request: ChatbotRequest): Response<ApiResponse<ChatbotResponse>>
 
-    /**
-     * Obtiene una lista de las preguntas más frecuentes para mostrar al inicio del chat.
-     * Reemplaza al antiguo endpoint de preguntas recomendadas.
-     *
-     * @return Una respuesta envuelta con la lista de objetos [RecommendedQuestion].
-     */
+    // Obtiene una lista de las preguntas más frecuentes para mostrar al inicio del chat.
+
     @GET("api/chatbot-knowledge/frequent_questions/")
     suspend fun getFrequentQuestions(): Response<ApiResponse<RecommendedQuestionsResponse>>
 } 

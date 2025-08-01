@@ -44,4 +44,10 @@
         android:name="com.tecsup.aquanqa.ui.chatbot.ChatbotFragment"
         android:label="@string/menu_chatbot"
         tools:layout="@layout/fragment_chatbot" />
+
+    <fragment
+        android:id="@+id/navigation_notifications"
+        android:name="com.tecsup.aquanqa.ui.notifications.NotificationsFragment"
+        android:label="@string/title_notifications"
+        tools:layout="@layout/fragment_notifications" />
 </navigation>

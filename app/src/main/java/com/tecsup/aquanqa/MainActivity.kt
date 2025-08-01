@@ -4,6 +4,8 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -102,8 +104,7 @@ class MainActivity : AppCompatActivity() {
         // Configurar la cabecera del Drawer
         setupDrawerHeader()
 
-        // Configurar listener para status bar transparente cuando se abre el drawer
-        setupDrawerStatusBar(drawerLayout)
+
 
         // Configurar listener de navegación SOLO para el item de logout
         navView.setNavigationItemSelectedListener { menuItem ->
@@ -125,9 +126,10 @@ class MainActivity : AppCompatActivity() {
             val isChatbot = destination.id == R.id.navigation_chatbot
             val isProfile = destination.id == R.id.navigation_profile
             val isEditProfile = destination.id == R.id.editProfileFragment
+            val isNotifications = destination.id == R.id.navigation_notifications
             
-            // Ocultar FAB en chatbot, perfil y editar perfil
-            val shouldHideFab = isChatbot || isProfile || isEditProfile
+            // Ocultar FAB en chatbot, perfil, editar perfil y notificaciones
+            val shouldHideFab = isChatbot || isProfile || isEditProfile || isNotifications
             binding.appBarMain.fabChatbot.visibility = if (shouldHideFab) View.GONE else View.VISIBLE
             
             // Solo ocultar bottom nav en chatbot
@@ -182,56 +184,41 @@ class MainActivity : AppCompatActivity() {
         profileViewModel.loadUserProfile()
     }
     
-    /**
-     * Configura el status bar para que sea blanco cuando se abre el drawer
-     */
-    private fun setupDrawerStatusBar(drawerLayout: DrawerLayout) {
-        drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
-            override fun onDrawerOpened(drawerView: View) {
-                // Status bar blanco cuando se abre el drawer
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    window.statusBarColor = ContextCompat.getColor(this@MainActivity, R.color.white)
-                    window.navigationBarColor = ContextCompat.getColor(this@MainActivity, android.R.color.transparent)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        // Iconos del status bar oscuros para que se vean sobre fondo blanco
-                        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-                    }
-                }
-            }
-
-            override fun onDrawerClosed(drawerView: View) {
-                // Restaurar status bar original cuando se cierra el drawer
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    window.statusBarColor = ContextCompat.getColor(this@MainActivity, android.R.color.transparent)
-                    window.navigationBarColor = ContextCompat.getColor(this@MainActivity, android.R.color.transparent)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        // Mantener iconos claros según el tema original
-                        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-                    }
-                }
-            }
-
-            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
-                // Opcional: Puedes agregar animaciones durante el deslizamiento
-            }
-
-            override fun onDrawerStateChanged(newState: Int) {
-                // Opcional: Manejar cambios de estado del drawer
-            }
-        })
-    }
 
     private fun logoutUser() {
+        binding.appBarMain.logoutProgressBar.visibility = View.VISIBLE
         lifecycleScope.launch {
             // Remover token FCM del servidor
             firebaseManager.unregisterTokenFromServer()
             // Logout del repositorio
             loginRepository.logout()
+
+            // Ocultar ProgressBar y navegar a LoginActivity
+            binding.appBarMain.logoutProgressBar.visibility = View.GONE
+            val intent = Intent(this@MainActivity, LoginActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            finish()
         }
-        val intent = Intent(this, LoginActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        startActivity(intent)
-        finish()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        android.util.Log.d("MainActivity", "Inflando menú de toolbar")
+        menuInflater.inflate(R.menu.toolbar_menu, menu)
+        android.util.Log.d("MainActivity", "Menú inflado con ${menu.size()} items")
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        android.util.Log.d("MainActivity", "Item de menú seleccionado: ${item.itemId}")
+        return when (item.itemId) {
+            R.id.action_notifications -> {
+                android.util.Log.d("MainActivity", "Navegando a notificaciones")
+                navController.navigate(R.id.navigation_notifications)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     override fun onSupportNavigateUp(): Boolean {

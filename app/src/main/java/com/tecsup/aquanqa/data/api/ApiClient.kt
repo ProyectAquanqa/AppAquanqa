@@ -3,6 +3,7 @@ package com.tecsup.aquanqa.data.api
 import android.content.Context
 
 object ApiClient {
+
     private var instance: RetrofitClient? = null
 
     fun getClient(context: Context): RetrofitClient {

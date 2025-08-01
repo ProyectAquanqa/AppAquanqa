@@ -27,35 +27,24 @@ import retrofit2.http.Query
 
 /**
  * Interfaz que define todos los endpoints de la API de Aquanqa.
- * 
- * Esta interfaz utiliza Retrofit para realizar peticiones HTTP a la API
- * del backend de Django. Incluye endpoints para autenticación, perfil de usuario,
- * gestión de eventos, categorías y chatbot.
+ * Esta interfaz utiliza Retrofit para realizar peticiones HTTP a la API del backend de Django.
  */
 interface ApiService {
-    
-    // ================= AUTENTICACIÓN =================
-    
-    /**
-     * Endpoint para iniciar sesión y obtener tokens JWT.
-     * 
+    /**Endpoint para iniciar sesión y obtener tokens JWT.
      * @param loginRequest Datos de inicio de sesión (DNI y contraseña)
-     * @return Response<LoginResponse> Respuesta con tokens de acceso y refresco
-     */
+     * @return Response<LoginResponse> Respuesta con tokens de acceso y refresco */
+
     @POST("api/token/")
     suspend fun login(@Body loginRequest: LoginRequest): Response<LoginResponse>
     
     /**
      * Endpoint para refrescar el token de acceso cuando expira.
-     * 
      * @param refreshToken Objeto con el token de refresco
      * @return Response<RefreshTokenResponse> Nuevo token de acceso
      */
     @POST("api/token/refresh/")
     suspend fun refreshToken(@Body refreshToken: RefreshTokenRequest): Response<RefreshTokenResponse>
-    
-    // ================= PERFIL DE USUARIO =================
-    
+
     /**
      * Endpoint para obtener el perfil completo del usuario autenticado.
      * 
@@ -189,8 +178,7 @@ interface ApiService {
 
     /**
      * Endpoint heredado para obtener eventos por categoría.
-     * Mantenido por compatibilidad con código existente.
-     * 
+
      * @param categoriaNombre Nombre de la categoría a filtrar
      * @return Response<List<Anuncio>> Lista de eventos de la categoría especificada
      * @deprecated Usar getEventsByCategory o getFilteredEvents en su lugar
@@ -216,7 +204,36 @@ interface ApiService {
         @Body request: ChatbotRequest
     ): Response<ChatbotResponse>
 
-    // ================= NOTIFICACIONES FCM =================
+    // ================= NOTIFICACIONES =================
+
+    /**
+     * Endpoint para obtener el historial de notificaciones del usuario.
+     * 
+     * @param token Token de autenticación en formato "Bearer {token}"
+     * @param page Número de página (opcional, por defecto 1)
+     * @param pageSize Cantidad de elementos por página (opcional, por defecto 20)
+     * @return Response<List<Notification>> Lista de notificaciones
+     */
+    @GET("api/notifications/")
+    suspend fun getNotifications(
+        @Header("Authorization") token: String,
+        @Query("page") page: Int = 1,
+        @Query("page_size") pageSize: Int = 20
+    ): Response<List<com.tecsup.aquanqa.data.model.Notification>>
+
+    /**
+     * Endpoint para marcar una notificación como leída.
+     * 
+     * @param token Token de autenticación en formato "Bearer {token}"
+     * @param notificationId ID de la notificación a marcar como leída
+     * @return Response<Unit> Respuesta de confirmación
+     */
+    @PATCH("api/notifications/{id}/")
+    suspend fun markNotificationAsRead(
+        @Header("Authorization") token: String,
+        @Path("id") notificationId: String,
+        @Body readStatus: Map<String, Boolean>
+    ): Response<Unit>
 
     /**
      * Endpoint para registrar un token FCM de dispositivo.

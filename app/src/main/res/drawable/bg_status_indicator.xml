@@ -4,5 +4,5 @@
     <solid android:color="@color/success" />
     <stroke
         android:width="2dp"
-        android:color="@color/background_card" />
+        android:color="@color/white" />
 </shape>

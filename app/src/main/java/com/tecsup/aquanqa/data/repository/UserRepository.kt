@@ -16,22 +16,15 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 
-/**
- * Repositorio para manejar la información del perfil del usuario.
- * Abstrae el origen de los datos (API, preferencias) y proporciona
- * una interfaz limpia para que los ViewModels interactúen.
- */
+//Repositorio para manejar la información del perfil del usuario.
+
 class UserRepository(
     private val context: Context,
     private val userPreferences: UserPreferences
 ) {
 
-    /**
-     * Obtiene el perfil del usuario autenticado desde la API.
-     *
-     * @return Un objeto [Result] que contiene el [UserProfile] en caso de éxito,
-     * o una [IOException] en caso de error.
-     */
+    //Obtiene el perfil del usuario autenticado desde la API.
+
     suspend fun getUserProfile(): Result<UserProfile> {
         return try {
             val accessToken = userPreferences.accessToken.first()
@@ -54,10 +47,6 @@ class UserRepository(
     
     /**
      * Actualiza el perfil del usuario, permitiendo cambiar la foto y/o la firma.
-     *
-     * @param photoUri La [Uri] de la nueva foto de perfil (opcional).
-     * @param signatureUri La [Uri] de la nueva firma (opcional).
-     * @return Un objeto [Result] con el perfil actualizado o un error.
      */
     suspend fun updateProfile(photoUri: Uri?, signatureUri: Uri?): Result<UserProfile> {
         return try {
@@ -83,10 +72,9 @@ class UserRepository(
     }
 
     /**
-     * Actualiza los datos de texto del perfil (e.g., email).
-     *
+     * Actualiza los datos de texto del perfil email, contraseña
      * @param textData Un mapa con los campos a actualizar.
-     * @return Un objeto [Result] con el perfil actualizado o un error.
+     * retorna Un objeto [Result] con el perfil actualizado o un error.
      */
     suspend fun updateProfileTextData(textData: Map<String, String>): Result<UserProfile> {
         return try {
@@ -110,7 +98,6 @@ class UserRepository(
     
     /**
      * Función de utilidad para crear un [MultipartBody.Part] a partir de una [Uri].
-     *
      * @param partName El nombre del campo en la petición multipart (e.g., "foto_perfil").
      * @param uri La [Uri] del archivo a subir.
      * @return El [MultipartBody.Part] creado, o null si la URI no se pudo procesar.
@@ -152,8 +139,7 @@ class UserRepository(
 
     /**
      * Proporciona la URL base para construir las rutas completas de las imágenes.
-     *
-     * @return La URL base del servidor de medios.
+     retorna La URL base del servidor de medios.
      */
     fun getBaseUrl(): String {
         return ApiConfig.MEDIA_URL

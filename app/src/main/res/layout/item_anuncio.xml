@@ -23,7 +23,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="16dp"
+            android:padding="14dp"
             android:gravity="center_vertical"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -78,7 +78,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="16dp"
+            android:paddingHorizontal="14dp"
             android:paddingBottom="12dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -111,17 +111,22 @@
 
         </LinearLayout>
 
-        <!-- Imagen del anuncio -->
-        <com.google.android.material.imageview.ShapeableImageView
+        <!-- Imagen del anuncio - CLICK PARA VER EN GRANDE -->
+        <ImageView
             android:id="@+id/iv_announcement_image"
             android:layout_width="0dp"
-            android:layout_height="240dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:scaleType="centerCrop"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:maxHeight="400dp"
+            android:minHeight="120dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?android:attr/selectableItemBackground"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/ll_content"
-            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.None"
             tools:src="@tools:sample/backgrounds/scenic" />
 
         <!-- Barra de acciones -->
@@ -150,8 +155,8 @@
 
                 <ImageView
                     android:id="@+id/iv_like"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
+                    android:layout_width="23dp"
+                    android:layout_height="23dp"
                     android:src="@drawable/ic_favortite" />
 
                 <TextView
@@ -162,7 +167,7 @@
                     android:text="123"
                     android:textColor="#666666"
                     android:fontFamily="@font/montserrat"
-                    android:textSize="12sp" />
+                    android:textSize="15sp" />
 
             </LinearLayout>
 
@@ -179,8 +184,8 @@
 
                 <ImageView
                     android:id="@+id/iv_comment"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
+                    android:layout_width="23dp"
+                    android:layout_height="23dp"
                     android:src="@drawable/ic_comment" />
 
                 <TextView
@@ -191,15 +196,16 @@
                     android:text="45"
                     android:textColor="#666666"
                     android:fontFamily="@font/montserrat"
-                    android:textSize="12sp" />
+                    android:textSize="15sp" />
 
             </LinearLayout>
 
-            <!-- Espaciador flexible -->
+            <!--  Espaciador flexible
             <View
                 android:layout_width="0dp"
                 android:layout_height="1dp"
                 android:layout_weight="1" />
+            -->
 
             <!-- Compartir -->
             <LinearLayout
@@ -208,13 +214,14 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
+                android:layout_marginStart="16dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:padding="6dp">
 
                 <ImageView
                     android:id="@+id/iv_share"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
+                    android:layout_width="23dp"
+                    android:layout_height="23dp"
                     android:src="@drawable/ic_share" />
 
                 <TextView
@@ -225,9 +232,11 @@
                     android:text="20"
                     android:textColor="#666666"
                     android:fontFamily="@font/montserrat"
-                    android:textSize="12sp" />
+                    android:textSize="15sp" />
 
             </LinearLayout>
+
+
 
         </LinearLayout>
 

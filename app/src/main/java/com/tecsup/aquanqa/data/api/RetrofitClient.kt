@@ -16,7 +16,7 @@ class RetrofitClient(private val context: Context) {
 
     private val userPreferences = UserPreferences(context)
 
-    // Interceptor avanzado para manejar autenticación y renovación de tokens
+    // Interceptor para manejar autenticación y renovación de tokens
     private val authInterceptor = AuthInterceptor(context)
 
     // Configurar interceptor de logging con máximo detalle
@@ -24,13 +24,14 @@ class RetrofitClient(private val context: Context) {
         level = HttpLoggingInterceptor.Level.BODY
     }
 
-    // Cliente HTTP con tiempos de espera más largos para carga de archivos
+    // Cliente HTTP optimizado para velocidad
     private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
         .addInterceptor(authInterceptor)
-        .connectTimeout(ApiConfig.TIMEOUT, TimeUnit.SECONDS)
-        .readTimeout(60, TimeUnit.SECONDS)     // Tiempo de lectura más largo
-        .writeTimeout(60, TimeUnit.SECONDS)    // Tiempo de escritura más largo para subidas
+        .connectTimeout(15, TimeUnit.SECONDS)     // Conexión más rápida
+        .readTimeout(20, TimeUnit.SECONDS)        // Lectura más rápida
+        .writeTimeout(30, TimeUnit.SECONDS)       // Escritura optimizada
+        .retryOnConnectionFailure(true)           // Retry automático
         .build()
 
     // Cliente Retrofit configurado

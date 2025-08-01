@@ -55,9 +55,21 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    
+    // Testing dependencies
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    testImplementation("org.mockito:mockito-core:5.7.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
 
     // Circle ImageView
     implementation("de.hdodenhof:circleimageview:3.1.0")
+
+    // PhotoView para zoom de imágenes (como Instagram)
+    implementation("com.github.chrisbanes:PhotoView:2.3.0")
+
+    // SwipeRefreshLayout
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
     // DataStore Preferences
     implementation("androidx.datastore:datastore-preferences:1.0.0")

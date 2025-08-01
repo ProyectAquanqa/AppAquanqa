@@ -28,7 +28,7 @@ class AuthInterceptor(private val context: Context) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
         
-        // Si la petición ya tiene Authorization header, no hacer nada
+        // Si la petición ya tiene Authorization header, no hace nada
         if (originalRequest.header(AUTHORIZATION_HEADER) != null) {
             return chain.proceed(originalRequest)
         }
@@ -51,7 +51,7 @@ class AuthInterceptor(private val context: Context) : Interceptor {
                 // Ejecutar la petición
                 val response = chain.proceed(authenticatedRequest)
 
-                // Si obtenemos 401 (Unauthorized), intentar refrescar el token
+                // Si obtenemos 401, que se intente refrescar el token
                 if (response.code == 401) {
                     Log.d(TAG, "Received 401, attempting token refresh")
                     response.close()

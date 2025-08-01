@@ -13,8 +13,7 @@ import java.lang.IllegalArgumentException
 
 /**
  * Adaptador unificado para toda la conversación del chatbot.
- * Utiliza un ListAdapter con un sealed class (ChatItem) para manejar
- * diferentes tipos de vistas: mensajes enviados, recibidos y sugerencias.
+ * Utiliza un ListAdapter con un sealed class (ChatItem) para manejar diferentes tipos de vistas: mensajes enviados, recibidos y sugerencias.
  */
 class ChatAdapter(
     private val onSuggestionClicked: (String) -> Unit

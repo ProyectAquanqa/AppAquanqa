@@ -32,7 +32,7 @@
                 android:topRightRadius="20dp"
                 android:bottomLeftRadius="20dp"
                 android:bottomRightRadius="20dp"/>
-            <solid android:color="@color/background_card" />
+            <solid android:color="@color/white" />
         </shape>
     </item>
     

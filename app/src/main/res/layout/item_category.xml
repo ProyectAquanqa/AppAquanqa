@@ -35,7 +35,7 @@
             android:layout_marginEnd="6dp"
             android:src="@drawable/ic_announcement_filled"
             android:scaleType="centerInside"
-            app:tint="@color/primary_color"
+            app:tint="@color/aquanqa_green"
             tools:src="@drawable/ic_announcement_filled" />
 
         <!-- Título de la categoría -->

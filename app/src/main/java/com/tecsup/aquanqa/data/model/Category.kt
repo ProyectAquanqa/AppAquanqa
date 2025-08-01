@@ -2,41 +2,15 @@ package com.tecsup.aquanqa.data.model
 
 /**
  * Modelo de datos que representa una categoría de eventos.
- * 
- * Este modelo corresponde a la estructura de datos del backend para las categorías
- * que permiten clasificar y filtrar los eventos de la aplicación.
- * 
  * Los nombres de los campos están en snake_case para coincidir directamente
  * con las claves del JSON devuelto por la API de Django.
  */
 data class Category(
-    /**
-     * Identificador único de la categoría en la base de datos.
-     */
+
     val id: Int,
-    
-    /**
-     * Nombre descriptivo de la categoría (ej: "Anuncios", "Charlas", "Talleres").
-     * Este campo es único en el backend.
-     */
     val nombre: String,
-    
-    /**
-     * Descripción opcional que proporciona más detalles sobre la categoría.
-     * Puede ser null si no se proporciona descripción.
-     */
     val descripcion: String?,
-    
-    /**
-     * Fecha y hora de creación de la categoría en formato ISO 8601.
-     * Proporcionado por el sistema de auditoría del backend.
-     */
     val created_at: String?,
-    
-    /**
-     * Fecha y hora de la última actualización en formato ISO 8601.
-     * Proporcionado por el sistema de auditoría del backend.
-     */
     val updated_at: String?
 ) {
     
@@ -44,23 +18,12 @@ data class Category(
      * Compañero objeto que contiene constantes útiles para el manejo de categorías.
      */
     companion object {
-        /**
-         * Identificador especial para la categoría "Todos" que representa
-         * la opción de mostrar eventos de todas las categorías sin filtro.
-         */
+        // Identificador especial para la categoría "Todos" que representa
         const val ALL_CATEGORIES_ID = -1
+        const val ALL_CATEGORIES_NAME = "Todos" //nombre
         
-        /**
-         * Nombre de la categoría especial "Todos".
-         */
-        const val ALL_CATEGORIES_NAME = "Todos"
-        
-        /**
-         * Crea una instancia especial de Category que representa la opción "Todos".
-         * Esta categoría no existe en el backend pero es útil para la UI.
-         * 
-         * @return Category Instancia especial para mostrar todos los eventos
-         */
+        //Crea una instancia especial de Category que representa la opción "Todos".
+
         fun createAllCategoriesOption(): Category {
             return Category(
                 id = ALL_CATEGORIES_ID,

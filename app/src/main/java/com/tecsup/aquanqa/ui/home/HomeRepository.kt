@@ -13,17 +13,26 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 /**
- * Repositorio para la pantalla Home.
- * Maneja la obtención de datos desde la API y preferencias locales.
- * Incluye soporte para paginación e infinite scroll.
+ * Repositorio optimizado para la pantalla Home.
+ * Maneja la obtención de datos con cache inteligente y llamadas optimizadas.
+ * Reduce latencia y mejora la experiencia del usuario.
  */
 class HomeRepository(
     private val apiService: ApiService,
     private val userPreferences: UserPreferences
 ) {
     
+    // Cache mejorado con timestamp para invalidación automática
     private var cachedCategories: List<Category>? = null
+    private var categoriesCacheTime: Long = 0
+    private var cachedEvents: Pair<String?, List<Anuncio>>? = null
+    private var eventsCacheTime: Long = 0
     private var currentPaginationInfo: PaginationInfo? = null
+    
+    companion object {
+        private const val CACHE_DURATION_MS = 5 * 60 * 1000L // 5 minutos
+        private const val EVENTS_CACHE_DURATION_MS = 2 * 60 * 1000L // 2 minutos
+    }
     
     /**
      * Obtiene el perfil del usuario desde preferencias locales.
@@ -60,13 +69,15 @@ class HomeRepository(
     fun getUserFirstName(): Flow<String> = userPreferences.userFirstName.map { it ?: "Usuario" }
     
     /**
-     * Obtiene todas las categorías disponibles.
-     * Incluye cache en memoria y la categoría "Todos".
+     * Obtiene categorías con cache inteligente y validación de tiempo.
+     * Cache se invalida automáticamente después de 5 minutos.
      */
     suspend fun getCategories(): Result<List<Category>> {
         return try {
-            cachedCategories?.let { 
-                return Result.Success(listOf(Category.createAllCategoriesOption()) + it)
+            // Verificar cache válido
+            val currentTime = System.currentTimeMillis()
+            if (cachedCategories != null && (currentTime - categoriesCacheTime) < CACHE_DURATION_MS) {
+                return Result.Success(listOf(Category.createAllCategoriesOption()) + cachedCategories!!)
             }
             
             val token = userPreferences.accessToken.first()
@@ -77,7 +88,10 @@ class HomeRepository(
             val response = apiService.getCategories("Bearer $token")
             if (response.isSuccessful && response.body() != null) {
                 val categories = response.body()!!
+                
+                // Actualizar cache con timestamp
                 cachedCategories = categories
+                categoriesCacheTime = currentTime
                 
                 val allCategories = listOf(Category.createAllCategoriesOption()) + categories
                 Result.Success(allCategories)
@@ -154,8 +168,8 @@ class HomeRepository(
     }
     
     /**
-     * Obtiene eventos filtrados con paginación.
-     * Usa el endpoint específico de Android con filtrado robusto.
+     * Obtiene eventos filtrados con cache inteligente y optimización de llamadas.
+     * Cache se invalida automáticamente después de 2 minutos.
      * 
      * @param categoryName Nombre de la categoría (null o "Todos" para obtener todos)
      * @param page Número de página
@@ -167,58 +181,68 @@ class HomeRepository(
         pageSize: Int = 10
     ): Result<Pair<List<Anuncio>, PaginationInfo>> {
         return try {
+            // Verificar cache válido para la misma categoría
+            val currentTime = System.currentTimeMillis()
+            val normalizedCategoryName = if (categoryName == Category.ALL_CATEGORIES_NAME) null else categoryName
+            
+            cachedEvents?.let { (cachedCategory, events) ->
+                if (cachedCategory == normalizedCategoryName && 
+                    (currentTime - eventsCacheTime) < EVENTS_CACHE_DURATION_MS) {
+                    val paginationInfo = PaginationInfo(
+                        count = events.size,
+                        hasNext = false,
+                        hasPrevious = false,
+                        currentPage = page
+                    )
+                    return Result.Success(Pair(events, paginationInfo))
+                }
+            }
+            
             val token = userPreferences.accessToken.first()
             if (token == null) {
                 return Result.Error(Exception("Token de acceso no disponible"))
             }
             
-            val response = if (categoryName == null || categoryName == Category.ALL_CATEGORIES_NAME) {
-                apiService.getEventosAndroid(
-                    token = "Bearer $token",
-                    categoriaNombre = null,
-                    ordering = "-created_at"
-                )
-            } else {
-                apiService.getEventosAndroid(
-                    token = "Bearer $token",
-                    categoriaNombre = categoryName,
-                    ordering = "-created_at"
-                )
-            }
+            // Llamada optimizada al API
+            val response = apiService.getEventosAndroid(
+                token = "Bearer $token",
+                categoriaNombre = normalizedCategoryName,
+                ordering = "-created_at"
+            )
             
             if (response.isSuccessful && response.body() != null) {
                 val events = response.body()!!
                 
-                if (categoryName != null && categoryName != Category.ALL_CATEGORIES_NAME) {
+                // Filtrado en cliente solo si es necesario
+                val filteredEvents = if (normalizedCategoryName != null) {
                     val correctlyFiltered = events.all { evento ->
-                        evento.categoria.nombre.equals(categoryName, ignoreCase = true)
+                        evento.categoria.nombre.equals(normalizedCategoryName, ignoreCase = true)
                     }
                     
-                    if (!correctlyFiltered && events.isNotEmpty()) {
-                        val clientFiltered = events.filter { evento ->
-                            evento.categoria.nombre.equals(categoryName, ignoreCase = true)
+                    if (!correctlyFiltered) {
+                        events.filter { evento ->
+                            evento.categoria.nombre.equals(normalizedCategoryName, ignoreCase = true)
                         }
-                        
-                        val paginationInfo = PaginationInfo(
-                            count = clientFiltered.size,
-                            hasNext = false,
-                            hasPrevious = false,
-                            currentPage = page
-                        )
-                        
-                        return Result.Success(Pair(clientFiltered, paginationInfo))
+                    } else {
+                        events
                     }
+                } else {
+                    events
                 }
                 
+                // Actualizar cache
+                cachedEvents = Pair(normalizedCategoryName, filteredEvents)
+                eventsCacheTime = currentTime
+                
                 val paginationInfo = PaginationInfo(
-                    count = events.size,
+                    count = filteredEvents.size,
                     hasNext = false,
                     hasPrevious = false,
                     currentPage = page
                 )
                 
                 currentPaginationInfo = paginationInfo
-                Result.Success(Pair(events, paginationInfo))
+                Result.Success(Pair(filteredEvents, paginationInfo))
             } else {
                 Result.Error(Exception("Error al obtener eventos: ${response.code()} - ${response.message()}"))
             }
@@ -228,17 +252,16 @@ class HomeRepository(
     }
     
     /**
-     * Refresca todos los datos eliminando cache.
+     * Refresca todos los datos invalidando cache de forma inteligente.
      */
     suspend fun refreshAllData(): Result<Boolean> {
         return try {
+            // Invalidar todos los caches
             cachedCategories = null
+            categoriesCacheTime = 0
+            cachedEvents = null
+            eventsCacheTime = 0
             currentPaginationInfo = null
-            
-            val categoriesResult = getCategories()
-            if (categoriesResult is Result.Error) {
-                return Result.Error(Exception("Error al refrescar categorías: ${categoriesResult.exception.message}"))
-            }
             
             Result.Success(true)
         } catch (e: Exception) {
@@ -247,7 +270,29 @@ class HomeRepository(
     }
     
     /**
+     * Invalida solo el cache de eventos para una categoría específica.
+     */
+    fun invalidateEventsCache(categoryName: String? = null) {
+        val normalizedCategoryName = if (categoryName == Category.ALL_CATEGORIES_NAME) null else categoryName
+        cachedEvents?.let { (cachedCategory, _) ->
+            if (cachedCategory == normalizedCategoryName) {
+                cachedEvents = null
+                eventsCacheTime = 0
+            }
+        }
+    }
+    
+    /**
      * Obtiene la información de paginación actual.
      */
     fun getCurrentPaginationInfo(): PaginationInfo? = currentPaginationInfo
+    
+    /**
+     * Verifica si hay datos en cache válidos.
+     */
+    fun hasCachedData(): Boolean {
+        val currentTime = System.currentTimeMillis()
+        return (cachedCategories != null && (currentTime - categoriesCacheTime) < CACHE_DURATION_MS) ||
+               (cachedEvents != null && (currentTime - eventsCacheTime) < EVENTS_CACHE_DURATION_MS)
+    }
 } 

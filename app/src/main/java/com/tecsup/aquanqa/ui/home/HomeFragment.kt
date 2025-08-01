@@ -20,28 +20,40 @@ import com.tecsup.aquanqa.ui.anuncios.createAnunciosAdapter
 import com.tecsup.aquanqa.ui.base.BaseFragment
 import com.tecsup.aquanqa.utils.DateUtils
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 class HomeFragment : BaseFragment<FragmentHomeBinding>() {
 
     private lateinit var viewModel: HomeViewModel
     private lateinit var categoryAdapter: CategoryAdapter
     private lateinit var eventsAdapter: AnunciosAdapterWrapper
+    
+    // Variables para retry automático
+    private var categoriesRetryCount = 0
+    private var eventsRetryCount = 0
+    private val maxRetries = 3
+    private val baseDelayMs = 1000L
 
     override fun getViewBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentHomeBinding {
         return FragmentHomeBinding.inflate(inflater, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        initializeViewModel()
-        setupRecyclerViews()
+        // Inicialización optimizada y secuencial
+        initializeViewModelOptimized()
+        setupRecyclerViewsOptimized()
         super.onViewCreated(view, savedInstanceState)
     }
 
-    private fun initializeViewModel() {
-        val userPreferences = UserPreferences(requireContext())
-        val apiClient = ApiClient.getClient(requireContext())
-        val apiService = apiClient.apiService
-        val repository = HomeRepository(apiService, userPreferences)
+    /**
+     * Inicialización optimizada del ViewModel con dependencias reutilizadas
+     */
+    private fun initializeViewModelOptimized() {
+        // Reutilizar instancias para mejor performance
+        val context = requireContext().applicationContext
+        val userPreferences = UserPreferences(context)
+        val apiClient = ApiClient.getClient(context)
+        val repository = HomeRepository(apiClient.apiService, userPreferences)
         
         viewModel = ViewModelProvider(
             this,
@@ -51,10 +63,26 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
 
     override fun setupUI() {
         super.setupUI()
+        // Configuración inicial rápida de UI
+        setupInitialUI()
+    }
+    
+    /**
+     * Configuración inicial optimizada de la UI
+     */
+    private fun setupInitialUI() {
+        // Mostrar fecha inmediatamente
         binding.tvDate.text = viewModel.currentDateSpanish
+        
+        // Preconfigurar elementos para evitar redraws
+        binding.tvUserName.text = "¡Hola, Usuario!"
     }
 
-    private fun setupRecyclerViews() {
+    /**
+     * Configuración optimizada de RecyclerViews con mejor performance
+     */
+    private fun setupRecyclerViewsOptimized() {
+        // Configurar adapter de categorías con mejor performance
         categoryAdapter = CategoryAdapter { category ->
             viewModel.onCategorySelected(category)
         }
@@ -63,8 +91,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
             adapter = categoryAdapter
             layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
             setHasFixedSize(true)
+            // Optimizaciones para mejor scroll
+            isNestedScrollingEnabled = false
+            itemAnimator = null // Eliminar animaciones para mayor velocidad
         }
         
+        // Configurar adapter de eventos con lazy loading
         eventsAdapter = createAnunciosAdapter { anuncio ->
             // TODO: Handle event click
         }
@@ -72,45 +104,61 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         binding.rvPublications.apply {
             adapter = eventsAdapter.getAdapter()
             layoutManager = LinearLayoutManager(requireContext())
+            setHasFixedSize(false) // Permitir altura dinámica
+            // Optimizaciones de memoria y scroll
+            setItemViewCacheSize(20)
+            setDrawingCacheEnabled(true)
+            setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH)
         }
     }
 
 
 
     override fun setupObservers() {
+        // Observer optimizado del nombre de usuario
         viewModel.userFirstName.observe(viewLifecycleOwner) { firstName ->
             binding.tvUserName.text = "¡Hola, $firstName!"
             binding.tvDate.text = viewModel.currentDateSpanish
         }
         
+        // Observer de estados de carga global
+        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            // Manejar estado de carga global si es necesario
+        }
+        
+        // Observer mejorado de categorías con retry automático
         viewModel.categoriesState.observe(viewLifecycleOwner) { result ->
             when (result) {
                 is Result.Success -> {
+                    categoriesRetryCount = 0 // Reset contador en éxito
                     categoryAdapter.submitList(result.data)
                 }
                 is Result.Error -> {
-                    Toast.makeText(requireContext(), "Error cargando categorías", Toast.LENGTH_SHORT).show()
+                    handleCategoriesError(result.exception)
                 }
                 is Result.Loading -> {
-                    // Loading state
+                    // Mostrar indicador de carga si es necesario
                 }
             }
         }
         
+        // Observer mejorado de eventos con retry automático
         viewModel.eventsState.observe(viewLifecycleOwner) { result ->
             when (result) {
                 is Result.Success -> {
+                    eventsRetryCount = 0 // Reset contador en éxito
                     eventsAdapter.submitList(result.data)
                 }
                 is Result.Error -> {
-                    Toast.makeText(requireContext(), "Error cargando eventos", Toast.LENGTH_SHORT).show()
+                    handleEventsError(result.exception)
                 }
                 is Result.Loading -> {
-                    // Loading state
+                    // Mostrar indicador de carga si es necesario
                 }
             }
         }
         
+        // Observer de categoría seleccionada
         lifecycleScope.launch {
             viewModel.selectedCategory.collect { category ->
                 category?.let { 
@@ -119,8 +167,54 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
             }
         }
     }
+    
+    /**
+     * Maneja errores de categorías con retry automático inteligente
+     */
+    private fun handleCategoriesError(exception: Exception) {
+        if (categoriesRetryCount < maxRetries) {
+            categoriesRetryCount++
+            val delay = baseDelayMs * categoriesRetryCount
+            
+            lifecycleScope.launch {
+                delay(delay)
+                viewModel.refreshData()
+            }
+        } else {
+            showUserFriendlyError("No se pudieron cargar las categorías. Verifica tu conexión.")
+        }
+    }
+    
+    /**
+     * Maneja errores de eventos con retry automático inteligente
+     */
+    private fun handleEventsError(exception: Exception) {
+        if (eventsRetryCount < maxRetries) {
+            eventsRetryCount++
+            val delay = baseDelayMs * eventsRetryCount
+            
+            lifecycleScope.launch {
+                delay(delay)
+                viewModel.refreshData()
+            }
+        } else {
+            showUserFriendlyError("No se pudieron cargar los eventos. Verifica tu conexión.")
+        }
+    }
+    
+    /**
+     * Muestra mensajes de error más amigables al usuario
+     */
+    private fun showUserFriendlyError(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+    }
 
+    /**
+     * Refresca datos con reset de contadores de retry
+     */
     fun refreshData() {
+        categoriesRetryCount = 0
+        eventsRetryCount = 0
         viewModel.refreshData()
     }
 }

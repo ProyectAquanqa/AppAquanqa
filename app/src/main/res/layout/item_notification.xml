@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?android:attr/selectableItemBackground"
+    android:paddingHorizontal="20dp"
+    android:paddingVertical="12dp">
+
+    <!-- Imagen de  icono de notificación -->
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/iv_author_image"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:src="@drawable/ic_alert"
+        app:civ_border_width="0dp"
+
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:src="@drawable/ic_alert" />
+
+    <!-- Contenido de la notificación -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/iv_author_image"
+        app:layout_constraintTop_toTopOf="@id/iv_author_image">
+
+        <!-- Título de la notificación -->
+        <TextView
+            android:id="@+id/tv_notification_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16dp"
+            android:textColor="@color/text_primary"
+            android:fontFamily="@font/montserrat_bold"
+            android:lineSpacingExtra="2dp"
+            android:maxLines="2"
+            android:ellipsize="end"
+            tools:text="Nuevo evento publicado" />
+
+        <!-- Mensaje/descripción de la notificación -->
+        <TextView
+            android:id="@+id/tv_notification_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary"
+            android:fontFamily="@font/montserrat"
+            android:maxLines="1"
+            android:ellipsize="end"
+            tools:text="Se ha publicado un nuevo evento en la comunidad" />
+
+        <!-- hora de la notificación -->
+        <TextView
+            android:id="@+id/tv_notification_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary"
+            android:fontFamily="@font/montserrat"
+            tools:text="hace 2 horas" />
+
+    </LinearLayout>
+
+    <!-- Indicador de notificación no leída (opcional) -->
+    <View
+        android:id="@+id/unread_indicator"
+        android:layout_width="8dp"
+        android:layout_height="8dp"
+        android:background="@drawable/bg_status_indicator"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/iv_author_image"
+        tools:visibility="visible" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

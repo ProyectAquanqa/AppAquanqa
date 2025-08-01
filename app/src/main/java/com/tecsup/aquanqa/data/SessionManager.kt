@@ -22,9 +22,8 @@ class SessionManager(
         private const val TAG = "SessionManager"
     }
 
-    /**
-     * Verifica si el usuario tiene una sesión activa válida
-     */
+    //Verifica si el usuario tiene una sesión activa válida
+
     suspend fun isSessionActive(): Boolean {
         return try {
             val isLoggedIn = userPreferences.isUserLoggedIn.first()
@@ -38,9 +37,8 @@ class SessionManager(
         }
     }
 
-    /**
-     * Obtiene el token de acceso actual, intentando renovarlo si es necesario
-     */
+    // Obtiene el token de acceso actual, intentando renovarlo si es necesario
+
     suspend fun getValidAccessToken(): String? {
         return try {
             val accessToken = userPreferences.accessToken.first()
@@ -59,9 +57,8 @@ class SessionManager(
         }
     }
 
-    /**
-     * Refresca el token de acceso usando el refresh token
-     */
+    // Refresca el token de acceso usando el refresh token
+
     suspend fun refreshAccessToken(): String? {
         return try {
             val refreshToken = userPreferences.refreshToken.first()
@@ -96,9 +93,8 @@ class SessionManager(
         }
     }
 
-    /**
-     * Limpia completamente la sesión del usuario
-     */
+    // Limpia completamente la sesión del usuario
+
     suspend fun clearSession() {
         try {
             userPreferences.clear()
@@ -108,16 +104,14 @@ class SessionManager(
         }
     }
 
-    /**
-     * Verifica si el usuario está logueado (Flow reactivo)
-     */
+    // Verifica si el usuario está logueado (Flow reactivo)
+
     fun isUserLoggedInFlow(): Flow<Boolean> {
         return userPreferences.isUserLoggedIn
     }
 
-    /**
-     * Obtiene el DNI del usuario actual
-     */
+    // Obtiene el DNI del usuario actual
+
     suspend fun getCurrentUserDni(): String? {
         return try {
             userPreferences.userDni.first()
@@ -127,9 +121,8 @@ class SessionManager(
         }
     }
 
-    /**
-     * Obtiene el nombre del usuario actual
-     */
+    // Obtiene el nombre del usuario actual
+
     suspend fun getCurrentUserName(): String? {
         return try {
             userPreferences.userFirstName.first()

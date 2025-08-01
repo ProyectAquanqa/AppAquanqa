@@ -5,7 +5,7 @@ import java.util.Date
 
 /**
  * Modelo de datos para representar la información del autor de un anuncio.
- * `SerializedName` se usa para mapear los nombres de la API a las propiedades de Kotlin.
+ * SerializedName para mapear los nombres de la API a las propiedades de Kotlin.
  */
 data class Autor(
     val id: Int,
@@ -15,9 +15,8 @@ data class Autor(
     val fotoPerfil: String?
 )
 
-/**
- * Modelo de datos principal para un anuncio.
- */
+//Modelo de datos principal para un anuncio.
+
 data class Anuncio(
     val id: Int,
     val titulo: String,

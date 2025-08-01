@@ -7,29 +7,24 @@
 
     <!-- ========== COLORES CORPORATIVOS AQUANQA ========== -->
     <color name="aquanqa_blue">#035594</color>
-    <color name="aquanqa_blue_dark">#1565C0</color>
     <color name="aquanqa_blue_light">#ADC4E6</color>
     <color name="aquanqa_green">#10B981</color>
-    <color name="aquanqa_green_light">#E8F5E8</color>
-    <!-- ========== COLORES PRIMARIOS (ALIAS) ========== -->
-    <color name="primary">#035594</color>
-    <color name="primary_color">#4CAF50</color>
-    <color name="primary_blue">#0C5892</color>
-    <color name="primary_blue_dark">#1565C0</color>
-    <color name="primary_blue_light">#CBE2F6</color>
-    <color name="primary_blue_lighter">#E3F2FD</color>
 
-    <!-- ========== FONDOS CLAROS ========== -->
+    <!-- ========== COLORES PRIMARIOS ALTERNATIVOS ========== -->
+
+    <color name="primary_blue">#0C5892</color>
+    <color name="primary_blue_light">#CBE2F6</color>
+
+    <!-- ========== FONDOS ========== -->
     <color name="background_primary">#FFFFFF</color>
     <color name="background_secondary">#F8F9FA</color>
     <color name="background_card">#FFFFFF</color>
     <color name="background_input">#FFFFFF</color>
 
-    <!-- ========== TEXTOS OSCUROS ========== -->
+    <!-- ========== TEXTOS ========== -->
     <color name="text_primary">#000000</color>
     <color name="text_secondary">#6C757D</color>
     <color name="text_hint">#68686B</color>
-    <color name="text_disabled">#CED4DA</color>
 
     <!-- ========== BORDES Y DIVISORES ========== -->
     <color name="border_light">#DEE2E6</color>
@@ -39,18 +34,8 @@
 
     <!-- ========== COLORES DE ESTADO ========== -->
     <color name="success">#28A745</color>
-    <color name="warning">#FFC107</color>
-    <color name="error">#DC3545</color>
-
 
     <!-- ========== COLORES DE INTERACCIÓN ========== -->
     <color name="ripple_light">#1A1E88E5</color>
-    <color name="selection">#E3F2FD</color>
-    <color name="focus">#1E88E5</color>
-    <color name="shadow">#1A000000</color>
-
-    <!-- ========== COLORES ESPECÍFICOS PARA CATEGORÍAS ========== -->
-
-    <color name="stroke_color">#E0E0E0</color>
-
+    <color name="stroke_color">#8D8D8D</color>
 </resources>

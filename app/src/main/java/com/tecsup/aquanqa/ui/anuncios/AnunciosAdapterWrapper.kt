@@ -21,9 +21,8 @@ class AnunciosAdapterWrapper(
      */
     private val adapter = AnunciosAdapter(emptyList())
     
-    /**
-     * Lista actual de anuncios para manejar los callbacks de click.
-     */
+    //Lista actual de anuncios para manejar los callbacks de click.
+
     private var currentList: List<Anuncio> = emptyList()
     
     init {
@@ -31,21 +30,15 @@ class AnunciosAdapterWrapper(
         setupClickListeners()
     }
     
-    /**
-     * Actualiza la lista de anuncios, similar a submitList() de ListAdapter.
-     * 
-     * @param list Nueva lista de anuncios a mostrar
-     */
+    // Actualiza la lista de anuncios
+
     fun submitList(list: List<Anuncio>) {
         currentList = list
         adapter.updateData(list)
     }
     
-    /**
-     * Obtiene el adapter original para usar en el RecyclerView.
-     * 
-     * @return AnunciosAdapter El adapter original configurado
-     */
+    // Obtiene el adapter original para usar en el RecyclerView.
+
     fun getAdapter(): AnunciosAdapter = adapter
     
     /**

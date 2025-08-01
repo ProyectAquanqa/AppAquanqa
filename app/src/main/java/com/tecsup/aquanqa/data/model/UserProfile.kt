@@ -3,7 +3,7 @@ package com.tecsup.aquanqa.data.model
 /**
  * Modelo de datos que representa el perfil de un usuario.
  *
- * Los nombres de los campos (e.g., first_name) están en snake_case para coincidir
+ * Los nombres de los campos  están en snake_case para coincidir
  * directamente con las claves del JSON devuelto por la API de Django,
  * eliminando la necesidad de anotaciones @SerializedName.
  */

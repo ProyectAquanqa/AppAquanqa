@@ -43,16 +43,28 @@
             app:layout_constraintTop_toTopOf="parent"
             app:navGraph="@navigation/mobile_navigation" />
 
-        <!-- Divisor removido ya que el nuevo diseño tiene sombra y bordes redondeados -->
+        <!-- Línea divisora delgada encima del bottom navigation -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="@drawable/bottom_nav_divider"
+            app:layout_constraintBottom_toTopOf="@+id/bottom_nav_view"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottom_nav_view"
             style="@style/BottomNavigationView.Clean"
             android:layout_width="match_parent"
-
-            android:layout_height="60dp"
+            android:layout_height="68dp"
+            android:background="@android:color/white"
+            android:backgroundTint="@android:color/white"
+            android:clipToPadding="false"
+            android:paddingBottom="8dp"
+            app:backgroundTint="@android:color/white"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:menu="@menu/bottom_nav_menu" />
 
@@ -64,13 +76,24 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="15dp"
-        android:layout_marginBottom="80dp"
+        android:layout_marginBottom="88dp"
         android:backgroundTint="@color/primary_blue"
-        android:elevation="8dp"
+        android:elevation="12dp"
         app:borderWidth="0dp"
         app:fabSize="normal"
         app:rippleColor="@color/ripple_light"
         app:srcCompat="@drawable/ic_favortite"
         app:tint="@color/background_primary" />
+
+
+    <ProgressBar
+        android:id="@+id/logout_progress_bar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout> 

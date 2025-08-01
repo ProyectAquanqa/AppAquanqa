@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <!-- Estado seleccionado - Negro sólido como en la imagen -->
+    <item android:state_checked="true" android:color="@color/text_primary" />
+    
+    <!-- Estado normal - Gris claro como en la imagen -->
+    <item android:color="#9CA3AF" />
+    
+</selector>

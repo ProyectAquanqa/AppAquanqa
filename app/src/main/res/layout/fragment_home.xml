@@ -101,7 +101,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/welcome_section">
 
-                <!-- ===== SECCIÓN DE CATEGORÍAS ===== -->
+                <!--categorias -->
                 <LinearLayout
                     android:id="@+id/categories_section"
                     android:layout_width="match_parent"
@@ -132,19 +132,19 @@
 
                 </LinearLayout>
 
-                <!-- Separador sutil -->
+                <!-- Separador  -->
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="8dp"
                     android:background="#F5F5F5" />
 
-                <!-- ===== SECCIÓN DE PUBLICACIONES RECIENTES ===== -->
+                <!--publicaciones -->
                 <LinearLayout
                     android:id="@+id/publications_section"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:paddingHorizontal="20dp"
+
                     android:paddingTop="24dp"
                     android:paddingBottom="16dp">
 
@@ -157,6 +157,7 @@
                         android:text="Publicaciones Recientes"
                         android:textColor="@android:color/black"
                         android:textSize="20sp"
+                        android:paddingHorizontal="20dp"
                         android:textStyle="bold" />
                     <!-- RecyclerView para publicaciones -->
                     <androidx.recyclerview.widget.RecyclerView

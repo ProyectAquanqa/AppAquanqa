@@ -8,8 +8,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 /**
- * Class that requests authentication and user information from the remote data source and
- * maintains an in-memory cache of login status and user credentials information.
+ * Clase que solicita autenticación e información del usuario de la fuente de datos remota y
+ * mantiene un caché en memoria con el estado de inicio de sesión y la información de las credenciales del usuario.
  */
 class LoginRepository(
     private val dataSource: LoginDataSource,
@@ -36,16 +36,14 @@ class LoginRepository(
         }
     }
 
-    /**
-     * Verifica si hay una sesión activa usando SessionManager
-     */
+    // Verifica si hay una sesión activa usando SessionManager
+
     suspend fun isSessionActive(): Boolean {
         return sessionManager?.isSessionActive() ?: false
     }
 
-    /**
-     * Cierra la sesión del usuario y limpia todos los datos
-     */
+    // Cierra la sesión del usuario y limpia todos los datos
+
     suspend fun logout() {
         user = null
         sessionManager?.clearSession() ?: dataSource.logout()
@@ -62,9 +60,8 @@ class LoginRepository(
         return result
     }
 
-    /**
-     * Obtiene un token de acceso válido, refrescándolo si es necesario
-     */
+    // Obtiene un token de acceso válido, refrescándolo si es necesario
+
     suspend fun getValidAccessToken(): String? {
         return sessionManager?.getValidAccessToken()
     }

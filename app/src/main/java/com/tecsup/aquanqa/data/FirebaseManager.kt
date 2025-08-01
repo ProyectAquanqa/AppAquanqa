@@ -10,9 +10,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
-/**
- * Gestor de Firebase para manejar tokens FCM y notificaciones
- */
+// Gestor de Firebase para manejar tokens FCM y notificaciones
+
 class FirebaseManager(
     private val context: Context,
     private val userPreferences: UserPreferences,
@@ -23,9 +22,8 @@ class FirebaseManager(
         private const val TAG = "FirebaseManager"
     }
 
-    /**
-     * Inicializa Firebase y obtiene el token FCM
-     */
+    //Inicializa Firebase y obtiene el token FCM
+
     fun initializeFirebase() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -38,9 +36,8 @@ class FirebaseManager(
         }
     }
 
-    /**
-     * Obtiene el token FCM y lo registra en el servidor
-     */
+    // Obtiene el token FCM y lo registra en el servidor
+
     suspend fun getAndRegisterFcmToken() {
         try {
             val token = FirebaseMessaging.getInstance().token.await()
@@ -51,9 +48,8 @@ class FirebaseManager(
         }
     }
 
-    /**
-     * Registra el token FCM en el servidor
-     */
+    //Registra el token FCM en el servidor
+
     suspend fun registerTokenWithServer(token: String) {
         try {
             val accessToken = sessionManager.getValidAccessToken()
@@ -81,9 +77,8 @@ class FirebaseManager(
         }
     }
 
-    /**
-     * Remueve el token FCM del servidor (para logout)
-     */
+    //Remueve el token FCM del servidor (para logout)
+
     suspend fun unregisterTokenFromServer() {
         try {
             val fcmToken = userPreferences.getFcmToken()

@@ -40,11 +40,10 @@ class UserPreferences(private val context: Context) {
         private val FCM_TOKEN = stringPreferencesKey("fcm_token")
     }
 
-    // ================= TOKENS DE AUTENTICACIÓN =================
 
     /**
      * Flow que emite el token de acceso actual del usuario.
-     * @return Flow<String?> Token de acceso o null si no existe
+     * retorna Flow<String?> Token de acceso o null si no existe
      */
     val accessToken: Flow<String?> = context.dataStore.data.map { preferences ->
         preferences[ACCESS_TOKEN]
@@ -52,7 +51,7 @@ class UserPreferences(private val context: Context) {
 
     /**
      * Flow que emite el token de refresco actual del usuario.
-     * @return Flow<String?> Token de refresco o null si no existe
+     * retorna Flow<String?> Token de refresco o null si no existe
      */
     val refreshToken: Flow<String?> = context.dataStore.data.map { preferences ->
         preferences[REFRESH_TOKEN]
@@ -62,7 +61,7 @@ class UserPreferences(private val context: Context) {
 
     /**
      * Flow que emite el DNI del usuario autenticado.
-     * @return Flow<String?> DNI del usuario o null si no existe
+     * retorna Flow<String?> DNI del usuario o null si no existe
      */
     val userDni: Flow<String?> = context.dataStore.data.map { preferences ->
         preferences[USER_DNI]
@@ -70,7 +69,7 @@ class UserPreferences(private val context: Context) {
 
     /**
      * Flow que emite el email del usuario autenticado.
-     * @return Flow<String?> Email del usuario o null si no existe
+     * retorna Flow<String?> Email del usuario o null si no existe
      */
     val userEmail: Flow<String?> = context.dataStore.data.map { preferences ->
         preferences[USER_EMAIL]
@@ -78,7 +77,7 @@ class UserPreferences(private val context: Context) {
 
     /**
      * Flow que emite el primer nombre del usuario autenticado.
-     * @return Flow<String?> Primer nombre del usuario o null si no existe
+     * retorna Flow<String?> Primer nombre del usuario o null si no existe
      */
     val userFirstName: Flow<String?> = context.dataStore.data.map { preferences ->
         preferences[USER_FIRST_NAME]
@@ -86,7 +85,7 @@ class UserPreferences(private val context: Context) {
 
     /**
      * Flow que emite el apellido del usuario autenticado.
-     * @return Flow<String?> Apellido del usuario o null si no existe
+     * retorna Flow<String?> Apellido del usuario o null si no existe
      */
     val userLastName: Flow<String?> = context.dataStore.data.map { preferences ->
         preferences[USER_LAST_NAME]
@@ -94,7 +93,7 @@ class UserPreferences(private val context: Context) {
 
     /**
      * Flow que emite la URL de la foto de perfil del usuario.
-     * @return Flow<String?> URL de la foto de perfil o null si no existe
+     * retorna Flow<String?> URL de la foto de perfil o null si no existe
      */
     val userPhotoUrl: Flow<String?> = context.dataStore.data.map { preferences ->
         preferences[USER_PHOTO_URL]
@@ -102,19 +101,16 @@ class UserPreferences(private val context: Context) {
 
     /**
      * Flow que emite el token FCM del dispositivo.
-     * @return Flow<String?> Token FCM o null si no existe
+     * retorna Flow<String?> Token FCM o null si no existe
      */
     val fcmToken: Flow<String?> = context.dataStore.data.map { preferences ->
         preferences[FCM_TOKEN]
     }
 
-    // ================= MÉTODOS DE GUARDADO =================
+    // metodos de guardado
 
-    /**
-     * Guarda los tokens de autenticación en el almacenamiento persistente.
-     * @param accessToken Token de acceso JWT
-     * @param refreshToken Token de refresco JWT
-     */
+    //Guarda los tokens de autenticación en el almacenamiento persistente.
+
     suspend fun saveTokens(accessToken: String, refreshToken: String) {
         context.dataStore.edit { preferences ->
             preferences[ACCESS_TOKEN] = accessToken
@@ -124,7 +120,6 @@ class UserPreferences(private val context: Context) {
 
     /**
      * Guarda el DNI del usuario en el almacenamiento persistente.
-     * @param dni DNI del usuario
      */
     suspend fun saveUserDni(dni: String) {
         context.dataStore.edit { preferences ->
@@ -134,7 +129,6 @@ class UserPreferences(private val context: Context) {
 
     /**
      * Guarda el email del usuario en el almacenamiento persistente.
-     * @param email Email del usuario
      */
     suspend fun saveUserEmail(email: String) {
         context.dataStore.edit { preferences ->
@@ -142,12 +136,8 @@ class UserPreferences(private val context: Context) {
         }
     }
 
-    /**
-     * Guarda los datos básicos del usuario obtenidos del perfil.
-     * @param firstName Primer nombre del usuario
-     * @param lastName Apellido del usuario
-     * @param photoUrl URL de la foto de perfil (opcional)
-     */
+    //Guarda los datos básicos del usuario obtenidos del perfil.
+
     suspend fun saveUserProfile(
         firstName: String,
         lastName: String,
@@ -162,31 +152,26 @@ class UserPreferences(private val context: Context) {
         }
     }
 
-    /**
-     * Actualiza solo la foto de perfil del usuario.
-     * @param photoUrl Nueva URL de la foto de perfil
-     */
+    //Actualiza solo la foto de perfil del usuario.
+
     suspend fun updateUserPhoto(photoUrl: String) {
         context.dataStore.edit { preferences ->
             preferences[USER_PHOTO_URL] = photoUrl
         }
     }
 
-    /**
-     * Guarda el token FCM del dispositivo.
-     * @param token Token FCM del dispositivo
-     */
+    //Guarda el token FCM del dispositivo.
+
     suspend fun saveFcmToken(token: String) {
         context.dataStore.edit { preferences ->
             preferences[FCM_TOKEN] = token
         }
     }
 
-    // ================= UTILIDADES =================
-
+    // utilidades
     /**
      * Verifica si el usuario tiene una sesión activa válida.
-     * @return Flow<Boolean> true si tiene tokens guardados, false en caso contrario
+     * retorna Flow<Boolean> true si tiene tokens guardados, false en caso contrario
      */
     val isUserLoggedIn: Flow<Boolean> = context.dataStore.data.map { preferences ->
         preferences[ACCESS_TOKEN] != null && preferences[REFRESH_TOKEN] != null
@@ -213,10 +198,8 @@ class UserPreferences(private val context: Context) {
         }
     }
 
-    /**
-     * Obtiene el token FCM actual del dispositivo.
-     * @return Token FCM o null si no existe
-     */
+    //Obtiene el token FCM actual del dispositivo, null si no existe
+
     suspend fun getFcmToken(): String? {
         return fcmToken.first()
     }

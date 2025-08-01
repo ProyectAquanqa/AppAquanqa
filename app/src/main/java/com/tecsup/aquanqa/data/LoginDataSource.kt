@@ -4,6 +4,7 @@ import com.tecsup.aquanqa.data.api.ApiClient
 import com.tecsup.aquanqa.data.model.LoggedInUser
 import com.tecsup.aquanqa.data.model.LoginRequest
 import com.tecsup.aquanqa.data.model.LoginResponse
+import com.tecsup.aquanqa.data.model.UserProfile
 import com.tecsup.aquanqa.data.model.UserResponse
 import com.tecsup.aquanqa.data.network.InvalidPasswordException
 import com.tecsup.aquanqa.data.network.UserNotFoundException
@@ -31,6 +32,31 @@ class LoginDataSource(private val userPreferences: UserPreferences) {
 
                     userPreferences.saveTokens(accessToken, refreshToken)
                     userPreferences.saveUserDni(userData.dni)
+                    
+                    // Obtener el perfil completo del usuario después del login
+                    try {
+                        val profileResponse = ApiClient.apiService.getUserProfile("Bearer $accessToken")
+                        if (profileResponse.isSuccessful && profileResponse.body() != null) {
+                            val userProfile = profileResponse.body()!!
+                            userPreferences.saveUserProfile(
+                                firstName = userProfile.first_name,
+                                lastName = userProfile.last_name,
+                                photoUrl = userProfile.foto_perfil
+                            )
+                        } else {
+                            // Si falla obtener el perfil, al menos guardamos el first_name del login
+                            userPreferences.saveUserProfile(
+                                firstName = userData.first_name,
+                                lastName = ""
+                            )
+                        }
+                    } catch (e: Exception) {
+                        // Si falla obtener el perfil, al menos guarda el first_name del login
+                        userPreferences.saveUserProfile(
+                            firstName = userData.first_name,
+                            lastName = ""
+                        )
+                    }
                     
                     val loggedInUser = LoggedInUser(
                         userId = userData.id.toString(),

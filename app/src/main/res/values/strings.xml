@@ -6,6 +6,7 @@
     <string name="title_anuncios">Anuncios</string>
     <string name="title_beneficios">Beneficios</string>
     <string name="title_profile">Perfil</string>
+    <string name="title_notifications">Notificaciones</string>
 
     <!-- Textos para el menú lateral (Navigation Drawer) -->
     <string name="navigation_drawer_open">Abrir menú de navegación</string>

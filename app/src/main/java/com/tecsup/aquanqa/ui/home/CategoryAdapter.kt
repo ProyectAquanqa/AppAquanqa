@@ -81,9 +81,9 @@ class CategoryAdapter(
             val context = itemView.context
             
             if (isSelected) {
-                // Estilo seleccionado: fondo aquanqa_green_light
+                // Estilo seleccionado
                 cardView.apply {
-                    setCardBackgroundColor(ContextCompat.getColor(context, R.color.aquanqa_green_light))
+                    setCardBackgroundColor(ContextCompat.getColor(context, R.color.aquanqa_green))
                     strokeColor = ContextCompat.getColor(context, R.color.aquanqa_green)
                     strokeWidth = 2
                     elevation = 4f

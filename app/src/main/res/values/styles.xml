@@ -1,177 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- ========== TEMA PRINCIPAL CLARO ========== -->
-    <style name="AppTheme.Light" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
-        <item name="colorPrimary">@color/aquanqa_blue</item>
-        <item name="colorPrimaryDark">@color/aquanqa_blue_dark</item>
-        <item name="colorAccent">@color/aquanqa_blue</item>
-        <item name="android:windowBackground">@color/background_primary</item>
-        <item name="colorSurface">@color/background_card</item>
-        <item name="colorOnSurface">@color/text_primary</item>
-        <item name="android:textColorPrimary">@color/text_primary</item>
-        <item name="android:textColorSecondary">@color/text_secondary</item>
-        <item name="android:statusBarColor">@color/aquanqa_blue</item>
-        <item name="android:windowLightStatusBar">false</item>
-        <item name="android:navigationBarColor">@color/background_primary</item>
-        <item name="android:windowLightNavigationBar">true</item>
-    </style>
-
-    <!-- ========== NAVIGATION VIEW ========== -->
-    <style name="NavigationView.Light" parent="Widget.MaterialComponents.NavigationView">
-        <item name="android:background">@color/background_primary</item>
-        <item name="itemBackground">@drawable/nav_menu_item_selector</item>
-        <item name="itemTextAppearance">@style/NavigationView.TextAppearance</item>
-        <item name="itemIconTint">@color/aquanqa_blue</item>
-        <item name="itemTextColor">@color/text_primary</item>
-        <item name="itemHorizontalPadding">16dp</item>
-        <item name="itemVerticalPadding">12dp</item>
-        <item name="itemIconPadding">24dp</item>
-        <item name="itemMaxLines">1</item>
-        <item name="android:layout_marginStart">8dp</item>
-        <item name="android:layout_marginEnd">8dp</item>
-        <item name="android:layout_marginTop">8dp</item>
-        <item name="android:layout_marginBottom">8dp</item>
-    </style>
-
-    <style name="NavigationView.TextAppearance" parent="TextAppearance.MaterialComponents.Body1">
-        <item name="android:textSize">16sp</item>
-        <item name="android:textStyle">normal</item>
-        <item name="android:letterSpacing">0.01</item>
-        <item name="fontFamily">sans-serif-medium</item>
-        <item name="android:textColor">@color/text_primary</item>
-    </style>
-
-    <!-- ========== BOTTOM NAVIGATION ========== -->
-    <style name="BottomNavigationView.TextAppearance" parent="TextAppearance.MaterialComponents.Caption">
-        <item name="android:textSize">10sp</item>
-        <item name="android:textAllCaps">false</item>
-        <item name="android:letterSpacing">0.0</item>
-    </style>
-
-    <style name="BottomNavigation.Light" parent="Widget.MaterialComponents.BottomNavigationView">
-        <item name="android:background">@color/background_primary</item>
-        <item name="itemIconTint">@color/primary_blue</item>
-        <item name="itemTextColor">@color/text_primary</item>
+    <!--  BOTTOM NAVIGATION  -->
+    <!-- Usado en: app_bar_main.xml -->
+    <style name="BottomNavigationView.Clean" parent="Widget.Design.BottomNavigationView">
+        <!-- Fondo blanco puro -->
+        <item name="android:background">@android:color/white</item>
+        <item name="backgroundTint">@android:color/white</item>
+        
+        <!-- Elevación y sombra -->
+        <item name="android:elevation">8dp</item>
         <item name="elevation">8dp</item>
-    </style>
-
-    <!-- ========== ESTILOS PARA TEMA CLARO ========== -->
-    
-    <!-- Estilos de texto -->
-    <style name="Text.Primary" parent="TextAppearance.MaterialComponents.Body1">
-        <item name="android:textColor">@color/text_primary</item>
-        <item name="fontFamily">@font/montserrat</item>
-    </style>
-    
-    <style name="Text.Secondary" parent="TextAppearance.MaterialComponents.Body2">
-        <item name="android:textColor">@color/text_secondary</item>
-        <item name="fontFamily">@font/montserrat</item>
-    </style>
-    
-    <style name="Text.Headline" parent="TextAppearance.MaterialComponents.Headline6">
-        <item name="android:textColor">@color/text_primary</item>
-        <item name="fontFamily">@font/montserrat_bold</item>
-    </style>
-    
-    <!-- Estilos de botones -->
-    <style name="Button.Primary" parent="Widget.MaterialComponents.Button">
-        <item name="backgroundTint">@color/aquanqa_blue</item>
-        <item name="android:textColor">@color/white</item>
-        <item name="fontFamily">@font/montserrat_medium</item>
-        <item name="cornerRadius">8dp</item>
-    </style>
-    
-    <style name="Button.Secondary" parent="Widget.MaterialComponents.Button.OutlinedButton">
-        <item name="strokeColor">@color/aquanqa_blue</item>
-        <item name="android:textColor">@color/aquanqa_blue</item>
-        <item name="fontFamily">@font/montserrat_medium</item>
-        <item name="cornerRadius">8dp</item>
-    </style>
-    
-    <!-- Estilos de cards -->
-    <style name="Card.Light" parent="Widget.MaterialComponents.CardView">
-        <item name="cardBackgroundColor">@color/background_card</item>
-        <item name="cardElevation">4dp</item>
-        <item name="cardCornerRadius">8dp</item>
-        <item name="strokeColor">@color/border_light</item>
-        <item name="strokeWidth">0dp</item>
-    </style>
-    
-    <!-- Estilos de inputs -->
-    <style name="TextInput.Light" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-        <item name="boxStrokeColor">@color/border_focus</item>
-        <item name="hintTextColor">@color/text_hint</item>
-        <item name="android:textColorHint">@color/text_hint</item>
-        <item name="boxBackgroundColor">@color/background_input</item>
-    </style>
-    
-    <!-- Estilos de componentes -->
-    <style name="FAB.Light" parent="Widget.MaterialComponents.FloatingActionButton">
-        <item name="backgroundTint">@color/aquanqa_blue</item>
-        <item name="tint">@color/white</item>
-        <item name="elevation">6dp</item>
-        <item name="pressedTranslationZ">12dp</item>
-    </style>
-    
-    <style name="Toolbar.Light" parent="Widget.MaterialComponents.Toolbar">
-        <item name="android:background">@color/aquanqa_blue</item>
-        <item name="titleTextColor">@color/white</item>
-        <item name="subtitleTextColor">@color/white</item>
-        <item name="android:theme">@style/ThemeOverlay.MaterialComponents.Dark.ActionBar</item>
-    </style>
-    
-    <style name="Chip.Light" parent="Widget.MaterialComponents.Chip.Action">
-        <item name="chipBackgroundColor">@color/background_secondary</item>
-        <item name="android:textColor">@color/text_primary</item>
-        <item name="chipStrokeColor">@color/border_medium</item>
-        <item name="chipStrokeWidth">1dp</item>
-    </style>
-
-    <!-- ========== ESTILOS REUTILIZABLES PARA PERFIL ========== -->
-    
-    <!-- Divisor elegante para perfil -->
-    <style name="ProfileDivider">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">1dp</item>
-        <item name="android:layout_marginHorizontal">20dp</item>
-        <item name="android:background">@color/divider</item>
-        <item name="android:alpha">0.6</item>
-    </style>
-    
-    <!-- Título de sección -->
-    <style name="ProfileSectionTitle">
-        <item name="android:textSize">12sp</item>
-        <item name="android:textColor">@color/aquanqa_blue</item>
-        <item name="android:fontFamily">@font/montserrat_bold</item>
-        <item name="android:letterSpacing">0.1</item>
-        <item name="android:textAllCaps">true</item>
-    </style>
-    
-    <!-- Card de perfil -->
-    <style name="ProfileCard" parent="Widget.MaterialComponents.CardView">
-        <item name="cardBackgroundColor">@color/background_card</item>
-        <item name="cardCornerRadius">16dp</item>
-        <item name="cardElevation">4dp</item>
-        <item name="android:layout_marginHorizontal">16dp</item>
-        <item name="android:layout_marginBottom">16dp</item>
-    </style>
-
-    <!-- ========== ESTILOS PARA BOTTOM NAVIGATION LIMPIO ========== -->
-    
-    <!-- Estilo principal del Bottom Navigation con fondo blanco y items focusables -->
-    <style name="BottomNavigationView.Clean" parent="Widget.MaterialComponents.BottomNavigationView">
-
-        <item name="android:elevation">4dp</item>
-        <item name="itemIconTint">@color/bottom_nav_icon_color</item>
-        <item name="itemTextColor">@color/bottom_nav_text_color</item>
-        <item name="itemBackground">@drawable/bottom_nav_item_ripple</item>
+        
+        <!-- Colores de iconos y texto -->
+        <item name="itemIconTint">@color/bottom_nav_icon_color_modern</item>
+        <item name="itemTextColor">@color/bottom_nav_text_color_modern</item>
+        
+        <!-- Fondo de items transparente -->
+        <item name="itemBackground">@android:color/transparent</item>
+        <item name="itemRippleColor">@android:color/transparent</item>
+        
+        <!-- Configuración de indicadores y texto -->
         <item name="itemActiveIndicatorStyle">@style/BottomNavigationView.CleanIndicator</item>
         <item name="itemTextAppearanceActive">@style/BottomNavigationView.TextAppearance.Active</item>
         <item name="itemTextAppearanceInactive">@style/BottomNavigationView.TextAppearance.Inactive</item>
+        
+        <!-- Visibilidad y tamaños -->
         <item name="labelVisibilityMode">labeled</item>
-
-        <item name="itemIconSize">24dp</item>
+        <item name="itemIconSize">28dp</item>
+        
+        <!-- Theme overlay -->
+        <item name="materialThemeOverlay">@style/ThemeOverlay.BottomNav.Clean</item>
     </style>
 
     <!-- Indicador invisible para diseño limpio -->
@@ -181,20 +40,50 @@
         <item name="android:height">0dp</item>
     </style>
 
-    <!-- Texto activo -->
+    <!-- Texto activo del bottom navigation -->
     <style name="BottomNavigationView.TextAppearance.Active" parent="TextAppearance.MaterialComponents.Caption">
-        <item name="android:textSize">11sp</item>
-        <item name="android:textColor">@color/aquanqa_blue</item>
-
-        <item name="fontFamily">@font/montserrat_bold</item>
-
+        <item name="android:textSize">10sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="fontFamily">@font/montserrat_medium</item>
+        <item name="android:letterSpacing">0.02</item>
     </style>
 
-    <!-- Texto inactivo -->
+    <!-- Texto inactivo del bottom navigation -->
     <style name="BottomNavigationView.TextAppearance.Inactive" parent="TextAppearance.MaterialComponents.Caption">
-        <item name="android:textSize">11sp</item>
-        <item name="android:textColor">@color/black</item>
+        <item name="android:textSize">10sp</item>
+        <item name="android:textColor">@color/text_secondary</item>
         <item name="fontFamily">@font/montserrat</item>
+        <item name="android:letterSpacing">0.02</item>
+    </style>
+
+    <!-- Theme Overlay para fondo blanco -->
+    <style name="ThemeOverlay.BottomNav.Clean" parent="">
+        <item name="colorSurface">@android:color/white</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorPrimary">@android:color/white</item>
+        <item name="colorSecondary">@android:color/white</item>
+        <item name="android:colorBackground">@android:color/white</item>
+        <item name="colorSurfaceVariant">@android:color/white</item>
+        <item name="colorSurfaceContainer">@android:color/white</item>
+    </style>
+
+    <!-- ========== ESTILOS DE PERFIL ========== -->
+    <!-- Usado en: fragment_profile.xml, fragment_edit_profile.xml -->
+    <style name="ProfileDivider">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:layout_marginHorizontal">20dp</item>
+        <item name="android:background">@color/divider</item>
+        <item name="android:alpha">0.6</item>
+    </style>
+
+    <!-- ========== ESTILOS DE BOTONES ========== -->
+    <!-- Usado en: fragment_notifications.xml -->
+    <style name="Button.Secondary" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="strokeColor">@color/aquanqa_blue</item>
+        <item name="android:textColor">@color/aquanqa_blue</item>
+        <item name="fontFamily">@font/montserrat_medium</item>
+        <item name="cornerRadius">8dp</item>
     </style>
 
 </resources> 
