@@ -40,6 +40,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        <!-- UCrop Activity para recorte de imágenes -->
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Aquanqa.UCrop"
+            android:windowSoftInputMode="adjustResize" />
 
         <!-- Servicio de Firebase Cloud Messaging -->
         <service

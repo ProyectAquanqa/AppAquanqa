@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -24,6 +25,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.tecsup.aquanqa.R
 import com.tecsup.aquanqa.databinding.FragmentEditProfileBinding
+import com.yalantis.ucrop.UCrop
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -31,114 +33,94 @@ import java.util.Date
 import java.util.Locale
 
 /**
- * Fragment para editar el perfil del usuario.
- * Permite cambiar la foto de perfil y la firma digitalizada.
+ * Fragment para editar el perfil del usuario con funcionalidad de recorte de imágenes.
+ * 
+ * Características principales:
+ * - Captura de imágenes desde cámara y galería
+ * - Recorte profesional con UCrop
+ * - Configuraciones específicas para fotos de perfil (1:1) y firmas (3:1)
+ * - Gestión automática de permisos
+ * - Interfaz de usuario intuitiva
  */
 class EditProfileFragment : Fragment() {
 
+    // ========== CONSTANTES ==========
+    companion object {
+        private const val TAG = "EditProfileFragment"
+        private const val CAMERA_PERMISSION_REQUEST_CODE = 100
+        
+        // Configuraciones de imagen
+        private const val PROFILE_MAX_SIZE = 512
+        private const val SIGNATURE_MAX_WIDTH = 800
+        private const val SIGNATURE_MAX_HEIGHT = 300
+        private const val IMAGE_COMPRESSION_QUALITY = 90
+    }
+
+    // ========== PROPIEDADES ==========
     private var _binding: FragmentEditProfileBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var viewModel: ProfileViewModel
 
-    // Uri de la nueva foto de perfil seleccionada
+    // URIs de las imágenes seleccionadas
     private var selectedPhotoUri: Uri? = null
-    
-    // Uri de la nueva firma seleccionada
     private var selectedSignatureUri: Uri? = null
-    
-    // Uri temporal para la cámara
     private var temporalCameraUri: Uri? = null
     
-    // Flag para recordar si estamos eligiendo para firma o foto de perfil
+    // Estado del flujo de selección
     private var isForSignatureSelection = false
+    private var currentImageType: ImageType = ImageType.PROFILE_PHOTO
     
-    // Request code para permisos de cámara
-    private val CAMERA_PERMISSION_REQUEST_CODE = 100
+    /**
+     * Enum para definir el tipo de imagen que se está procesando
+     */
+    private enum class ImageType {
+        PROFILE_PHOTO,
+        SIGNATURE
+    }
     
-    // Registro para manejar la selección de imágenes de la galería para la foto de perfil
+    // ========== ACTIVITY RESULT LAUNCHERS ==========
+    
+    /** Launcher para seleccionar imagen de galería (foto de perfil) */
     private val pickPhotoLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            result.data?.data?.let { uri ->
-                selectedPhotoUri = uri
-                // Mostrar la foto seleccionada en la UI
-                Glide.with(requireContext())
-                    .load(uri)
-                    .apply(RequestOptions.circleCropTransform())
-                    .into(binding.profileImageView)
-                
-            }
-        }
+        handleGalleryResult(result, ImageType.PROFILE_PHOTO)
     }
     
-    // Registro para manejar la toma de fotos con la cámara para la foto de perfil
+    /** Launcher para capturar imagen con cámara (foto de perfil) */
     private val takePhotoLauncher = registerForActivityResult(
         ActivityResultContracts.TakePicture()
     ) { success ->
-        if (success && temporalCameraUri != null) {
-            selectedPhotoUri = temporalCameraUri
-            // Mostrar la foto tomada en la UI
-            Glide.with(requireContext())
-                .load(temporalCameraUri)
-                .apply(RequestOptions.circleCropTransform())
-                .into(binding.profileImageView)
-            
-        }
+        handleCameraResult(success, ImageType.PROFILE_PHOTO)
     }
     
-    // Registro para manejar la selección de imágenes de la galería para la firma
+    /** Launcher para seleccionar imagen de galería (firma) */
     private val pickSignatureLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            result.data?.data?.let { uri ->
-                selectedSignatureUri = uri
-                // Mostrar la firma seleccionada en la UI
-                Glide.with(requireContext())
-                    .load(uri)
-                    .fitCenter()
-                    .into(binding.signatureImageView)
-                
-            }
-        }
+        handleGalleryResult(result, ImageType.SIGNATURE)
     }
     
-    // Registro para manejar la toma de fotos con la cámara para la firma
+    /** Launcher para capturar imagen con cámara (firma) */
     private val takeSignatureLauncher = registerForActivityResult(
         ActivityResultContracts.TakePicture()
     ) { success ->
-        if (success && temporalCameraUri != null) {
-            selectedSignatureUri = temporalCameraUri
-            // Mostrar la foto tomada como firma en la UI
-            Glide.with(requireContext())
-                .load(temporalCameraUri)
-                .fitCenter()
-                .into(binding.signatureImageView)
-            
-        }
+        handleCameraResult(success, ImageType.SIGNATURE)
     }
     
-    // Registro para solicitar permisos
+    /** Launcher para solicitar permisos de cámara */
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
-        if (isGranted) {
-            // Permiso concedido, proceder con la acción correspondiente
-            if (isForSignatureSelection) {
-                launchCamera(true)
-            } else {
-                launchCamera(false)
-            }
-        } else {
-            // Permiso denegado, mostrar mensaje al usuario
-            Toast.makeText(
-                requireContext(),
-                "Permiso de cámara denegado. No se puede tomar la foto.",
-                Toast.LENGTH_SHORT
-            ).show()
-        }
+        handlePermissionResult(isGranted)
+    }
+    
+    /** Launcher para manejar el resultado del recorte con UCrop */
+    private val cropImageLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        handleCropResult(result)
     }
 
     override fun onCreateView(
@@ -245,44 +227,150 @@ class EditProfileFragment : Fragment() {
         }
     }
     
+    // ========== FUNCIONES PÚBLICAS ==========
+    
     /**
-     * Muestra un diálogo para seleccionar la fuente de la imagen (cámara o galería)
-     * @param isForSignature true si es para la firma, false si es para la foto de perfil
+     * Muestra diálogo para seleccionar fuente de imagen
      */
     private fun showImageSourceDialog(isForSignature: Boolean) {
-        val options = arrayOf("Tomar foto", "Seleccionar de galería")
         isForSignatureSelection = isForSignature
+        val imageType = if (isForSignature) ImageType.SIGNATURE else ImageType.PROFILE_PHOTO
+        val title = if (isForSignature) "Seleccionar firma" else "Seleccionar foto de perfil"
         
         AlertDialog.Builder(requireContext())
-            .setTitle(if (isForSignature) "Seleccionar firma" else "Seleccionar foto")
-            .setItems(options) { _, which ->
-                when (which) {
-                    0 -> { // Tomar foto con la cámara
-                        if (checkCameraPermission()) {
-                            launchCamera(isForSignature)
-                        } else {
-                            requestCameraPermission()
-                        }
-                    }
-                    1 -> { // Seleccionar de galería
-                        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-                        if (isForSignature) {
-                            pickSignatureLauncher.launch(intent)
-                        } else {
-                            pickPhotoLauncher.launch(intent)
-                        }
-                    }
+            .setTitle(title)
+            .setItems(arrayOf("Tomar foto", "Seleccionar de galería")) { _, option ->
+                when (option) {
+                    0 -> handleCameraSelection(imageType)
+                    1 -> handleGallerySelection(imageType)
                 }
             }
-            .setNegativeButton("Cancelar") { dialog, _ -> dialog.dismiss() }
+            .setNegativeButton("Cancelar", null)
             .show()
     }
     
+    // ========== MANEJO DE RESULTADOS ==========
+    
     /**
-     * Verifica si la aplicación tiene permiso para usar la cámara
-     * @return true si tiene permiso, false en caso contrario
+     * Maneja el resultado de selección desde galería
      */
-    private fun checkCameraPermission(): Boolean {
+    private fun handleGalleryResult(result: androidx.activity.result.ActivityResult, imageType: ImageType) {
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.data?.let { uri ->
+                currentImageType = imageType
+                startImageCrop(uri, imageType)
+            }
+        }
+    }
+    
+    /**
+     * Maneja el resultado de captura con cámara
+     */
+    private fun handleCameraResult(success: Boolean, imageType: ImageType) {
+        if (success && temporalCameraUri != null) {
+            currentImageType = imageType
+            startImageCrop(temporalCameraUri!!, imageType)
+        }
+    }
+    
+    /**
+     * Maneja el resultado de solicitud de permisos
+     */
+    private fun handlePermissionResult(isGranted: Boolean) {
+        if (isGranted) {
+            val imageType = if (isForSignatureSelection) ImageType.SIGNATURE else ImageType.PROFILE_PHOTO
+            launchCamera(imageType)
+        } else {
+            showToast("Permiso de cámara requerido para tomar fotos")
+        }
+    }
+    
+    /**
+     * Maneja el resultado del recorte de imagen
+     */
+    private fun handleCropResult(result: androidx.activity.result.ActivityResult) {
+        when (result.resultCode) {
+            Activity.RESULT_OK -> {
+                result.data?.let { intent ->
+                    UCrop.getOutput(intent)?.let { croppedUri ->
+                        displayCroppedImage(croppedUri, currentImageType)
+                        showToast("Imagen recortada exitosamente")
+                    }
+                }
+            }
+            UCrop.RESULT_ERROR -> {
+                result.data?.let { intent ->
+                    val error = UCrop.getError(intent)
+                    Log.e(TAG, "Error en recorte", error)
+                    showToast("Error al recortar imagen")
+                }
+            }
+        }
+    }
+    
+    // ========== FUNCIONES DE SELECCIÓN ==========
+    
+    /**
+     * Maneja la selección de cámara
+     */
+    private fun handleCameraSelection(imageType: ImageType) {
+        if (hasCameraPermission()) {
+            launchCamera(imageType)
+        } else {
+            requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+    
+    /**
+     * Maneja la selección de galería
+     */
+    private fun handleGallerySelection(imageType: ImageType) {
+        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        val launcher = if (imageType == ImageType.PROFILE_PHOTO) pickPhotoLauncher else pickSignatureLauncher
+        launcher.launch(intent)
+    }
+    
+    /**
+     * Lanza la cámara para captura de imagen
+     */
+    private fun launchCamera(imageType: ImageType) {
+        try {
+            temporalCameraUri = createTempImageUri()
+            val launcher = if (imageType == ImageType.PROFILE_PHOTO) takePhotoLauncher else takeSignatureLauncher
+            launcher.launch(temporalCameraUri)
+        } catch (e: IOException) {
+            Log.e(TAG, "Error al crear URI temporal", e)
+            showToast("Error al preparar la cámara")
+        }
+    }
+    
+    // ========== FUNCIONES DE RECORTE DE IMÁGENES (UCROP) ==========
+    
+    /**
+     * Inicia el proceso de recorte de imagen usando UCrop
+     * @param sourceUri URI de la imagen original
+     * @param imageType Tipo de imagen (PROFILE_PHOTO o SIGNATURE)
+     */
+    private fun startImageCrop(sourceUri: Uri, imageType: ImageType) {
+        try {
+            val destinationUri = createDestinationUri(imageType)
+            val uCrop = UCrop.of(sourceUri, destinationUri)
+                .withOptions(createCropOptions(imageType))
+            
+            cropImageLauncher.launch(uCrop.getIntent(requireContext()))
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Error al iniciar recorte", e)
+            showToast("Error al preparar el recorte de imagen")
+        }
+    }
+    
+    // ========== FUNCIONES DE UTILIDAD ==========
+    
+    /**
+     * Verifica si se tienen permisos de cámara
+     */
+    private fun hasCameraPermission(): Boolean {
         return ContextCompat.checkSelfPermission(
             requireContext(), 
             Manifest.permission.CAMERA
@@ -290,43 +378,100 @@ class EditProfileFragment : Fragment() {
     }
     
     /**
-     * Solicita el permiso de cámara al usuario
+     * Muestra un toast con el mensaje especificado
      */
-    private fun requestCameraPermission() {
-        requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+    private fun showToast(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
     
     /**
-     * Inicia la cámara para tomar una foto
-     * @param isForSignature true si es para la firma, false si es para la foto de perfil
+     * Muestra la imagen recortada en la interfaz correspondiente
      */
-    private fun launchCamera(isForSignature: Boolean) {
-        try {
-            temporalCameraUri = createTempImageUri()
-            if (isForSignature) {
-                takeSignatureLauncher.launch(temporalCameraUri)
-            } else {
-                takePhotoLauncher.launch(temporalCameraUri)
+    private fun displayCroppedImage(croppedUri: Uri, imageType: ImageType) {
+        when (imageType) {
+            ImageType.PROFILE_PHOTO -> {
+                selectedPhotoUri = croppedUri
+                Glide.with(requireContext())
+                    .load(croppedUri)
+                    .apply(RequestOptions.circleCropTransform())
+                    .placeholder(R.drawable.ic_person)
+                    .error(R.drawable.ic_person)
+                    .into(binding.profileImageView)
             }
-        } catch (e: IOException) {
-            e.printStackTrace()
-            Toast.makeText(requireContext(), "Error al abrir la cámara", Toast.LENGTH_SHORT).show()
+            
+            ImageType.SIGNATURE -> {
+                selectedSignatureUri = croppedUri
+                Glide.with(requireContext())
+                    .load(croppedUri)
+                    .fitCenter()
+                    .placeholder(R.drawable.dotted_border)
+                    .error(R.drawable.dotted_border)
+                    .into(binding.signatureImageView)
+            }
         }
     }
     
     /**
-     * Crea un URI temporal para guardar la imagen capturada por la cámara
-     * @return URI del archivo temporal
+     * Configura UCrop con modelo único (estilo firma libre)
+     */
+    private fun createCropOptions(imageType: ImageType): UCrop.Options {
+        return UCrop.Options().apply {
+            // Configuración base
+            setCompressionQuality(IMAGE_COMPRESSION_QUALITY)
+            setCompressionFormat(Bitmap.CompressFormat.JPEG)
+            setHideBottomControls(false)
+            setShowCropFrame(true)
+            setShowCropGrid(true)
+            
+            // El status bar se maneja ahora desde el tema Theme.Aquanqa.UCrop
+            setToolbarWidgetColor(ContextCompat.getColor(requireContext(), android.R.color.white))
+            
+            // Ambos con recorte libre como la firma, solo diferente aspecto inicial
+            setFreeStyleCropEnabled(true) // Recorte libre para ambos
+            
+            // Configurar zoom libre desde cualquier punto
+            setMaxScaleMultiplier(10.0f) // Zoom máximo 10x para control detallado
+            setImageToCropBoundsAnimDuration(500) // Animación suave
+            
+            if (imageType == ImageType.PROFILE_PHOTO) {
+                // Foto de perfil: scale y recortable como la firma, pero cuadrado
+                withAspectRatio(1f, 1f) // Sugerencia cuadrada inicial
+                withMaxResultSize(PROFILE_MAX_SIZE, PROFILE_MAX_SIZE) // 512x512
+                setToolbarTitle("Recortar imagen de perfil")
+            } else {
+                // Firma: scale y recortable (comportamiento original)
+                withAspectRatio(3f, 1f) // Sugerencia rectangular inicial
+                withMaxResultSize(SIGNATURE_MAX_WIDTH, SIGNATURE_MAX_HEIGHT) // 800x300
+                setToolbarTitle("Recortar firma digital")
+            }
+            
+            // Color unificado para ambos tipos
+            val toolbarColor = ContextCompat.getColor(requireContext(), R.color.aquanqa_blue)
+            setToolbarColor(toolbarColor)
+            setActiveControlsWidgetColor(toolbarColor)
+        }
+    }
+    
+    /**
+     * Genera URI de destino único para imagen recortada
+     */
+    private fun createDestinationUri(imageType: ImageType): Uri {
+        val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val prefix = if (imageType == ImageType.PROFILE_PHOTO) "PROFILE" else "SIGNATURE"
+        val fileName = "CROPPED_${prefix}_${timestamp}.jpg"
+        return Uri.fromFile(File(requireContext().cacheDir, fileName))
+    }
+    
+    /**
+     * Crea URI temporal para captura de cámara
      */
     @Throws(IOException::class)
     private fun createTempImageUri(): Uri {
-        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-        val imageFileName = "JPEG_${timeStamp}_"
-        val storageDir = requireContext().getExternalFilesDir(null)
+        val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
         val imageFile = File.createTempFile(
-            imageFileName,
+            "TEMP_${timestamp}_",
             ".jpg",
-            storageDir
+            requireContext().getExternalFilesDir(null)
         )
         
         return FileProvider.getUriForFile(

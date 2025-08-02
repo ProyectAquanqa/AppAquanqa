@@ -65,7 +65,7 @@ dependencies {
     // Circle ImageView
     implementation("de.hdodenhof:circleimageview:3.1.0")
 
-    // PhotoView para zoom de imágenes (como Instagram)
+    // PhotoView para zoom de imágenes 
     implementation("com.github.chrisbanes:PhotoView:2.3.0")
 
     // SwipeRefreshLayout
@@ -77,6 +77,9 @@ dependencies {
     // Glide para carga de imágenes
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+    
+    // UCrop para recorte de imágenes
+    implementation("com.github.yalantis:ucrop:2.2.8")
     
     // Retrofit y Gson
     implementation("com.squareup.retrofit2:retrofit:2.9.0")

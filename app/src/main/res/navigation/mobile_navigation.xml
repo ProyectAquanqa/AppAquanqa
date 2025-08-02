@@ -18,10 +18,10 @@
         tools:layout="@layout/fragment_anuncios" />
 
     <fragment
-        android:id="@+id/navigation_beneficios"
-        android:name="com.tecsup.aquanqa.ui.beneficios.BeneficiosFragment"
-        android:label="@string/title_beneficios"
-        tools:layout="@layout/fragment_beneficios" />
+        android:id="@+id/navigation_lunch"
+        android:name="com.tecsup.aquanqa.ui.lunch.LunchFragment"
+        android:label="@string/title_lunch"
+        tools:layout="@layout/fragment_lunch" />
 
     <fragment
         android:id="@+id/navigation_profile"

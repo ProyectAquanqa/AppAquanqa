@@ -4,7 +4,7 @@
     <!-- Textos para la barra de navegación inferior y títulos de las páginas -->
     <string name="title_home">Inicio</string>
     <string name="title_anuncios">Anuncios</string>
-    <string name="title_beneficios">Beneficios</string>
+    <string name="title_lunch">Lunch</string>
     <string name="title_profile">Perfil</string>
     <string name="title_notifications">Notificaciones</string>
 

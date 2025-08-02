@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- NestedScrollView para que todo el contenido se deslice junto -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:scrollbars="none"
+        android:overScrollMode="never">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="20dp"
+            android:paddingTop="24dp"
+            android:paddingBottom="20dp">
+
+            <!-- Título principal -->
+            <TextView
+                android:id="@+id/tv_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Menú de la semana"
+                android:textAlignment="center"
+                android:textSize="24sp"
+                android:textColor="@color/black"
+                android:fontFamily="@font/montserrat_bold"
+                android:layout_marginBottom="20dp" />
+
+            <!-- RecyclerView para los días de la semana -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_lunch_menu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipToPadding="false"
+                android:scrollbars="none"
+                android:overScrollMode="never"
+                android:nestedScrollingEnabled="false"
+                tools:listitem="@layout/item_lunch_day" />
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</layout>

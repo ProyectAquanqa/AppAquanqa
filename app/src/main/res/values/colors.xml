@@ -8,7 +8,9 @@
     <!-- ========== COLORES CORPORATIVOS AQUANQA ========== -->
     <color name="aquanqa_blue">#035594</color>
     <color name="aquanqa_blue_light">#ADC4E6</color>
+    <color name="aquanqa_blue_dark">#024066</color>
     <color name="aquanqa_green">#10B981</color>
+    <color name="aquanqa_green_dark">#0D9968</color>
 
     <!-- ========== COLORES PRIMARIOS ALTERNATIVOS ========== -->
 

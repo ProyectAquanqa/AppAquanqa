@@ -11,9 +11,9 @@
         android:title="@string/title_anuncios" />
 
     <item
-        android:id="@+id/navigation_beneficios"
-        android:icon="@drawable/selector_benefits"
-        android:title="@string/title_beneficios" />
+        android:id="@+id/navigation_lunch"
+        android:icon="@drawable/selector_lunch"
+        android:title="@string/title_lunch" />
 
     <item
         android:id="@+id/navigation_profile"

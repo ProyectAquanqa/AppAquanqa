@@ -34,7 +34,7 @@ class CategoryAdapter(
         "Todos" to R.drawable.ic_home_filled,
         "Anuncios" to R.drawable.ic_announcement_filled,
         "Charlas" to R.drawable.ic_chatbot_modern,
-        "Talleres" to R.drawable.ic_benefits_filled,
+        "Talleres" to R.drawable.ic_lunch_filled,
         "Conferencias" to R.drawable.ic_profile_modern,
         "Noticias" to R.drawable.ic_announcement_outline,
         "Eventos" to R.drawable.ic_badge

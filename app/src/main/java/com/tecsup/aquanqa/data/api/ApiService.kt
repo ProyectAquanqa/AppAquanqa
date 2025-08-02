@@ -273,4 +273,24 @@ interface ApiService {
         @Path("id") tokenId: Int,
         @Body updateData: Map<String, Any>
     ): Response<Unit>
+
+    // ================= ALMUERZOS =================
+    
+    /**
+     * Endpoint para obtener la lista de almuerzos filtrada por días no feriados.
+     * 
+     * Obtiene todos los menús de almuerzo disponibles, excluyendo automáticamente
+     * los días marcados como feriados. Los resultados se ordenan por fecha ascendente.
+     * 
+     * @param token Token de autenticación en formato "Bearer {token}"
+     * @param esFeriado Filtro para excluir feriados (siempre false para días laborables)
+     * @param ordering Campo por el cual ordenar los resultados (por defecto: fecha)
+     * @return Response<List<Almuerzo>> Lista de almuerzos disponibles
+     */
+    @GET("api/almuerzos/")
+    suspend fun getAlmuerzos(
+        @Header("Authorization") token: String,
+        @Query("es_feriado") esFeriado: Boolean = false,
+        @Query("ordering") ordering: String = "fecha"
+    ): Response<List<com.tecsup.aquanqa.ui.lunch.Almuerzo>>
 } 
