@@ -212,7 +212,7 @@
                         android:id="@+id/passwordInputLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Ingresa nueva contraseña (opcional)"
+                        android:hint="Toca para cambiar contraseña"
                         app:boxStrokeColor="@color/border_focus"
                         app:hintTextColor="@color/text_hint"
                         app:boxBackgroundColor="@color/background_input"
@@ -222,19 +222,22 @@
                         app:boxCornerRadiusBottomEnd="8dp"
                         app:startIconDrawable="@drawable/ic_lock_outline"
                         app:startIconTint="@color/aquanqa_blue"
-                        app:passwordToggleEnabled="true"
-                        app:passwordToggleTint="@color/text_hint"
+                        app:endIconDrawable="@drawable/ic_edit"
+                        app:endIconTint="@color/text_hint"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/passwordEditText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:inputType="textPassword"
+                            android:inputType="none"
                             android:textSize="16sp"
                             android:textColor="@color/text_primary"
                             android:fontFamily="@font/montserrat"
-                            android:maxLines="1" />
+                            android:maxLines="1"
+                            android:focusable="false"
+                            android:clickable="true"
+                            android:cursorVisible="false" />
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
 
