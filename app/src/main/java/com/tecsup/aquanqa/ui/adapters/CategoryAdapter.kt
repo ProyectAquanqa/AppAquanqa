@@ -33,7 +33,7 @@ class CategoryAdapter(
     private val categoryIcons = mapOf(
         "Todos" to R.drawable.ic_home_filled,
         "Anuncios" to R.drawable.ic_announcement_filled,
-        "Charlas" to R.drawable.ic_chatbot_modern,
+        "Charlas" to R.drawable.ic_lunch_filled,
         "Talleres" to R.drawable.ic_lunch_filled,
         "Conferencias" to R.drawable.ic_profile_filled,
         "Noticias" to R.drawable.ic_announcement_outline,

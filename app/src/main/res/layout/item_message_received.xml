@@ -28,7 +28,7 @@
         android:layout_height="35dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="4dp"
-        android:src="@drawable/ic_chatboot"
+        android:src="@drawable/ic_chatbot"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/sender_name"
         android:contentDescription="@string/menu_chatbot" />

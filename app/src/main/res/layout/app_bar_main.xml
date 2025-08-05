@@ -79,11 +79,11 @@
         android:layout_marginBottom="88dp"
         android:backgroundTint="@color/primary_blue"
         android:elevation="12dp"
-        app:borderWidth="0dp"
+        app:maxImageSize="40dp"
         app:fabSize="normal"
-        app:rippleColor="@color/ripple_light"
-        app:srcCompat="@drawable/ic_favortite"
-        app:tint="@color/background_primary" />
+        app:tint="@null"
+        app:srcCompat="@drawable/ic_chatbot"
+       />
 
 
     <ProgressBar
