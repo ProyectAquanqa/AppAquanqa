@@ -33,6 +33,7 @@ import android.view.WindowInsetsController
 import com.tecsup.aquanqa.MainActivity
 import com.tecsup.aquanqa.R
 import com.tecsup.aquanqa.data.FirebaseManager
+import com.tecsup.aquanqa.AquanqaApplication
 import com.tecsup.aquanqa.data.SessionManager
 import com.tecsup.aquanqa.data.preferences.UserPreferences
 import kotlinx.coroutines.launch
@@ -288,22 +289,59 @@ class LoginActivity : AppCompatActivity() {
     private fun checkExistingSession() {
         lifecycleScope.launch {
             try {
+                Log.d("LoginActivity", "Verificando sesion existente...")
+                
+                // Obtener AquanqaApplication para acceso completo al sistema
+                val app = application as AquanqaApplication
+                val sessionPersistenceManager = app.getSessionPersistenceManager()
+                
+                // Verificar si necesita recuperacion
+                if (sessionPersistenceManager.needsSessionRecovery()) {
+                    Log.d("LoginActivity", "Sesion necesita recuperacion, intentando...")
+                    
+                    val recoverySuccess = sessionPersistenceManager.performSessionRecovery(sessionManager)
+                    
+                    if (!recoverySuccess) {
+                        Log.w("LoginActivity", "Recuperacion de sesion fallo, requiere relogin")
+                        return@launch
+                    }
+                    
+                    Log.i("LoginActivity", "Recuperacion de sesion exitosa")
+                }
+                
+                // Verificar sesion activa
                 val hasActiveSession = sessionManager.isSessionActive()
                 
                 if (hasActiveSession) {
                     val validToken = sessionManager.getValidAccessToken()
                     
                     if (!validToken.isNullOrEmpty()) {
+                        Log.i("LoginActivity", "Sesion valida encontrada, redirigiendo a MainActivity")
+                        
+                        // Actualizar actividad en persistencia
+                        sessionPersistenceManager.updateLastActive()
+                        
+                        // Verificar salud de sesion
+                        app.checkSessionHealth()
+                        
                         // Hay una sesión válida, ir directamente a MainActivity
                         val intent = Intent(this@LoginActivity, MainActivity::class.java)
                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                         startActivity(intent)
                         finish()
                         return@launch
+                    } else {
+                        Log.w("LoginActivity", "Sesion activa pero sin token valido")
                     }
+                } else {
+                    Log.d("LoginActivity", "No hay sesion activa")
                 }
-                // Si no hay sesión activa, continuar con el flujo normal de login
+                
+                // Si llegamos aqui, no hay sesion valida - continuar con login normal
+                Log.d("LoginActivity", "Continuando con flujo normal de login")
+                
             } catch (e: Exception) {
+                Log.e("LoginActivity", "Error verificando sesion existente", e)
                 // En caso de error, continuar con el flujo normal de login
             }
         }

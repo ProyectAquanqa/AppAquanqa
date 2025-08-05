@@ -1,13 +1,35 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-   Sample backup rules file; uncomment and customize as necessary.
-   See https://developer.android.com/guide/topics/data/autobackup
-   for details.
-   Note: This file is ignored for devices older than API 31
-   See https://developer.android.com/about/versions/12/backup-restore
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Reglas de backup configuradas para Aquanqa
+   Incluye datos seguros y excluye informacion sensible
 -->
 <full-backup-content>
-    <!--
-   <include domain="sharedpref" path="."/>
-   <exclude domain="sharedpref" path="device.xml"/>
--->
+    <!-- INCLUIR: Datos de configuracion y preferencias del usuario -->
+    <include domain="sharedpref" path="user_preferences.preferences_pb"/>
+    
+    <!-- INCLUIR: Datos de persistencia de sesion (sin tokens) -->
+    <include domain="sharedpref" path="session_persistence.preferences_pb"/>
+    
+    <!-- EXCLUIR: Tokens y datos sensibles de autenticacion -->
+    <exclude domain="sharedpref" path="user_preferences.preferences_pb" 
+             requiredFlags="clientSideEncryption"/>
+    
+    <!-- INCLUIR: Configuraciones de la aplicacion -->
+    <include domain="database" path="app_config.db"/>
+    
+    <!-- INCLUIR: Cache de imagenes de perfil (son publicas) -->
+    <include domain="file" path="profile_images/"/>
+    
+    <!-- EXCLUIR: Cache temporal y archivos sensibles -->
+    <exclude domain="cache" path="."/>
+    <exclude domain="no_backup" path="."/>
+    
+    <!-- INCLUIR: Configuraciones de notificaciones -->
+    <include domain="sharedpref" path="notification_preferences.xml"/>
+    
+    <!-- EXCLUIR: Logs que pueden contener informacion sensible -->
+    <exclude domain="file" path="logs/"/>
+    
+    <!-- INCLUIR: Configuraciones de UI y tema -->
+    <include domain="sharedpref" path="ui_preferences.xml"/>
 </full-backup-content>

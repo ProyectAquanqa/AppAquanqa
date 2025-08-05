@@ -4,8 +4,10 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.tecsup.aquanqa.data.utils.JwtDecoder
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -28,6 +30,8 @@ class UserPreferences(private val context: Context) {
         // Claves para las preferencias de autenticación
         private val ACCESS_TOKEN = stringPreferencesKey("access_token")
         private val REFRESH_TOKEN = stringPreferencesKey("refresh_token")
+        private val ACCESS_TOKEN_EXPIRATION = longPreferencesKey("access_token_expiration")
+        private val REFRESH_TOKEN_EXPIRATION = longPreferencesKey("refresh_token_expiration")
         
         // Claves para los datos básicos del usuario
         private val USER_DNI = stringPreferencesKey("user_dni")
@@ -55,6 +59,22 @@ class UserPreferences(private val context: Context) {
      */
     val refreshToken: Flow<String?> = context.dataStore.data.map { preferences ->
         preferences[REFRESH_TOKEN]
+    }
+
+    /**
+     * Flow que emite el timestamp de expiración del token de acceso.
+     * retorna Flow<Long?> Timestamp de expiración en segundos o null si no existe
+     */
+    val accessTokenExpiration: Flow<Long?> = context.dataStore.data.map { preferences ->
+        preferences[ACCESS_TOKEN_EXPIRATION]
+    }
+
+    /**
+     * Flow que emite el timestamp de expiración del token de refresco.
+     * retorna Flow<Long?> Timestamp de expiración en segundos o null si no existe
+     */
+    val refreshTokenExpiration: Flow<Long?> = context.dataStore.data.map { preferences ->
+        preferences[REFRESH_TOKEN_EXPIRATION]
     }
 
     // ================= DATOS DEL USUARIO =================
@@ -109,12 +129,26 @@ class UserPreferences(private val context: Context) {
 
     // metodos de guardado
 
-    //Guarda los tokens de autenticación en el almacenamiento persistente.
-
+    /**
+     * Guarda los tokens de autenticación en el almacenamiento persistente.
+     * También extrae y almacena automáticamente los timestamps de expiración de los tokens JWT.
+     * 
+     * @param accessToken Token de acceso JWT
+     * @param refreshToken Token de refresco JWT
+     */
     suspend fun saveTokens(accessToken: String, refreshToken: String) {
         context.dataStore.edit { preferences ->
             preferences[ACCESS_TOKEN] = accessToken
             preferences[REFRESH_TOKEN] = refreshToken
+            
+            // Extraer y guardar timestamps de expiración
+            JwtDecoder.decodeToken(accessToken)?.let { tokenInfo ->
+                preferences[ACCESS_TOKEN_EXPIRATION] = tokenInfo.expirationTime
+            }
+            
+            JwtDecoder.decodeToken(refreshToken)?.let { tokenInfo ->
+                preferences[REFRESH_TOKEN_EXPIRATION] = tokenInfo.expirationTime
+            }
         }
     }
 
@@ -195,6 +229,53 @@ class UserPreferences(private val context: Context) {
         context.dataStore.edit { preferences ->
             preferences.remove(ACCESS_TOKEN)
             preferences.remove(REFRESH_TOKEN)
+            preferences.remove(ACCESS_TOKEN_EXPIRATION)
+            preferences.remove(REFRESH_TOKEN_EXPIRATION)
+        }
+    }
+
+    /**
+     * Verifica si el token de acceso está expirado o próximo a expirar
+     * 
+     * @param bufferSeconds Segundos de buffer antes de considerar expirado (default: 30s)
+     * @return true si el token está expirado, inválido o próximo a expirar
+     */
+    suspend fun isAccessTokenExpired(bufferSeconds: Long = 30L): Boolean {
+        return try {
+            val token = accessToken.first()
+            JwtDecoder.isTokenExpired(token, bufferSeconds)
+        } catch (e: Exception) {
+            true // Si hay error, considerar expirado
+        }
+    }
+
+    /**
+     * Verifica si el token de refresco está expirado
+     * 
+     * @param bufferSeconds Segundos de buffer antes de considerar expirado (default: 30s)
+     * @return true si el token está expirado, inválido o próximo a expirar
+     */
+    suspend fun isRefreshTokenExpired(bufferSeconds: Long = 30L): Boolean {
+        return try {
+            val token = refreshToken.first()
+            JwtDecoder.isTokenExpired(token, bufferSeconds)
+        } catch (e: Exception) {
+            true // Si hay error, considerar expirado
+        }
+    }
+
+    /**
+     * Verifica si el token de acceso necesita ser refrescado pronto
+     * 
+     * @param thresholdSeconds Umbral en segundos (default: 5 minutos)
+     * @return true si el token expira en menos del threshold especificado
+     */
+    suspend fun shouldRefreshAccessToken(thresholdSeconds: Long = 300L): Boolean {
+        return try {
+            val token = accessToken.first()
+            JwtDecoder.shouldRefreshToken(token, thresholdSeconds)
+        } catch (e: Exception) {
+            true // Si hay error, considerar que necesita refresh
         }
     }
 

@@ -1,19 +1,41 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-   Sample data extraction rules file; uncomment and customize as necessary.
-   See https://developer.android.com/about/versions/12/backup-restore#xml-changes
-   for details.
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Reglas de extraccion de datos para Aquanqa
+   Controla que datos se incluyen en backups en la nube y transferencias
 -->
 <data-extraction-rules>
     <cloud-backup>
-        <!-- TODO: Use <include> and <exclude> to control what is backed up.
-        <include .../>
-        <exclude .../>
-        -->
+        <!-- INCLUIR: Preferencias de usuario seguras -->
+        <include domain="sharedpref" path="user_preferences.preferences_pb"/>
+        <include domain="sharedpref" path="session_persistence.preferences_pb"/>
+        
+        <!-- INCLUIR: Configuraciones de la app -->
+        <include domain="sharedpref" path="notification_preferences.xml"/>
+        <include domain="sharedpref" path="ui_preferences.xml"/>
+        
+        <!-- EXCLUIR: Datos sensibles de autenticacion -->
+        <exclude domain="sharedpref" path="user_preferences.preferences_pb" 
+                 requiredFlags="clientSideEncryption"/>
+        
+        <!-- EXCLUIR: Cache y datos temporales -->
+        <exclude domain="cache" path="."/>
+        <exclude domain="file" path="temp/"/>
+        <exclude domain="file" path="logs/"/>
     </cloud-backup>
-    <!--
+    
     <device-transfer>
-        <include .../>
-        <exclude .../>
+        <!-- Para transferencia entre dispositivos incluir mas datos -->
+        <include domain="sharedpref" path="user_preferences.preferences_pb"/>
+        <include domain="sharedpref" path="session_persistence.preferences_pb"/>
+        <include domain="sharedpref" path="notification_preferences.xml"/>
+        <include domain="sharedpref" path="ui_preferences.xml"/>
+        
+        <!-- INCLUIR: Imagenes de perfil para transferencia -->
+        <include domain="file" path="profile_images/"/>
+        
+        <!-- EXCLUIR: Cache temporal -->
+        <exclude domain="cache" path="."/>
+        <exclude domain="file" path="temp/"/>
+        <exclude domain="file" path="logs/"/>
     </device-transfer>
-    -->
 </data-extraction-rules>

@@ -27,6 +27,7 @@ import com.tecsup.aquanqa.data.LoginDataSource
 import com.tecsup.aquanqa.data.LoginRepository
 import com.tecsup.aquanqa.data.Result
 import com.tecsup.aquanqa.data.SessionManager
+import com.tecsup.aquanqa.data.manager.TokenRefreshManager
 import com.tecsup.aquanqa.data.preferences.UserPreferences
 import com.tecsup.aquanqa.data.repository.UserRepository
 import com.tecsup.aquanqa.databinding.ActivityMainBinding
@@ -48,6 +49,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var profileViewModel: ProfileViewModel
     private lateinit var firebaseManager: FirebaseManager
     private lateinit var notificationPermissionHelper: NotificationPermissionHelper
+    private lateinit var tokenRefreshManager: TokenRefreshManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,6 +69,10 @@ class MainActivity : AppCompatActivity() {
         )
         userRepository = UserRepository(applicationContext, userPreferences)
 
+        // Obtener managers desde AquanqaApplication (ya inicializados)
+        val app = application as AquanqaApplication
+        tokenRefreshManager = app.getTokenRefreshManager()
+        
         // Inicializar el ViewModel compartido
         profileViewModel = ViewModelProvider(this, ProfileViewModelFactory(application)).get(ProfileViewModel::class.java)
 
@@ -74,12 +80,13 @@ class MainActivity : AppCompatActivity() {
         notificationPermissionHelper = NotificationPermissionHelper(this)
         notificationPermissionHelper.initialize()
 
-        // Inicializar Firebase Manager
-        val sessionManager = SessionManager(applicationContext, userPreferences)
-        firebaseManager = FirebaseManager(applicationContext, userPreferences, sessionManager)
+        // Obtener Firebase Manager (ya inicializado en Application)
+        firebaseManager = FirebaseManager(applicationContext, userPreferences, app.getSessionManager())
         
         // Solicitar permisos de notificaciones y luego inicializar Firebase
         requestNotificationPermissionsAndInitializeFirebase()
+        
+        // El monitoreo de tokens ya se inicia automaticamente en Application
 
         binding.appBarMain.fabChatbot.setOnClickListener {
             navController.navigate(R.id.navigation_chatbot)
@@ -188,17 +195,33 @@ class MainActivity : AppCompatActivity() {
     private fun logoutUser() {
         binding.appBarMain.logoutProgressBar.visibility = View.VISIBLE
         lifecycleScope.launch {
-            // Remover token FCM del servidor
-            firebaseManager.unregisterTokenFromServer()
-            // Logout del repositorio
-            loginRepository.logout()
-
-            // Ocultar ProgressBar y navegar a LoginActivity
-            binding.appBarMain.logoutProgressBar.visibility = View.GONE
-            val intent = Intent(this@MainActivity, LoginActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
-            finish()
+            try {
+                Log.d("MainActivity", "Iniciando logout completo")
+                
+                // Obtener AquanqaApplication para limpieza completa
+                val app = application as AquanqaApplication
+                
+                // Remover token FCM del servidor
+                firebaseManager.unregisterTokenFromServer()
+                
+                // Logout del repositorio
+                loginRepository.logout()
+                
+                // Limpieza completa de sesion a nivel de aplicacion
+                app.clearCompleteSession()
+                
+                Log.d("MainActivity", "Logout completo exitoso")
+                
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error durante logout", e)
+            } finally {
+                // Ocultar ProgressBar y navegar a LoginActivity
+                binding.appBarMain.logoutProgressBar.visibility = View.GONE
+                val intent = Intent(this@MainActivity, LoginActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+            }
         }
     }
 
@@ -223,5 +246,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+    }
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        // Detener monitoreo de tokens y limpiar recursos
+        if (::tokenRefreshManager.isInitialized) {
+            tokenRefreshManager.stopTokenMonitoring()
+        }
     }
 }
