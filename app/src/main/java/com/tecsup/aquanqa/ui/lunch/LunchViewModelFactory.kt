@@ -1,5 +1,7 @@
 package com.tecsup.aquanqa.ui.lunch
 
+import com.tecsup.aquanqa.data.repository.LunchRepository
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 

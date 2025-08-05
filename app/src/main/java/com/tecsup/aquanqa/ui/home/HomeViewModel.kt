@@ -5,9 +5,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tecsup.aquanqa.data.Result
-import com.tecsup.aquanqa.data.model.Anuncio
-import com.tecsup.aquanqa.data.model.Category
-import com.tecsup.aquanqa.data.model.PaginationInfo
+import com.tecsup.aquanqa.data.model.content.Anuncio
+import com.tecsup.aquanqa.data.model.content.Category
+import com.tecsup.aquanqa.data.model.common.PaginationInfo
 import com.tecsup.aquanqa.utils.DateUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

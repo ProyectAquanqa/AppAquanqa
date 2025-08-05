@@ -1,10 +1,13 @@
 package com.tecsup.aquanqa.ui.lunch
 
+import com.tecsup.aquanqa.data.model.content.Almuerzo
+import com.tecsup.aquanqa.data.repository.LunchRepository
+import com.tecsup.aquanqa.data.Result as DataResult
+
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tecsup.aquanqa.data.Result
 import kotlinx.coroutines.launch
 
 /**
@@ -59,7 +62,7 @@ class LunchViewModel(
             _error.value = null
             
             when (val result = repository.getAlmuerzos()) {
-                is Result.Success -> {
+                is DataResult.Success -> {
                     val almuerzosList = result.data
                     _almuerzos.value = almuerzosList
                     _isEmpty.value = almuerzosList.isEmpty()
@@ -67,7 +70,7 @@ class LunchViewModel(
                     // Log para debugging
                     println("LunchViewModel: Cargados ${almuerzosList.size} almuerzos")
                 }
-                is Result.Error -> {
+                is DataResult.Error -> {
                     _error.value = "Error al cargar los almuerzos: ${result.exception.message}"
                     _almuerzos.value = emptyList()
                     _isEmpty.value = true

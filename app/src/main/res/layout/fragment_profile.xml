@@ -43,8 +43,8 @@
                         app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CircleImageView"
 
                         app:strokeWidth="3dp"
-                        android:elevation="4dp"
-                        tools:src="@tools:sample/avatars" />
+
+                        tools:src="@drawable/fondo_blue" />
 
                     <!-- Indicador de estado online -->
                     <View

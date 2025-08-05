@@ -1,5 +1,9 @@
 package com.tecsup.aquanqa.ui.lunch
 
+import com.tecsup.aquanqa.data.model.content.Almuerzo
+import com.tecsup.aquanqa.data.repository.LunchRepository
+import com.tecsup.aquanqa.ui.adapters.LunchAdapter
+
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup

@@ -5,7 +5,7 @@ import android.net.Uri
 import com.tecsup.aquanqa.data.Result
 import com.tecsup.aquanqa.data.api.ApiClient
 import com.tecsup.aquanqa.data.api.ApiConfig
-import com.tecsup.aquanqa.data.model.UserProfile
+import com.tecsup.aquanqa.data.model.user.UserProfile
 import com.tecsup.aquanqa.data.preferences.UserPreferences
 import kotlinx.coroutines.flow.first
 import okhttp3.MediaType.Companion.toMediaTypeOrNull

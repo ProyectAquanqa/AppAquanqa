@@ -136,7 +136,7 @@ class MainActivity : AppCompatActivity() {
             binding.appBarMain.bottomNavView.visibility = if (isChatbot) View.GONE else View.VISIBLE
         }
 
-        supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_menu_white)
+        supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_menu)
     }
 
     /**

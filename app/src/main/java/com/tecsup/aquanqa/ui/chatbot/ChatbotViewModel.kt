@@ -1,11 +1,19 @@
 package com.tecsup.aquanqa.ui.chatbot
 
+import com.tecsup.aquanqa.data.repository.ChatbotRepository
+
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tecsup.aquanqa.data.api.ApiClient
-import com.tecsup.aquanqa.ui.chatbot.model.RecommendedQuestion
+import com.tecsup.aquanqa.data.model.chatbot.RecommendedQuestion
+import com.tecsup.aquanqa.data.model.chatbot.Message
+import com.tecsup.aquanqa.data.model.chatbot.ChatItem
+import com.tecsup.aquanqa.utils.ChatSessionManager
+import com.tecsup.aquanqa.utils.ChatMemoryStats
+import com.tecsup.aquanqa.utils.MessageValidator
+import com.tecsup.aquanqa.utils.ValidationResult
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -13,6 +21,7 @@ sealed class ChatUiState {
     object Loading : ChatUiState()
     data class Success(val items: List<ChatItem>) : ChatUiState()
     data class Error(val message: String) : ChatUiState()
+    data class ValidationError(val error: String) : ChatUiState()
 }
 
 class ChatbotViewModel(private val repository: ChatbotRepository) : ViewModel() {
@@ -33,17 +42,34 @@ class ChatbotViewModel(private val repository: ChatbotRepository) : ViewModel() 
 
 
     fun sendMessage(userMessageText: String) {
-        if (userMessageText.isBlank()) return
-
+        // 1. Validar el mensaje de entrada
+        when (val validationResult = MessageValidator.validateMessage(userMessageText)) {
+            is ValidationResult.Error -> {
+                // Emitir estado de error de validación sin añadir mensaje al chat
+                _chatUiState.postValue(ChatUiState.ValidationError(validationResult.error))
+                return
+            }
+            is ValidationResult.Success -> {
+                // Continuar con el mensaje validado y limpio
+                processValidMessage(validationResult.message)
+            }
+        }
+    }
+    
+    /**
+     * Procesa un mensaje que ya ha sido validado.
+     * Separado de sendMessage para mayor claridad.
+     */
+    private fun processValidMessage(validatedMessage: String) {
         // 1. Añadir el mensaje del usuario usando el SessionManager
-        ChatSessionManager.addUserMessage(userMessageText)
+        ChatSessionManager.addUserMessage(validatedMessage)
         
         // 2. Añadir indicador de "escribiendo..." usando el SessionManager
         val loadingId = ChatSessionManager.addLoadingIndicator()
 
         // 3. Lanzar la corrutina para obtener la respuesta del bot
         viewModelScope.launch {
-            val result = repository.postQuery(userMessageText)
+            val result = repository.postQuery(validatedMessage)
             
             // Eliminar el indicador de "escribiendo..."
             ChatSessionManager.removeLoadingIndicator(loadingId)
@@ -74,13 +100,13 @@ class ChatbotViewModel(private val repository: ChatbotRepository) : ViewModel() 
      * 2. Si NO hay recommendedQuestions → obtener las 4 preguntas más frecuentes de la base de datos
      * 3. Si falla todo → mostrar preguntas por defecto
      */
-    private fun addSuggestionsAfterResponse(response: com.tecsup.aquanqa.ui.chatbot.model.ChatbotResponse) {
+    private fun addSuggestionsAfterResponse(response: com.tecsup.aquanqa.data.model.chatbot.ChatbotResponse) {
         viewModelScope.launch {
             val suggestionsToShow = if (response.recommendedQuestions.isNotEmpty()) {
-                // Caso 1: Hay preguntas específicas recomendadas
-                response.recommendedQuestions
+                // Caso 1: Hay preguntas específicas recomendadas (limitar a 4)
+                response.recommendedQuestions.take(4)
             } else {
-                // Caso 2: No hay preguntas específicas, obtener las más frecuentes
+                // Caso 2: No hay preguntas específicas, obtener las 4 más frecuentes
                 repository.getFrequentQuestionsWithFallback().take(4)
             }
 
@@ -101,4 +127,10 @@ class ChatbotViewModel(private val repository: ChatbotRepository) : ViewModel() 
             ChatSessionManager.addSuggestions(fallbackQuestions)
         }
     }
+    
+    /**
+     * Obtiene estadísticas de uso de memoria del chat.
+     * Útil para debugging y monitoreo de performance.
+     */
+    fun getMemoryStats() = ChatSessionManager.getMemoryStats()
 } 

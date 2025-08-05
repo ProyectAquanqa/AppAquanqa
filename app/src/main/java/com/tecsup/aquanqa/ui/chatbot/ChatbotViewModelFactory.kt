@@ -1,5 +1,7 @@
 package com.tecsup.aquanqa.ui.chatbot
 
+import com.tecsup.aquanqa.data.repository.ChatbotRepository
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 

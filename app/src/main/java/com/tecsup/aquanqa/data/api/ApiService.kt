@@ -1,16 +1,16 @@
 package com.tecsup.aquanqa.data.api
 
-import com.tecsup.aquanqa.data.model.Anuncio
-import com.tecsup.aquanqa.data.model.Category
-import com.tecsup.aquanqa.data.model.FcmTokenResponse
-import com.tecsup.aquanqa.data.model.LoginRequest
-import com.tecsup.aquanqa.data.model.LoginResponse
-import com.tecsup.aquanqa.data.model.PaginatedResponse
-import com.tecsup.aquanqa.data.model.RefreshTokenRequest
-import com.tecsup.aquanqa.data.model.RefreshTokenResponse
-import com.tecsup.aquanqa.data.model.UserProfile
-import com.tecsup.aquanqa.ui.chatbot.model.ChatbotRequest
-import com.tecsup.aquanqa.ui.chatbot.model.ChatbotResponse
+import com.tecsup.aquanqa.data.model.content.Anuncio
+import com.tecsup.aquanqa.data.model.content.Category
+import com.tecsup.aquanqa.data.model.user.FcmTokenResponse
+import com.tecsup.aquanqa.data.model.auth.LoginRequest
+import com.tecsup.aquanqa.data.model.auth.LoginResponse
+import com.tecsup.aquanqa.data.model.common.PaginatedResponse
+import com.tecsup.aquanqa.data.model.auth.RefreshTokenRequest
+import com.tecsup.aquanqa.data.model.auth.RefreshTokenResponse
+import com.tecsup.aquanqa.data.model.user.UserProfile
+import com.tecsup.aquanqa.data.model.chatbot.ChatbotRequest
+import com.tecsup.aquanqa.data.model.chatbot.ChatbotResponse
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -219,7 +219,7 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Query("page") page: Int = 1,
         @Query("page_size") pageSize: Int = 20
-    ): Response<List<com.tecsup.aquanqa.data.model.Notification>>
+    ): Response<List<com.tecsup.aquanqa.data.model.content.Notification>>
 
     /**
      * Endpoint para marcar una notificación como leída.
@@ -292,5 +292,5 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Query("es_feriado") esFeriado: Boolean = false,
         @Query("ordering") ordering: String = "fecha"
-    ): Response<List<com.tecsup.aquanqa.ui.lunch.Almuerzo>>
+    ): Response<List<com.tecsup.aquanqa.data.model.content.Almuerzo>>
 } 

@@ -12,7 +12,7 @@
         
         <item
             android:id="@+id/navigation_home"
-            android:icon="@drawable/ic_home_modern"
+            android:icon="@drawable/ic_home_outline"
             android:title="@string/menu_home"
             android:titleCondensed="Inicio" />
             
@@ -26,7 +26,7 @@
             
         <item
             android:id="@+id/navigation_profile"
-            android:icon="@drawable/ic_profile_modern"
+            android:icon="@drawable/ic_profile_filled"
             android:title="@string/menu_profile"
             android:titleCondensed="Perfil" />
             

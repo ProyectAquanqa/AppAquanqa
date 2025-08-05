@@ -8,7 +8,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.tecsup.aquanqa.R
 import com.tecsup.aquanqa.databinding.FragmentProfileBinding
-import com.tecsup.aquanqa.data.model.UserProfile
+import com.tecsup.aquanqa.data.model.user.UserProfile
 import com.tecsup.aquanqa.ui.base.BaseFragment
 
 /**
@@ -96,7 +96,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>() {
             binding.passwordField.root,
             label = "Contraseña",
             value = "••••••••",
-            iconRes = R.drawable.ic_lock_outline,
+            iconRes = R.drawable.ic_lock,
             showActionIcon = true
         )
     }
@@ -112,13 +112,13 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>() {
             Glide.with(requireContext())
                 .load(imageUrl)
                 .apply(RequestOptions.circleCropTransform())
-                .placeholder(R.drawable.ic_person)
-                .error(R.drawable.ic_person)
+                .placeholder(R.drawable.ic_person_outline)
+                .error(R.drawable.ic_person_outline)
                 .into(binding.profileImageView)
         } ?: run {
             // Si no hay foto de perfil, mostrar el icono por defecto
             Glide.with(requireContext())
-                .load(R.drawable.ic_person)
+                .load(R.drawable.ic_person_outline)
                 .apply(RequestOptions.circleCropTransform())
                 .into(binding.profileImageView)
         }

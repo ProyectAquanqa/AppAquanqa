@@ -165,7 +165,7 @@
                 android:textColorHint="@color/text_hint"
                 app:endIconTint="@color/aquanqa_blue"
                 app:errorIconDrawable="@null"
-                app:startIconDrawable="@drawable/ic_lock_outline"
+                app:startIconDrawable="@drawable/ic_lock"
                 app:startIconTint="@color/aquanqa_blue"
 
                  >

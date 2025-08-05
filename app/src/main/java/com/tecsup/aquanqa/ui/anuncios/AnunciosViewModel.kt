@@ -1,11 +1,13 @@
 package com.tecsup.aquanqa.ui.anuncios
 
+import com.tecsup.aquanqa.data.repository.AnunciosRepository
+import com.tecsup.aquanqa.data.Result as DataResult
+
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tecsup.aquanqa.data.Result
-import com.tecsup.aquanqa.data.model.Anuncio
+import com.tecsup.aquanqa.data.model.content.Anuncio
 import kotlinx.coroutines.launch
 
 /**
@@ -48,14 +50,14 @@ class AnunciosViewModel : ViewModel() {
         viewModelScope.launch {
             _isLoading.value = true
             when (val result = repository.getAnuncios()) {
-                is Result.Success -> {
+                is DataResult.Success -> {
                     _anuncios.value = result.data
                     _error.value = "" // Limpiar errores previos
                 }
-                is Result.Error -> {
+                is DataResult.Error -> {
                     _error.value = result.exception.message ?: "Ocurrió un error desconocido"
                 }
-                is Result.Loading -> {
+                is DataResult.Loading -> {
                     // El loading ya se maneja manualmente arriba y abajo
                 }
             }

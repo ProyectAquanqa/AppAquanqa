@@ -5,9 +5,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tecsup.aquanqa.data.Result
-import com.tecsup.aquanqa.data.model.Notification
-import com.tecsup.aquanqa.data.model.NotificationGroup
-import com.tecsup.aquanqa.data.model.NotificationItem
+import com.tecsup.aquanqa.data.model.content.Notification
+import com.tecsup.aquanqa.data.model.content.NotificationGroup
+import com.tecsup.aquanqa.data.model.content.NotificationItem
 
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat

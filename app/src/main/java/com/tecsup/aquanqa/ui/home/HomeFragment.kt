@@ -11,8 +11,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.tecsup.aquanqa.data.Result
 import com.tecsup.aquanqa.data.api.ApiClient
-import com.tecsup.aquanqa.data.model.Anuncio
-import com.tecsup.aquanqa.data.model.Category
+import com.tecsup.aquanqa.data.model.content.Anuncio
+import com.tecsup.aquanqa.data.model.content.Category
 import com.tecsup.aquanqa.data.preferences.UserPreferences
 import com.tecsup.aquanqa.databinding.FragmentHomeBinding
 import com.tecsup.aquanqa.ui.anuncios.AnunciosAdapterWrapper

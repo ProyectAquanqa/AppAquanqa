@@ -43,8 +43,3 @@ La aplicación sigue el patrón de arquitectura MVVM (Model-View-ViewModel):
 Cuando la API esté desplegada en un servidor de producción, deberás actualizar la URL base en:
 `app/src/main/java/com/tecsup/aquanqa/data/api/ApiConfig.kt`
 
-```kotlin
-const val BASE_URL = "https://tu-dominio-de-produccion.com/"
-```
-
-Recuerda también actualizar la configuración de seguridad para usar HTTPS en producción. 

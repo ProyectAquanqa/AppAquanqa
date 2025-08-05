@@ -1,7 +1,7 @@
 package com.tecsup.aquanqa.ui.notifications
 
-import com.tecsup.aquanqa.data.model.Notification
-import com.tecsup.aquanqa.data.model.NotificationType
+import com.tecsup.aquanqa.data.model.content.Notification
+import com.tecsup.aquanqa.data.model.content.NotificationType
 import org.junit.Before
 import org.junit.Test
 

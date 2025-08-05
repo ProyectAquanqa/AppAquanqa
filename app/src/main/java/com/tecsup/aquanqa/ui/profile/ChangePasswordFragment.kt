@@ -9,14 +9,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.textfield.TextInputLayout
 import com.tecsup.aquanqa.R
 import com.tecsup.aquanqa.databinding.BottomSheetChangePasswordBinding
-
-/**
- * Data class para encapsular los datos del cambio de contraseña
- */
-data class PasswordChangeData(
-    val currentPassword: String,
-    val newPassword: String
-)
+import com.tecsup.aquanqa.data.model.user.PasswordChangeData
 
 /**
  * Bottom Sheet Fragment para cambiar la contraseña del usuario.

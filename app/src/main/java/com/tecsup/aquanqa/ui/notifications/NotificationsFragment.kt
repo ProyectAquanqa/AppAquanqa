@@ -1,5 +1,7 @@
 package com.tecsup.aquanqa.ui.notifications
 
+import com.tecsup.aquanqa.data.model.content.NotificationItem
+
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -125,7 +127,7 @@ class NotificationsFragment : BaseFragment<FragmentNotificationsBinding>() {
     /**
      * Muestra el estado de éxito con datos.
      */
-    private fun showSuccessState(notificationItems: List<com.tecsup.aquanqa.data.model.NotificationItem>) {
+    private fun showSuccessState(notificationItems: List<NotificationItem>) {
         android.util.Log.d("NotificationsFragment", "showSuccessState con ${notificationItems.size} items")
         binding.apply {
             progressBar.visibility = View.GONE

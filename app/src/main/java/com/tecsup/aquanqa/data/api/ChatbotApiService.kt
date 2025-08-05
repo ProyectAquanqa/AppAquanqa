@@ -1,10 +1,10 @@
 package com.tecsup.aquanqa.data.api
 
-import com.tecsup.aquanqa.ui.chatbot.model.ApiResponse
-import com.tecsup.aquanqa.ui.chatbot.model.ChatbotRequest
-import com.tecsup.aquanqa.ui.chatbot.model.ChatbotResponse
-import com.tecsup.aquanqa.ui.chatbot.model.RecommendedQuestion
-import com.tecsup.aquanqa.ui.chatbot.model.RecommendedQuestionsResponse
+import com.tecsup.aquanqa.data.model.chatbot.ApiResponse
+import com.tecsup.aquanqa.data.model.chatbot.ChatbotRequest
+import com.tecsup.aquanqa.data.model.chatbot.ChatbotResponse
+import com.tecsup.aquanqa.data.model.chatbot.RecommendedQuestion
+import com.tecsup.aquanqa.data.model.chatbot.RecommendedQuestionsResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
