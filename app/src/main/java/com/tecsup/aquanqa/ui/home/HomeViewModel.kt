@@ -3,6 +3,7 @@ package com.tecsup.aquanqa.ui.home
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.tecsup.aquanqa.data.Result
 import com.tecsup.aquanqa.data.model.content.Anuncio
@@ -18,7 +19,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 
 class HomeViewModel(
-    private val repository: HomeRepository
+    private val repository: com.tecsup.aquanqa.data.repository.HomeRepository
 ) : ViewModel() {
 
     // Estados combinados para mejor performance
@@ -40,12 +41,38 @@ class HomeViewModel(
     val currentDateSpanish: String get() = DateUtils.getCurrentDateInSpanish()
     
     init {
-        // Carga optimizada paralela
+        // Carga optimizada paralela con refresh inteligente
         loadDataOptimized()
     }
     
     /**
-     * Carga optimizada de datos en paralelo para mejor performance
+     * Refresca datos automáticamente cuando la app vuelve del background.
+     * SIEMPRE intenta obtener datos frescos si hay internet.
+     */
+    fun onAppResumed() {
+        viewModelScope.launch {
+            // SIEMPRE intentar refresh para detectar contenido nuevo
+            refreshData(forceRefresh = true)
+        }
+    }
+    
+    /**
+     * Verifica si hay nuevos eventos disponibles y los carga.
+     * Útil para detectar contenido nuevo después de agregar eventos.
+     */
+    fun checkForNewEvents() {
+        viewModelScope.launch {
+            // Invalidar cache para forzar detección de nuevo contenido
+            repository.invalidateCache(invalidateEvents = true)
+            
+            // Recargar eventos de la categoría actual
+            val currentCategory = _selectedCategory.value
+            loadEventsForCategory(currentCategory?.nombre, forceRefresh = true)
+        }
+    }
+    
+    /**
+     * Carga optimizada de datos con cache inteligente
      */
     private fun loadDataOptimized() {
         viewModelScope.launch {
@@ -53,7 +80,7 @@ class HomeViewModel(
             
             try {
                 coroutineScope {
-                    // Cargar datos en paralelo para velocidad máxima
+                    // Cargar datos en paralelo aprovechando el cache inteligente
                     val userNameDeferred = async { loadUserName() }
                     val categoriesDeferred = async { loadCategories() }
                     
@@ -98,12 +125,12 @@ class HomeViewModel(
     }
     
     /**
-     * Carga optimizada de categorías con mejor manejo de errores
+     * Carga optimizada de categorías con cache inteligente
      */
-    private suspend fun loadCategories(): Result<List<Category>> {
+    private suspend fun loadCategories(forceRefresh: Boolean = false): Result<List<Category>> {
         _categoriesState.value = Result.Loading
         return try {
-            val result = repository.getCategories()
+            val result = repository.getCategories(forceRefresh)
             _categoriesState.value = result
             result
         } catch (e: Exception) {
@@ -114,9 +141,9 @@ class HomeViewModel(
     }
     
     /**
-     * Carga optimizada de eventos con mejor manejo de errores y cache
+     * Carga optimizada de eventos con cache inteligente
      */
-    private fun loadEventsForCategory(categoryName: String?) {
+    private fun loadEventsForCategory(categoryName: String?, forceRefresh: Boolean = false) {
         viewModelScope.launch {
             try {
                 _eventsState.value = Result.Loading
@@ -124,7 +151,8 @@ class HomeViewModel(
                 val eventsResult = repository.getFilteredEvents(
                     categoryName = categoryName,
                     page = 1,
-                    pageSize = 30 // Más elementos para menos llamadas
+                    pageSize = 30, // Más elementos para menos llamadas
+                    forceRefresh = forceRefresh
                 )
                 
                 when (eventsResult) {
@@ -156,16 +184,16 @@ class HomeViewModel(
     }
     
     /**
-     * Refresh optimizado que conserva datos válidos durante la carga
+     * Refresh optimizado con cache inteligente que conserva datos válidos durante la carga
      */
-    fun refreshData() {
+    fun refreshData(forceRefresh: Boolean = true) {
         viewModelScope.launch {
             try {
-                // Refrescar cache del repositorio
+                // Refrescar cache del repositorio usando smart refresh
                 repository.refreshAllData()
                 
-                // Recargar solo categorías, los eventos se recargarán automáticamente
-                val categoriesResult = loadCategories()
+                // Recargar categorías con refresh forzado si se solicita
+                val categoriesResult = loadCategories(forceRefresh)
                 
                 if (categoriesResult is Result.Success && categoriesResult.data.isNotEmpty()) {
                     // Mantener categoría seleccionada si sigue existiendo
@@ -180,11 +208,42 @@ class HomeViewModel(
                     }
                     
                     _selectedCategory.value = updatedCategory
-                    loadEventsForCategory(updatedCategory.nombre)
+                    loadEventsForCategory(updatedCategory.nombre, forceRefresh)
                 }
             } catch (e: Exception) {
                 // Error silencioso para no interrumpir la experiencia del usuario
+                // El cache inteligente ya maneja fallbacks automáticamente
             }
         }
+    }
+    
+    /**
+     * Obtiene estadísticas del cache para debugging
+     */
+    fun getCacheStats() = repository.getCacheStats()
+    
+    /**
+     * Invalida cache específico
+     */
+    fun invalidateCache(categoryName: String? = null) {
+        viewModelScope.launch {
+            repository.invalidateCache(categoryName = categoryName)
+        }
+    }
+}
+
+/**
+ * Factory para crear instancias de HomeViewModel con dependencias manuales.
+ */
+class HomeViewModelFactory(
+    private val repository: com.tecsup.aquanqa.data.repository.HomeRepository
+) : ViewModelProvider.Factory {
+    
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return HomeViewModel(repository) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

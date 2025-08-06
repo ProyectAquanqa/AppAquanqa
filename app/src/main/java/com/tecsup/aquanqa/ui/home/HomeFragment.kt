@@ -45,15 +45,26 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         super.onViewCreated(view, savedInstanceState)
     }
 
+    override fun onResume() {
+        super.onResume()
+        // SIEMPRE intentar refresh para detectar contenido nuevo
+        if (::viewModel.isInitialized) {
+            viewModel.onAppResumed()
+        }
+    }
+
     /**
-     * Inicialización optimizada del ViewModel con dependencias reutilizadas
+     * Inicialización optimizada del ViewModel con cache inteligente
      */
     private fun initializeViewModelOptimized() {
         // Reutilizar instancias para mejor performance
         val context = requireContext().applicationContext
         val userPreferences = UserPreferences(context)
         val apiClient = ApiClient.getClient(context)
-        val repository = HomeRepository(apiClient.apiService, userPreferences)
+        val repository = com.tecsup.aquanqa.data.repository.HomeRepository(
+            apiClient.apiService, 
+            userPreferences
+        )
         
         viewModel = ViewModelProvider(
             this,
@@ -65,6 +76,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         super.setupUI()
         // Configuración inicial rápida de UI
         setupInitialUI()
+        setupSwipeRefresh()
     }
     
     /**
@@ -123,7 +135,10 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         
         // Observer de estados de carga global
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            // Manejar estado de carga global si es necesario
+            // Ocultar indicador de pull-to-refresh cuando termine la carga
+            if (!isLoading) {
+                binding.swipeRefreshLayout.isRefreshing = false
+            }
         }
         
         // Observer mejorado de categorías con retry automático
@@ -132,9 +147,13 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
                 is Result.Success -> {
                     categoriesRetryCount = 0 // Reset contador en éxito
                     categoryAdapter.submitList(result.data)
+                    // Ocultar SwipeRefreshLayout cuando las categorías se cargan exitosamente
+                    binding.swipeRefreshLayout.isRefreshing = false
                 }
                 is Result.Error -> {
                     handleCategoriesError(result.exception)
+                    // Ocultar SwipeRefreshLayout también en caso de error
+                    binding.swipeRefreshLayout.isRefreshing = false
                 }
                 is Result.Loading -> {
                     // Mostrar indicador de carga si es necesario
@@ -148,9 +167,13 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
                 is Result.Success -> {
                     eventsRetryCount = 0 // Reset contador en éxito
                     eventsAdapter.submitList(result.data)
+                    // Ocultar SwipeRefreshLayout cuando los eventos se cargan exitosamente
+                    binding.swipeRefreshLayout.isRefreshing = false
                 }
                 is Result.Error -> {
                     handleEventsError(result.exception)
+                    // Ocultar SwipeRefreshLayout también en caso de error
+                    binding.swipeRefreshLayout.isRefreshing = false
                 }
                 is Result.Loading -> {
                     // Mostrar indicador de carga si es necesario
@@ -210,27 +233,52 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
     }
 
     /**
-     * Refresca datos con reset de contadores de retry
+     * Refresca datos con reset de contadores de retry y cache inteligente
      */
-    fun refreshData() {
+    fun refreshData(forceRefresh: Boolean = true) {
         categoriesRetryCount = 0
         eventsRetryCount = 0
-        viewModel.refreshData()
+        viewModel.refreshData(forceRefresh)
     }
-}
-
-/**
- * Factory para crear instancias de HomeViewModel con dependencias manuales.
- */
-class HomeViewModelFactory(
-    private val repository: HomeRepository
-) : ViewModelProvider.Factory {
     
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return HomeViewModel(repository) as T
+    /**
+     * Configura el SwipeRefreshLayout para pull-to-refresh manual.
+     * Permite al usuario refrescar eventos y categorías deslizando hacia abajo.
+     */
+    private fun setupSwipeRefresh() {
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            // Refrescar datos con indicador visual
+            refreshData(forceRefresh = true)
         }
-        throw IllegalArgumentException("Unknown ViewModel class")
+        
+        // Personalizar colores del indicador de refresh
+        binding.swipeRefreshLayout.setColorSchemeResources(
+            android.R.color.holo_blue_bright,
+            android.R.color.holo_green_light,
+            android.R.color.holo_orange_light,
+            android.R.color.holo_red_light
+        )
+    }
+
+    /**
+     * Obtiene estadísticas del cache para debugging
+     */
+    fun getCacheStats() = viewModel.getCacheStats()
+    
+    /**
+     * Invalida cache específico cuando sea necesario
+     */
+    fun invalidateCache(categoryName: String? = null) {
+        viewModel.invalidateCache(categoryName)
+    }
+    
+    /**
+     * Método público para detectar nuevos eventos.
+     * Puede ser llamado desde otros fragments o activities.
+     */
+    fun detectNewEvents() {
+        if (::viewModel.isInitialized) {
+            viewModel.checkForNewEvents()
+        }
     }
 }

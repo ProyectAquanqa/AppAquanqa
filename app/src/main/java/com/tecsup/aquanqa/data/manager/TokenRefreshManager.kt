@@ -31,11 +31,11 @@ class TokenRefreshManager private constructor(
     companion object {
         private const val TAG = "TokenRefreshManager"
         
-        // Intervalo de verificación en milisegundos (cada 2 minutos)
-        private const val CHECK_INTERVAL_MS = 2 * 60 * 1000L
+        // Intervalo de verificación en milisegundos (cada 5 minutos - menos agresivo)
+        private const val CHECK_INTERVAL_MS = 5 * 60 * 1000L
         
-        // Threshold para refresh automático (5 minutos antes de expirar)
-        private const val REFRESH_THRESHOLD_SECONDS = 5 * 60L
+        // Threshold para refresh automático (10 minutos antes de expirar)
+        private const val REFRESH_THRESHOLD_SECONDS = 10 * 60L
         
         @Volatile
         private var INSTANCE: TokenRefreshManager? = null

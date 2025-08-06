@@ -1,26 +1,24 @@
 package com.tecsup.aquanqa.ui.anuncios
 
-import com.tecsup.aquanqa.data.repository.AnunciosRepository
-import com.tecsup.aquanqa.data.Result as DataResult
-
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tecsup.aquanqa.data.model.content.Anuncio
+import com.tecsup.aquanqa.data.preferences.UserPreferences
+import com.tecsup.aquanqa.data.repository.AnunciosRepository
+import com.tecsup.aquanqa.data.Result as DataResult
 import kotlinx.coroutines.launch
 
 /**
- * ViewModel para la pantalla de Anuncios.
- *
- * Sigue el patrón MVVM para separar la lógica de negocio de la UI. Se encarga de:
- * - Solicitar los datos al `AnunciosRepository`.
- * - Exponer el estado de la UI (carga, éxito, error) a través de LiveData.
- * - Mantener los datos de la lista de anuncios, sobreviviendo a cambios de configuración.
+ * ViewModel refactorizado para anuncios con cache híbrido inteligente.
+ * Ahora con persistencia que sobrevive al cierre de la app.
  */
-class AnunciosViewModel : ViewModel() {
+class AnunciosViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = AnunciosRepository()
+    private val userPreferences = UserPreferences(application)
+    private val repository = AnunciosRepository(userPreferences)
 
     // LiveData para exponer la lista de anuncios a la vista.
     private val _anuncios = MutableLiveData<List<Anuncio>>()
@@ -40,16 +38,15 @@ class AnunciosViewModel : ViewModel() {
     }
 
     /**
-     * Carga la lista de anuncios desde el repositorio.
-     *
-     * Utiliza `viewModelScope` para lanzar una corrutina segura, que se cancelará
-     * automáticamente si el ViewModel es destruido. Actualiza los LiveData
-     * correspondientes para reflejar el estado de la operación.
+     * Carga anuncios con cache híbrido inteligente.
+     * Ahora con persistencia que sobrevive al cierre de la app.
+     * 
+     * @param forceRefresh Forzar actualización desde API
      */
-    fun cargarAnuncios() {
+    fun cargarAnuncios(forceRefresh: Boolean = false) {
         viewModelScope.launch {
             _isLoading.value = true
-            when (val result = repository.getAnuncios()) {
+            when (val result = repository.getAnuncios(forceRefresh)) {
                 is DataResult.Success -> {
                     _anuncios.value = result.data
                     _error.value = "" // Limpiar errores previos
@@ -63,5 +60,31 @@ class AnunciosViewModel : ViewModel() {
             }
             _isLoading.value = false
         }
+    }
+
+    /**
+     * Refresca anuncios forzando llamada a la API.
+     * Útil para pull-to-refresh.
+     */
+    fun refreshAnuncios() {
+        cargarAnuncios(forceRefresh = true)
+    }
+
+    /**
+     * Limpia el cache de anuncios y recarga.
+     */
+    fun clearCacheAndReload() {
+        viewModelScope.launch {
+            repository.clearCache()
+            cargarAnuncios(forceRefresh = true)
+        }
+    }
+
+    /**
+     * Método llamado cuando la app vuelve del background.
+     * Refresca anuncios para detectar contenido nuevo inmediatamente.
+     */
+    fun onAppResumed() {
+        refreshAnuncios()
     }
 } 

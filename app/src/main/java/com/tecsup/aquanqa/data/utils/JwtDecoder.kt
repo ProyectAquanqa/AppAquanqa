@@ -110,10 +110,10 @@ object JwtDecoder {
      * Verifica si un token necesita ser refrescado pronto
      * 
      * @param token Token JWT a verificar
-     * @param thresholdSeconds Umbral en segundos para considerar que necesita refresh (default: 5 minutos)
+     * @param thresholdSeconds Umbral en segundos para considerar que necesita refresh (default: 10 minutos)
      * @return true si el token expira en menos del threshold especificado
      */
-    fun shouldRefreshToken(token: String?, thresholdSeconds: Long = 300L): Boolean {
+    fun shouldRefreshToken(token: String?, thresholdSeconds: Long = 600L): Boolean {
         val timeUntilExpiration = getTimeUntilExpiration(token)
         return timeUntilExpiration in 1..thresholdSeconds
     }

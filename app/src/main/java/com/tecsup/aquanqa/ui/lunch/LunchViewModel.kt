@@ -49,26 +49,52 @@ class LunchViewModel(
         // Cargar almuerzos al inicializar el ViewModel
         loadAlmuerzos()
     }
+    
+    /**
+     * Refresca datos automáticamente cuando la app vuelve del background.
+     * SIEMPRE intenta obtener datos frescos si hay internet.
+     */
+    fun onAppResumed() {
+        viewModelScope.launch {
+            // SIEMPRE intentar refresh para detectar contenido nuevo
+            refreshAlmuerzos()
+        }
+    }
+    
+    /**
+     * Verifica si hay nuevos almuerzos disponibles y los carga.
+     * Útil para detectar contenido nuevo después de agregar almuerzos.
+     */
+    fun checkForNewLunches() {
+        viewModelScope.launch {
+            // Limpiar cache y forzar recarga para detectar nuevo contenido
+            repository.clearCache()
+            loadAlmuerzos(forceRefresh = true)
+        }
+    }
 
     /**
-     * Carga la lista de almuerzos desde la API.
+     * Carga la lista de almuerzos con cache persistente inteligente.
      * 
      * Maneja todos los estados posibles: loading, success, error y empty.
      * Los datos se filtran automáticamente para excluir días feriados.
+     * Ahora con cache persistente que sobrevive al cierre de la app.
+     * 
+     * @param forceRefresh Si es true, ignora cache y llama API directamente
      */
-    fun loadAlmuerzos() {
+    fun loadAlmuerzos(forceRefresh: Boolean = false) {
         viewModelScope.launch {
             _isLoading.value = true
             _error.value = null
             
-            when (val result = repository.getAlmuerzos()) {
+            when (val result = repository.getAlmuerzos(forceRefresh)) {
                 is DataResult.Success -> {
                     val almuerzosList = result.data
                     _almuerzos.value = almuerzosList
                     _isEmpty.value = almuerzosList.isEmpty()
                     
                     // Log para debugging
-                    println("LunchViewModel: Cargados ${almuerzosList.size} almuerzos")
+                    println("LunchViewModel: Cargados ${almuerzosList.size} almuerzos (cache persistente)")
                 }
                 is DataResult.Error -> {
                     _error.value = "Error al cargar los almuerzos: ${result.exception.message}"
@@ -90,12 +116,25 @@ class LunchViewModel(
     }
 
     /**
-     * Refresca la lista de almuerzos desde la API.
+     * Refresca la lista de almuerzos forzando llamada a la API.
      * 
      * Útil para implementar pull-to-refresh en la UI.
+     * Ignora cache y obtiene datos frescos del servidor.
      */
     fun refreshAlmuerzos() {
-        loadAlmuerzos()
+        loadAlmuerzos(forceRefresh = true)
+    }
+
+    /**
+     * Limpia el cache de almuerzos y recarga.
+     * 
+     * Útil para debugging o cuando se necesita limpiar datos obsoletos.
+     */
+    fun clearCacheAndReload() {
+        viewModelScope.launch {
+            repository.clearCache()
+            loadAlmuerzos(forceRefresh = true)
+        }
     }
 
     /**

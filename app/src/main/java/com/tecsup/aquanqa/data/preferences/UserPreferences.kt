@@ -42,6 +42,22 @@ class UserPreferences(private val context: Context) {
         
         // Clave para el token FCM
         private val FCM_TOKEN = stringPreferencesKey("fcm_token")
+        
+        // Claves para cache de almuerzos
+        private val CACHED_ALMUERZOS = stringPreferencesKey("cached_almuerzos")
+        private val ALMUERZOS_CACHE_TIME = longPreferencesKey("almuerzos_cache_time")
+        
+        // Claves para cache de categorías
+        private val CACHED_CATEGORIES = stringPreferencesKey("cached_categories")
+        private val CATEGORIES_CACHE_TIME = longPreferencesKey("categories_cache_time")
+        
+        // Claves para fallback de eventos (datos básicos)
+        private val CACHED_EVENTS_FALLBACK = stringPreferencesKey("cached_events_fallback")
+        private val EVENTS_FALLBACK_CACHE_TIME = longPreferencesKey("events_fallback_cache_time")
+        
+        // Claves para fallback de anuncios (datos básicos)
+        private val CACHED_ANUNCIOS_FALLBACK = stringPreferencesKey("cached_anuncios_fallback")
+        private val ANUNCIOS_FALLBACK_CACHE_TIME = longPreferencesKey("anuncios_fallback_cache_time")
     }
 
 
@@ -125,6 +141,70 @@ class UserPreferences(private val context: Context) {
      */
     val fcmToken: Flow<String?> = context.dataStore.data.map { preferences ->
         preferences[FCM_TOKEN]
+    }
+
+    /**
+     * Flow que emite la lista de almuerzos cacheados.
+     * retorna Flow<String?> JSON de almuerzos o null si no existe
+     */
+    val cachedAlmuerzos: Flow<String?> = context.dataStore.data.map { preferences ->
+        preferences[CACHED_ALMUERZOS]
+    }
+
+    /**
+     * Flow que emite el timestamp del cache de almuerzos.
+     * retorna Flow<Long?> Timestamp de cuando se guardaron los almuerzos
+     */
+    val almuerzosCacheTime: Flow<Long?> = context.dataStore.data.map { preferences ->
+        preferences[ALMUERZOS_CACHE_TIME]
+    }
+
+    /**
+     * Flow que emite las categorías cacheadas.
+     * retorna Flow<String?> JSON de categorías o null si no existe
+     */
+    val cachedCategories: Flow<String?> = context.dataStore.data.map { preferences ->
+        preferences[CACHED_CATEGORIES]
+    }
+
+    /**
+     * Flow que emite el timestamp del cache de categorías.
+     * retorna Flow<Long?> Timestamp de cuando se guardaron las categorías
+     */
+    val categoriesCacheTime: Flow<Long?> = context.dataStore.data.map { preferences ->
+        preferences[CATEGORIES_CACHE_TIME]
+    }
+
+    /**
+     * Flow que emite el fallback de eventos (datos básicos).
+     * retorna Flow<String?> JSON de eventos básicos o null si no existe
+     */
+    val cachedEventsFallback: Flow<String?> = context.dataStore.data.map { preferences ->
+        preferences[CACHED_EVENTS_FALLBACK]
+    }
+
+    /**
+     * Flow que emite el timestamp del fallback de eventos.
+     * retorna Flow<Long?> Timestamp de cuando se guardó el fallback
+     */
+    val eventsFallbackCacheTime: Flow<Long?> = context.dataStore.data.map { preferences ->
+        preferences[EVENTS_FALLBACK_CACHE_TIME]
+    }
+
+    /**
+     * Flow que emite el fallback de anuncios (datos básicos).
+     * retorna Flow<String?> JSON de anuncios básicos o null si no existe
+     */
+    val cachedAnunciosFallback: Flow<String?> = context.dataStore.data.map { preferences ->
+        preferences[CACHED_ANUNCIOS_FALLBACK]
+    }
+
+    /**
+     * Flow que emite el timestamp del fallback de anuncios.
+     * retorna Flow<Long?> Timestamp de cuando se guardó el fallback
+     */
+    val anunciosFallbackCacheTime: Flow<Long?> = context.dataStore.data.map { preferences ->
+        preferences[ANUNCIOS_FALLBACK_CACHE_TIME]
     }
 
     // metodos de guardado
@@ -267,10 +347,10 @@ class UserPreferences(private val context: Context) {
     /**
      * Verifica si el token de acceso necesita ser refrescado pronto
      * 
-     * @param thresholdSeconds Umbral en segundos (default: 5 minutos)
+     * @param thresholdSeconds Umbral en segundos (default: 10 minutos - menos agresivo)
      * @return true si el token expira en menos del threshold especificado
      */
-    suspend fun shouldRefreshAccessToken(thresholdSeconds: Long = 300L): Boolean {
+    suspend fun shouldRefreshAccessToken(thresholdSeconds: Long = 600L): Boolean {
         return try {
             val token = accessToken.first()
             JwtDecoder.shouldRefreshToken(token, thresholdSeconds)
@@ -283,5 +363,150 @@ class UserPreferences(private val context: Context) {
 
     suspend fun getFcmToken(): String? {
         return fcmToken.first()
+    }
+
+    // ================= MÉTODOS PARA ALMUERZOS =================
+
+    /**
+     * Guarda la lista de almuerzos en cache persistente.
+     * Serializa la lista a JSON y guarda el timestamp actual.
+     * 
+     * @param almuerzosList Lista de almuerzos a guardar
+     */
+    suspend fun saveAlmuerzos(almuerzosList: String) {
+        context.dataStore.edit { preferences ->
+            preferences[CACHED_ALMUERZOS] = almuerzosList
+            preferences[ALMUERZOS_CACHE_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    /**
+     * Verifica si el cache de almuerzos ha expirado.
+     * Cache de almuerzos dura 2 horas (los menús no cambian frecuentemente).
+     * 
+     * @return true si el cache ha expirado o no existe
+     */
+    suspend fun isAlmuerzosCacheExpired(): Boolean {
+        val cacheTime = almuerzosCacheTime.first() ?: return true
+        val currentTime = System.currentTimeMillis()
+        val cacheAgeMs = currentTime - cacheTime
+        val maxCacheAgeMs = 5 * 60 * 1000L // 5 minutos (muy frecuente)
+        return cacheAgeMs > maxCacheAgeMs
+    }
+
+    /**
+     * Limpia el cache de almuerzos.
+     * Útil cuando se necesita forzar una actualización.
+     */
+    suspend fun clearAlmuerzosCache() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(CACHED_ALMUERZOS)
+            preferences.remove(ALMUERZOS_CACHE_TIME)
+        }
+    }
+
+    // ================= MÉTODOS PARA CATEGORÍAS =================
+
+    /**
+     * Guarda categorías en cache persistente.
+     * Cache duration: 24 horas (categorías cambian muy poco).
+     */
+    suspend fun saveCategories(categoriesJson: String) {
+        context.dataStore.edit { preferences ->
+            preferences[CACHED_CATEGORIES] = categoriesJson
+            preferences[CATEGORIES_CACHE_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    /**
+     * Verifica si el cache de categorías ha expirado.
+     * Cache de categorías dura 24 horas.
+     */
+    suspend fun isCategoriesCacheExpired(): Boolean {
+        val cacheTime = categoriesCacheTime.first() ?: return true
+        val currentTime = System.currentTimeMillis()
+        val cacheAgeMs = currentTime - cacheTime
+        val maxCacheAgeMs = 10 * 60 * 1000L // 10 minutos (muy frecuente)
+        return cacheAgeMs > maxCacheAgeMs
+    }
+
+    /**
+     * Limpia el cache de categorías.
+     */
+    suspend fun clearCategoriesCache() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(CACHED_CATEGORIES)
+            preferences.remove(CATEGORIES_CACHE_TIME)
+        }
+    }
+
+    // ================= MÉTODOS PARA FALLBACK DE EVENTOS =================
+
+    /**
+     * Guarda fallback de eventos (datos básicos sin imágenes).
+     * Para usar cuando no hay internet y cache de memoria está vacío.
+     */
+    suspend fun saveEventsFallback(eventsJson: String) {
+        context.dataStore.edit { preferences ->
+            preferences[CACHED_EVENTS_FALLBACK] = eventsJson
+            preferences[EVENTS_FALLBACK_CACHE_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    /**
+     * Verifica si el fallback de eventos ha expirado.
+     * Fallback dura 6 horas.
+     */
+    suspend fun isEventsFallbackExpired(): Boolean {
+        val cacheTime = eventsFallbackCacheTime.first() ?: return true
+        val currentTime = System.currentTimeMillis()
+        val cacheAgeMs = currentTime - cacheTime
+        val maxCacheAgeMs = 15 * 60 * 1000L // 15 minutos (muy frecuente)
+        return cacheAgeMs > maxCacheAgeMs
+    }
+
+    /**
+     * Limpia el fallback de eventos.
+     */
+    suspend fun clearEventsFallbackCache() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(CACHED_EVENTS_FALLBACK)
+            preferences.remove(EVENTS_FALLBACK_CACHE_TIME)
+        }
+    }
+
+    // ================= MÉTODOS PARA FALLBACK DE ANUNCIOS =================
+
+    /**
+     * Guarda fallback de anuncios (datos básicos sin imágenes).
+     * Para usar cuando no hay internet y cache de memoria está vacío.
+     */
+    suspend fun saveAnunciosFallback(anunciosJson: String) {
+        context.dataStore.edit { preferences ->
+            preferences[CACHED_ANUNCIOS_FALLBACK] = anunciosJson
+            preferences[ANUNCIOS_FALLBACK_CACHE_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    /**
+     * Verifica si el fallback de anuncios ha expirado.
+     * Fallback dura 6 horas.
+     */
+    suspend fun isAnunciosFallbackExpired(): Boolean {
+        val cacheTime = anunciosFallbackCacheTime.first() ?: return true
+        val currentTime = System.currentTimeMillis()
+        val cacheAgeMs = currentTime - cacheTime
+        val maxCacheAgeMs = 15 * 60 * 1000L // 15 minutos (muy frecuente)
+        return cacheAgeMs > maxCacheAgeMs
+    }
+
+    /**
+     * Limpia el fallback de anuncios.
+     */
+    suspend fun clearAnunciosFallbackCache() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(CACHED_ANUNCIOS_FALLBACK)
+            preferences.remove(ANUNCIOS_FALLBACK_CACHE_TIME)
+        }
     }
 } 

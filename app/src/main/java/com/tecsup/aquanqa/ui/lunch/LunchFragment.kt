@@ -95,8 +95,18 @@ class LunchFragment : BaseFragment<FragmentLunchBinding>() {
      * desde la parte superior de la lista.
      */
     private fun setupSwipeRefresh() {
-        // Solo configurar si existe SwipeRefreshLayout en el layout
-        // Si no existe, el pull-to-refresh no estará disponible
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            // Refrescar almuerzos con fuerza cuando el usuario desliza
+            lunchViewModel.refreshAlmuerzos()
+        }
+        
+        // Personalizar colores del indicador de refresh
+        binding.swipeRefreshLayout.setColorSchemeResources(
+            android.R.color.holo_blue_bright,
+            android.R.color.holo_green_light,
+            android.R.color.holo_orange_light,
+            android.R.color.holo_red_light
+        )
     }
 
     /**
@@ -109,6 +119,12 @@ class LunchFragment : BaseFragment<FragmentLunchBinding>() {
      * - Mensajes de error
      * - Estado de lista vacía
      */
+    override fun onResume() {
+        super.onResume()
+        // SIEMPRE intentar refresh para detectar contenido nuevo
+        lunchViewModel.onAppResumed()
+    }
+
     override fun setupObservers() {
         super.setupObservers()
         
@@ -127,6 +143,8 @@ class LunchFragment : BaseFragment<FragmentLunchBinding>() {
                 showLoading()
             } else {
                 hideLoading()
+                // Ocultar indicador de pull-to-refresh cuando termine la carga
+                binding.swipeRefreshLayout.isRefreshing = false
             }
         }
 
@@ -192,6 +210,16 @@ class LunchFragment : BaseFragment<FragmentLunchBinding>() {
      */
     private fun hideEmptyState() {
         binding.rvLunchMenu.visibility = View.VISIBLE
+    }
+
+    /**
+     * Método público para detectar nuevos almuerzos.
+     * Puede ser llamado desde otros fragments o activities.
+     */
+    fun detectNewLunches() {
+        // Como lunchViewModel está inicializado con 'by viewModels', 
+        // siempre está disponible cuando el fragment está activo
+        lunchViewModel.checkForNewLunches()
     }
 
     /**

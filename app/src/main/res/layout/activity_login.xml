@@ -50,7 +50,7 @@
 
                 android:scaleType="centerCrop"
                 app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CircleImageView"
-                android:src="@drawable/logo_aqu"
+                android:src="@drawable/prize_log"
                 />
                  <!-- app:strokeColor="@color/white"
                 app:strokeWidth="3dp"  -->

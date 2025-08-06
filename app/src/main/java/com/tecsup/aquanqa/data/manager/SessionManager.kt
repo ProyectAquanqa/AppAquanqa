@@ -35,23 +35,31 @@ class SessionManager(
             val accessToken = userPreferences.accessToken.first()
             val refreshToken = userPreferences.refreshToken.first()
             
+            Log.v(TAG, "Checking session status - logged in: $isLoggedIn, has access token: ${!accessToken.isNullOrEmpty()}, has refresh token: ${!refreshToken.isNullOrEmpty()}")
+            
             // Verificar que el usuario esté logueado y tenga tokens
             if (!isLoggedIn || accessToken.isNullOrEmpty() || refreshToken.isNullOrEmpty()) {
-                Log.d(TAG, "Session inactive: missing login status or tokens")
+                Log.d(TAG, "Session inactive: missing login status or tokens (logged: $isLoggedIn, access: ${!accessToken.isNullOrEmpty()}, refresh: ${!refreshToken.isNullOrEmpty()})")
                 return false
             }
             
+            // Verificar estado de tokens con logging detallado
+            val accessTokenExpired = userPreferences.isAccessTokenExpired()
+            val refreshTokenExpired = userPreferences.isRefreshTokenExpired()
+            
+            Log.v(TAG, "Token status - access expired: $accessTokenExpired, refresh expired: $refreshTokenExpired")
+            
             // Verificar que el refresh token no esté expirado
             // Si está expirado, la sesión no es válida
-            if (userPreferences.isRefreshTokenExpired()) {
-                Log.d(TAG, "Session inactive: refresh token expired")
+            if (refreshTokenExpired) {
+                Log.w(TAG, "Session inactive: refresh token expired - clearing session")
                 clearSession()
                 return false
             }
             
             // La sesión es activa si tenemos tokens y el refresh token es válido
             // No importa si el access token está expirado, se puede refrescar
-            Log.d(TAG, "Session is active")
+            Log.d(TAG, "Session is active (access token expired: $accessTokenExpired, but can be refreshed)")
             true
             
         } catch (e: Exception) {
@@ -129,9 +137,17 @@ class SessionManager(
             if (response.isSuccessful) {
                 val refreshResponse = response.body()
                 refreshResponse?.access?.let { newAccessToken ->
-                    // Guardar el nuevo token de acceso (manteniendo el mismo refresh token)
-                    userPreferences.saveTokens(newAccessToken, refreshToken)
-                    Log.d(TAG, "Access token refreshed successfully")
+                    // Determinar qué refresh token usar (nuevo si está disponible, o el anterior)
+                    val newRefreshToken = refreshResponse.refresh ?: refreshToken
+                    
+                    // Guardar ambos tokens (access token nuevo y refresh token actualizado)
+                    userPreferences.saveTokens(newAccessToken, newRefreshToken)
+                    
+                    if (refreshResponse.refresh != null) {
+                        Log.d(TAG, "Access token and refresh token refreshed successfully (rotation enabled)")
+                    } else {
+                        Log.d(TAG, "Access token refreshed successfully (using existing refresh token)")
+                    }
                     
                     // Debug: mostrar información del nuevo token
                     Log.d(TAG, JwtDecoder.getTokenDebugInfo(newAccessToken))
@@ -192,6 +208,47 @@ class SessionManager(
         } catch (e: Exception) {
             Log.e(TAG, "Error getting user name", e)
             null
+        }
+    }
+
+    /**
+     * Obtiene información completa de diagnóstico de la sesión
+     * Útil para debuggear problemas de autenticación
+     */
+    suspend fun getSessionDiagnostics(): String {
+        return try {
+            val isLoggedIn = userPreferences.isUserLoggedIn.first()
+            val accessToken = userPreferences.accessToken.first()
+            val refreshToken = userPreferences.refreshToken.first()
+            val accessTokenExpired = userPreferences.isAccessTokenExpired()
+            val refreshTokenExpired = userPreferences.isRefreshTokenExpired()
+            val shouldRefresh = userPreferences.shouldRefreshAccessToken()
+            val userName = getCurrentUserName()
+            val userDni = getCurrentUserDni()
+            
+            buildString {
+                appendLine("=== SESSION DIAGNOSTICS ===")
+                appendLine("User Logged In: $isLoggedIn")
+                appendLine("User Name: $userName")
+                appendLine("User DNI: $userDni")
+                appendLine("Has Access Token: ${!accessToken.isNullOrEmpty()}")
+                appendLine("Has Refresh Token: ${!refreshToken.isNullOrEmpty()}")
+                appendLine("Access Token Expired: $accessTokenExpired")
+                appendLine("Refresh Token Expired: $refreshTokenExpired")
+                appendLine("Should Refresh Access Token: $shouldRefresh")
+                appendLine("Session Active: ${isSessionActive()}")
+                appendLine("")
+                if (!accessToken.isNullOrEmpty()) {
+                    appendLine("Access Token Info:")
+                    appendLine(JwtDecoder.getTokenDebugInfo(accessToken))
+                }
+                if (!refreshToken.isNullOrEmpty()) {
+                    appendLine("Refresh Token Info:")
+                    appendLine(JwtDecoder.getTokenDebugInfo(refreshToken))
+                }
+            }
+        } catch (e: Exception) {
+            "Error generating session diagnostics: ${e.message}"
         }
     }
 } 

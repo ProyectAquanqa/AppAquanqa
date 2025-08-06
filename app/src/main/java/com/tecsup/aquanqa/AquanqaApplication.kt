@@ -9,6 +9,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.tecsup.aquanqa.data.SessionManager
 import com.tecsup.aquanqa.data.api.ApiClient
+import com.tecsup.aquanqa.data.api.RetrofitClient
 import com.tecsup.aquanqa.data.manager.SessionPersistenceManager
 import com.tecsup.aquanqa.data.manager.TokenRefreshManager
 import com.tecsup.aquanqa.data.preferences.UserPreferences
@@ -60,8 +61,14 @@ class AquanqaApplication : Application(), Application.ActivityLifecycleCallbacks
     
     private fun initializeCoreComponents() {
         try {
-            // Inicializar ApiClient
-            ApiClient.getClient(this)
+            // Inicializar ApiClient con capacidades de red robustas
+            val apiClient = ApiClient.getClient(this)
+            
+            // Iniciar monitoreo de conectividad inmediatamente
+            if (apiClient is RetrofitClient) {
+                apiClient.startConnectivityMonitoring()
+                Log.d(TAG, "Connectivity monitoring iniciado")
+            }
             
             // Inicializar managers
             userPreferences = UserPreferences(this)
@@ -69,7 +76,7 @@ class AquanqaApplication : Application(), Application.ActivityLifecycleCallbacks
             sessionManager = SessionManager(this, userPreferences)
             tokenRefreshManager = TokenRefreshManager.getInstance(this)
             
-            Log.d(TAG, "Componentes core inicializados")
+            Log.d(TAG, "Componentes core inicializados con capacidades de red robustas")
         } catch (e: Exception) {
             Log.e(TAG, "Error inicializando componentes core", e)
         }
@@ -143,6 +150,17 @@ class AquanqaApplication : Application(), Application.ActivityLifecycleCallbacks
         applicationScope.launch {
             try {
                 val timeInBackground = sessionPersistenceManager.markAppComingToForeground()
+                
+                // Verificar salud de conectividad al volver a foreground
+                val apiClient = ApiClient.getClient(this@AquanqaApplication)
+                if (apiClient is RetrofitClient) {
+                    val networkHealthy = apiClient.performHealthCheck()
+                    Log.d(TAG, "Network health check: $networkHealthy")
+                    
+                    if (!networkHealthy && sessionManager.isSessionActive()) {
+                        Log.w(TAG, "Network unhealthy but session active - monitoring closely")
+                    }
+                }
                 
                 // Si estuvo mucho tiempo en background, verificar salud de sesion
                 if (timeInBackground > 30 * 60 * 1000) { // 30 minutos
@@ -268,9 +286,48 @@ class AquanqaApplication : Application(), Application.ActivityLifecycleCallbacks
                 sessionPersistenceManager.clearPersistenceData()
                 userPreferences.clear()
                 
+                // Limpiar cache de red
+                val apiClient = ApiClient.getClient(this@AquanqaApplication)
+                if (apiClient is RetrofitClient) {
+                    apiClient.clearNetworkCache()
+                }
+                
                 Log.d(TAG, "Sesion completamente limpiada")
             } catch (e: Exception) {
                 Log.e(TAG, "Error limpiando sesion completa", e)
+            }
+        }
+    }
+    
+    /**
+     * Obtiene estadisticas completas de red y conectividad
+     */
+    fun getNetworkStats(): String {
+        return try {
+            val apiClient = ApiClient.getClient(this)
+            if (apiClient is RetrofitClient) {
+                apiClient.getNetworkStats()
+            } else {
+                "Network stats not available"
+            }
+        } catch (e: Exception) {
+            "Error getting network stats: ${e.message}"
+        }
+    }
+    
+    /**
+     * Fuerza verificacion de salud de red
+     */
+    fun checkNetworkHealth() {
+        applicationScope.launch {
+            try {
+                val apiClient = ApiClient.getClient(this@AquanqaApplication)
+                if (apiClient is RetrofitClient) {
+                    val healthy = apiClient.performHealthCheck()
+                    Log.i(TAG, "Network health check result: $healthy")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error checking network health", e)
             }
         }
     }

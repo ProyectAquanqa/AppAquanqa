@@ -32,6 +32,9 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>() {
             ProfileViewModelFactory(requireActivity().application)
         )[ProfileViewModel::class.java]
         
+        // Configurar SwipeRefreshLayout
+        setupSwipeRefresh()
+        
         // Configurar listeners
         setupListeners()
         
@@ -45,12 +48,35 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>() {
         // Observar cambios en el perfil del usuario
         viewModel.userProfile.observe(viewLifecycleOwner) { userProfile ->
             setupUserProfileData(userProfile)
+            // Ocultar SwipeRefreshLayout cuando se cargan los datos
+            binding.swipeRefreshLayout.isRefreshing = false
         }
         
         // Observar errores
         viewModel.error.observe(viewLifecycleOwner) { error ->
             showError(error)
+            // Ocultar SwipeRefreshLayout también en caso de error
+            binding.swipeRefreshLayout.isRefreshing = false
         }
+    }
+    
+    /**
+     * Configura el SwipeRefreshLayout para pull-to-refresh.
+     * Permite al usuario refrescar el perfil deslizando hacia abajo.
+     */
+    private fun setupSwipeRefresh() {
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            // Refrescar datos del perfil
+            viewModel.loadUserProfile()
+        }
+        
+        // Personalizar colores del indicador de refresh
+        binding.swipeRefreshLayout.setColorSchemeResources(
+            android.R.color.holo_blue_bright,
+            android.R.color.holo_green_light,
+            android.R.color.holo_orange_light,
+            android.R.color.holo_red_light
+        )
     }
     
     override fun onResume() {

@@ -3,20 +3,23 @@ package com.tecsup.aquanqa.ui.anuncios
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import com.tecsup.aquanqa.databinding.FragmentAnunciosBinding
 import com.tecsup.aquanqa.ui.base.BaseFragment
 
 /**
- * Fragmento que muestra la lista de anuncios.
- *
- * Sigue el patrón MVVM, observando los datos expuestos por `AnunciosViewModel`
- * y actualizando la UI en consecuencia. La UI consiste en un `RecyclerView`
- * que se puebla con los datos de los anuncios.
+ * Fragment refactorizado para anuncios con cache híbrido inteligente.
+ * Ahora con persistencia que sobrevive al cierre de la app + imagen por defecto.
  */
 class AnunciosFragment : BaseFragment<FragmentAnunciosBinding>() {
 
-    // Instancia del ViewModel, delegada a la gestión del ciclo de vida del fragmento.
-    private val viewModel: AnunciosViewModel by viewModels()
+    // ViewModel con cache híbrido
+    private val viewModel: AnunciosViewModel by lazy {
+        ViewModelProvider(
+            this,
+            ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().application)
+        )[AnunciosViewModel::class.java]
+    }
 
     private lateinit var adapter: AnunciosAdapter
 
@@ -27,6 +30,7 @@ class AnunciosFragment : BaseFragment<FragmentAnunciosBinding>() {
     override fun setupUI() {
         super.setupUI()
         setupRecyclerView()
+        setupSwipeRefresh()
     }
 
     override fun setupObservers() {
@@ -41,27 +45,71 @@ class AnunciosFragment : BaseFragment<FragmentAnunciosBinding>() {
         adapter = AnunciosAdapter(emptyList())
         binding.rvAnuncios.adapter = adapter
     }
+    
+    /**
+     * Configura el SwipeRefreshLayout para pull-to-refresh.
+     * Permite al usuario refrescar anuncios deslizando hacia abajo.
+     */
+    private fun setupSwipeRefresh() {
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            // Refrescar anuncios con fuerza
+            viewModel.refreshAnuncios()
+        }
+        
+        // Personalizar colores del indicador de refresh
+        binding.swipeRefreshLayout.setColorSchemeResources(
+            android.R.color.holo_blue_bright,
+            android.R.color.holo_green_light,
+            android.R.color.holo_orange_light,
+            android.R.color.holo_red_light
+        )
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // SIEMPRE intentar refresh para detectar contenido nuevo
+        viewModel.refreshAnuncios()
+    }
 
     /**
-     * Configura los observadores para los LiveData del ViewModel.
-     *
-     * - `anuncios`: Cuando la lista de anuncios cambia, se actualiza el adapter.
-     * - `isLoading`: Muestra u oculta una vista de carga (a implementar).
-     * - `error`: Muestra un mensaje de error si la carga falla.
+     * Configura los observadores con cache híbrido inteligente.
+     * Ahora los anuncios persisten al cerrar la app.
      */
     private fun observeViewModel() {
         viewModel.anuncios.observe(viewLifecycleOwner) { anuncios ->
-            // Actualizar el adapter con la nueva lista de anuncios.
+            // Actualizar adapter con anuncios (con imagen por defecto si no hay internet)
             adapter.updateData(anuncios)
+            // Ocultar SwipeRefreshLayout cuando se cargan los datos
+            binding.swipeRefreshLayout.isRefreshing = false
         }
 
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            // Aquí puedes mostrar u ocultar un ProgressBar
-            // binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            // Ocultar SwipeRefreshLayout cuando termine la carga
+            if (!isLoading) {
+                binding.swipeRefreshLayout.isRefreshing = false
+            }
         }
 
         viewModel.error.observe(viewLifecycleOwner) { errorMsg ->
-            showError(errorMsg)
+            if (errorMsg.isNotEmpty()) {
+                showError(errorMsg)
+                // Ocultar SwipeRefreshLayout también en caso de error
+                binding.swipeRefreshLayout.isRefreshing = false
+            }
         }
+    }
+
+    /**
+     * Refresca anuncios con cache híbrido.
+     */
+    fun refreshAnuncios() {
+        viewModel.refreshAnuncios()
+    }
+
+    /**
+     * Limpia cache y recarga (para debugging).
+     */
+    fun clearCacheAndReload() {
+        viewModel.clearCacheAndReload()
     }
 } 
