@@ -15,6 +15,7 @@ import com.tecsup.aquanqa.data.model.user.PasswordChangeData
 import com.tecsup.aquanqa.data.model.user.UserProfile
 import com.tecsup.aquanqa.utils.ImageDisplayHelper
 import com.tecsup.aquanqa.utils.ImagePickerManager
+import com.tecsup.aquanqa.utils.ValidationHelper
 
 /**
  * Fragment para editar el perfil del usuario.
@@ -82,6 +83,11 @@ class EditProfileFragment : Fragment() {
     }
     
     private fun setupObservers() {
+        // ✅ Observar estado de UI consolidado
+        viewModel.uiState.observe(viewLifecycleOwner) { state ->
+            handleUiState(state)
+        }
+        
         viewModel.userProfile.observe(viewLifecycleOwner) { userProfile ->
             populateUserData(userProfile)
             loadImages(userProfile)
@@ -92,14 +98,25 @@ class EditProfileFragment : Fragment() {
                 handleUpdateSuccess()
             }
         }
-
-        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            binding.loadingOverlay.visibility = if (isLoading) View.VISIBLE else View.GONE
-        }
-
-        viewModel.error.observe(viewLifecycleOwner) { error ->
-            if (error.isNotEmpty()) {
-                showToast(error)
+    }
+    
+    /**
+     * ✅ Maneja todos los estados de UI de manera centralizada.
+     */
+    private fun handleUiState(state: ProfileViewModel.ProfileUiState) {
+        when (state) {
+            is ProfileViewModel.ProfileUiState.Idle -> {
+                binding.loadingOverlay.visibility = View.GONE
+            }
+            is ProfileViewModel.ProfileUiState.Loading -> {
+                binding.loadingOverlay.visibility = View.VISIBLE
+            }
+            is ProfileViewModel.ProfileUiState.Success -> {
+                binding.loadingOverlay.visibility = View.GONE
+            }
+            is ProfileViewModel.ProfileUiState.Error -> {
+                binding.loadingOverlay.visibility = View.GONE
+                handleErrorMessage(state.message)
             }
         }
     }
@@ -132,9 +149,52 @@ class EditProfileFragment : Fragment() {
     }
 
     private fun handleUpdateSuccess() {
-        showToast(getString(R.string.profile_updated))
+        showToast("Perfil actualizado correctamente")
         findNavController().popBackStack()
         viewModel.onUpdateFinished()
+    }
+
+    /**
+     * Maneja los mensajes de error mostrándolos en los inputs correspondientes.
+     */
+    private fun handleErrorMessage(errorMessage: String) {
+        when {
+            // Errores específicos de contraseña
+            errorMessage.contains("contraseña actual no es correcta") || 
+            errorMessage.contains("password") && errorMessage.contains("incorrect") -> {
+                binding.passwordInputLayout.error = "La contraseña actual no es correcta"
+                // Limpiar los datos de contraseña para que el usuario los vuelva a ingresar
+                passwordChangeData = null
+                binding.passwordEditText.setText("")
+                binding.passwordInputLayout.helperText = null
+            }
+            
+            // Errores específicos de email
+            errorMessage.contains("email") && (errorMessage.contains("válido") || errorMessage.contains("uso")) -> {
+                binding.emailInputLayout.error = "El email no es válido o ya está en uso"
+            }
+            
+            // Errores generales - mostrar como toast ya que no corresponden a un input específico
+            else -> {
+                val userFriendlyMessage = when {
+                    errorMessage.contains("401") || errorMessage.contains("sesión ha expirado") -> 
+                        "Tu sesión ha expirado. Inicia sesión nuevamente"
+                    errorMessage.contains("network") || errorMessage.contains("conectar") || errorMessage.contains("conexión") -> 
+                        "No hay conexión a internet. Verifica tu conexión"
+                    errorMessage.contains("timeout") || errorMessage.contains("tardó demasiado") -> 
+                        "La operación tardó demasiado tiempo. Intenta nuevamente"
+                    errorMessage.contains("imágenes") && errorMessage.contains("grandes") -> 
+                        "Las imágenes son muy grandes. Elige imágenes más pequeñas"
+                    errorMessage.contains("formato") && errorMessage.contains("imagen") -> 
+                        "Formato de imagen no válido. Usa JPG o PNG"
+                    errorMessage.length < 80 && !errorMessage.contains("Exception") && 
+                    !errorMessage.contains("Error:") && !errorMessage.contains("IOException") -> 
+                        errorMessage
+                    else -> "Error al actualizar el perfil. Intenta nuevamente"
+                }
+                showToast(userFriendlyMessage)
+            }
+        }
     }
     
     private fun setupListeners() {
@@ -154,18 +214,58 @@ class EditProfileFragment : Fragment() {
         binding.passwordEditText.isFocusable = false
         binding.passwordEditText.isClickable = true
 
+        // Validación en tiempo real para email
+        binding.emailEditText.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                validateEmailField()
+            }
+        }
+
         binding.saveButton.setOnClickListener {
             saveProfile()
         }
 
         binding.cancelButton.setOnClickListener {
-            findNavController().popBackStack()
+            // Mostrar confirmación si hay cambios pendientes
+            if (hasUnsavedChanges()) {
+                showCancelConfirmationDialog()
+            } else {
+                findNavController().popBackStack()
+            }
         }
     }
 
     private fun saveProfile() {
-        val newEmail = binding.emailEditText.text.toString().trim()
+        // Limpiar errores previos
+        binding.emailInputLayout.error = null
+        binding.passwordInputLayout.error = null
         
+        // Validar email
+        val newEmail = binding.emailEditText.text.toString().trim()
+        val (isEmailValid, emailError) = ValidationHelper.validateEmail(newEmail)
+        
+        if (!isEmailValid) {
+            binding.emailInputLayout.error = emailError
+            return
+        }
+
+        // Si hay cambio de contraseña, validar que se haya proporcionado la contraseña actual
+        if (passwordChangeData != null) {
+            val currentPassword = passwordChangeData?.currentPassword
+            val newPassword = passwordChangeData?.newPassword
+            
+            if (currentPassword.isNullOrBlank()) {
+                binding.passwordInputLayout.error = "Debes ingresar tu contraseña actual"
+                return
+            }
+            
+            if (newPassword.isNullOrBlank()) {
+                binding.passwordInputLayout.error = "La nueva contraseña no puede estar vacía"
+                return
+            }
+        }
+        
+        // Si todas las validaciones pasan, proceder con la actualización
         viewModel.updateProfile(
             selectedPhotoUri,
             selectedSignatureUri,
@@ -189,7 +289,7 @@ class EditProfileFragment : Fragment() {
                     imageView = binding.profileImageView,
                     imageUri = uri
                 )
-                showToast("Imagen de perfil actualizada")
+                showToast("Imagen de perfil seleccionada")
             }
             ImagePickerManager.ImageType.SIGNATURE -> {
                 selectedSignatureUri = uri
@@ -198,13 +298,54 @@ class EditProfileFragment : Fragment() {
                     imageView = binding.signatureImageView,
                     imageUri = uri
                 )
-                showToast("Firma actualizada")
+                showToast("Firma seleccionada")
             }
         }
     }
 
     private fun showToast(message: String) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+    }
+
+    /**
+     * Valida el campo de email en tiempo real.
+     */
+    private fun validateEmailField() {
+        val email = binding.emailEditText.text.toString().trim()
+        val (isValid, errorMessage) = ValidationHelper.validateEmail(email)
+        
+        if (!isValid) {
+            binding.emailInputLayout.error = errorMessage
+        } else {
+            binding.emailInputLayout.error = null
+        }
+    }
+
+    /**
+     * Verifica si hay cambios sin guardar en el formulario.
+     */
+    private fun hasUnsavedChanges(): Boolean {
+        val currentEmail = binding.emailEditText.text.toString().trim()
+        val originalEmail = viewModel.userProfile.value?.email ?: ""
+        
+        return currentEmail != originalEmail || 
+               selectedPhotoUri != null || 
+               selectedSignatureUri != null || 
+               passwordChangeData != null
+    }
+
+    /**
+     * Muestra un diálogo de confirmación antes de cancelar con cambios pendientes.
+     */
+    private fun showCancelConfirmationDialog() {
+        val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        builder.setTitle("¿Descartar cambios?")
+        builder.setMessage("Tienes cambios sin guardar. ¿Estás seguro de que quieres salir?")
+        builder.setPositiveButton("Descartar") { _, _ ->
+            findNavController().popBackStack()
+        }
+        builder.setNegativeButton("Continuar editando", null)
+        builder.show()
     }
     
     /**
@@ -219,7 +360,10 @@ class EditProfileFragment : Fragment() {
             
             // Actualizar el texto del campo para mostrar que hay una nueva contraseña
             binding.passwordEditText.setText("••••••••") // Mostrar asteriscos
-            binding.passwordInputLayout.helperText = "Nueva contraseña configurada"
+            binding.passwordInputLayout.helperText = "Nueva contraseña configurada - Se verificará al guardar"
+            binding.passwordInputLayout.setHelperTextColor(
+                requireContext().getColorStateList(R.color.aquanqa_blue)
+            )
         }
         
         // Mostrar el bottom sheet

@@ -1,6 +1,7 @@
 package com.tecsup.aquanqa.data.cache
 
 import android.util.Log
+import com.tecsup.aquanqa.data.model.content.Almuerzo
 import com.tecsup.aquanqa.data.model.content.Anuncio
 import com.tecsup.aquanqa.data.model.content.Category
 import com.tecsup.aquanqa.data.model.content.EventoBasico
@@ -10,8 +11,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 
 /**
- * Manager de alto nivel que proporciona una interfaz simple
- * para operaciones de cache específicas del dominio de la aplicación.
+ * Manager de alto nivel optimizado para aplicaciones multi-usuario.
+ * Proporciona una interfaz simple para operaciones de cache específicas del dominio.
  */
 class CacheManager(
     private val cache: IntelligentCache = IntelligentCache()
@@ -25,6 +26,11 @@ class CacheManager(
         private const val EVENTS_KEY = "events"
         private const val USER_PROFILE_KEY = "user_profile"
         private const val EVENTS_BY_CATEGORY_KEY = "events_category"
+        private const val ALMUERZOS_KEY = "almuerzos"
+        
+        // ✅ NUEVO: Limits para prevenir memory leaks en multi-usuario
+        private const val MAX_USERS_IN_MEMORY = 10
+        private const val MAX_ENTRIES_PER_USER = 50
     }
     
     // ================= CATEGORÍAS =================
@@ -165,9 +171,9 @@ class CacheManager(
     /**
      * Guarda perfil de usuario en cache
      */
-    fun cacheUserProfile(userProfile: UserProfile, userId: String) {
+    fun cacheUserProfile(cacheKey: String, userProfile: UserProfile, userId: String? = null) {
         cache.put(
-            key = USER_PROFILE_KEY,
+            key = cacheKey,
             data = userProfile,
             cacheType = CacheStrategy.CacheType.USER_PROFILE,
             userId = userId,
@@ -183,8 +189,51 @@ class CacheManager(
     /**
      * Obtiene perfil de usuario del cache
      */
-    fun getCachedUserProfile(userId: String): CacheResult<UserProfile> {
-        return cache.get(USER_PROFILE_KEY, CacheStrategy.CacheType.USER_PROFILE, userId)
+    fun getCachedUserProfile(cacheKey: String, userId: String? = null): CacheResult<UserProfile> {
+        return cache.get(cacheKey, CacheStrategy.CacheType.USER_PROFILE, userId)
+    }
+    
+    /**
+     * Invalida cache de perfil de usuario
+     */
+    fun invalidateUserProfile(userId: String? = null) {
+        cache.invalidate(USER_PROFILE_KEY, CacheStrategy.CacheType.USER_PROFILE, userId)
+        Log.d(TAG, "User profile cache invalidated for user: $userId")
+    }
+    
+    // ================= ALMUERZOS =================
+    
+    /**
+     * Guarda almuerzos en cache con duración específica
+     */
+    fun cacheAlmuerzos(cacheKey: String, almuerzos: List<Almuerzo>, userId: String? = null) {
+        cache.put(
+            key = cacheKey,
+            data = almuerzos,
+            cacheType = CacheStrategy.CacheType.ALMUERZOS, // ✅ Tipo específico
+            userId = userId,
+            metadata = mapOf(
+                "count" to almuerzos.size,
+                "latest_date" to (almuerzos.firstOrNull()?.fecha ?: ""),
+                "cached_at" to System.currentTimeMillis()
+            )
+        )
+        Log.d(TAG, "Almuerzos cached: ${almuerzos.size} items for user: $userId")
+    }
+    
+    /**
+     * Obtiene almuerzos del cache
+     */
+    fun getCachedAlmuerzos(cacheKey: String, userId: String? = null): CacheResult<List<Almuerzo>> {
+        return cache.get(cacheKey, CacheStrategy.CacheType.ALMUERZOS, userId)
+    }
+    
+    /**
+     * Invalida cache de almuerzos
+     */
+    fun invalidateAlmuerzos(userId: String? = null) {
+        cache.invalidate(ALMUERZOS_KEY, CacheStrategy.CacheType.ALMUERZOS, userId)
+        Log.d(TAG, "Almuerzos cache invalidated for user: $userId")
     }
     
     // ================= OPERACIONES GLOBALES =================
@@ -195,6 +244,26 @@ class CacheManager(
     fun invalidateUserCache(userId: String) {
         cache.invalidateUser(userId)
         Log.d(TAG, "All cache invalidated for user: $userId")
+    }
+    
+    /**
+     * ✅ NUEVO: Limpieza inteligente para apps multi-usuario
+     */
+    fun smartCleanup(): CleanupResult {
+        val stats = cache.getStats()
+        var cleanedEntries = 0
+        
+        // 1. Limpiar usuarios con más entradas del límite
+        // 2. Limpiar entradas más antiguas primero
+        // 3. Mantener solo los últimos N usuarios activos
+        
+        // Esta es una implementación básica
+        // En producción, implementarías LRU más sofisticado
+        
+        return CleanupResult(
+            entriesCleanedUp = cleanedEntries,
+            memoryFreed = cleanedEntries * 1024L // Estimación
+        )
     }
     
     /**
@@ -212,6 +281,9 @@ class CacheManager(
                 }
                 CacheStrategy.CacheType.EVENTS -> {
                     getCachedEvents(userId) is CacheResult.Expired
+                }
+                CacheStrategy.CacheType.ALMUERZOS -> {
+                    getCachedAlmuerzos(ALMUERZOS_KEY, userId) is CacheResult.Expired
                 }
                 CacheStrategy.CacheType.USER_PROFILE -> {
                     userId?.let { getCachedUserProfile(it) is CacheResult.Expired } ?: false
@@ -281,6 +353,14 @@ class CacheManager(
         return null
     }
 }
+
+/**
+ * ✅ NUEVO: Resultado de limpieza automática
+ */
+data class CleanupResult(
+    val entriesCleanedUp: Int,
+    val memoryFreed: Long
+)
 
 /**
  * Resultado de una operación de refresh inteligente

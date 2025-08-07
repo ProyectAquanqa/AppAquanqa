@@ -261,4 +261,67 @@ object NetworkConfig {
             "/session/maintain"
         )
     }
+    
+    /**
+     * ✅ NUEVO: Utilidades simples de conectividad (integradas aquí)
+     * Para casos de uso directos como validación antes de navegación.
+     */
+    object ConnectivityUtils {
+        
+        /**
+         * Verifica si hay conexión a internet disponible.
+         * Compatible con todas las versiones de Android.
+         * 
+         * @param context Contexto de la aplicación
+         * @return true si hay conexión disponible, false en caso contrario
+         */
+        fun isNetworkAvailable(context: android.content.Context): Boolean {
+            val connectivityManager = context.getSystemService(android.content.Context.CONNECTIVITY_SERVICE) 
+                as android.net.ConnectivityManager
+            
+            return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                // API 23+: Usar NetworkCapabilities (recomendado)
+                val network = connectivityManager.activeNetwork ?: return false
+                val networkCapabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+                
+                networkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) ||
+                networkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                networkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_ETHERNET)
+            } else {
+                // API < 23: Usar método legacy
+                @Suppress("DEPRECATION")
+                val activeNetworkInfo = connectivityManager.activeNetworkInfo
+                activeNetworkInfo?.isConnected == true
+            }
+        }
+        
+        /**
+         * Verifica si hay conexión WiFi específicamente.
+         */
+        fun isWifiConnected(context: android.content.Context): Boolean {
+            val connectivityManager = context.getSystemService(android.content.Context.CONNECTIVITY_SERVICE) 
+                as android.net.ConnectivityManager
+            
+            return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                val network = connectivityManager.activeNetwork ?: return false
+                val networkCapabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+                networkCapabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI)
+            } else {
+                @Suppress("DEPRECATION")
+                val activeNetworkInfo = connectivityManager.activeNetworkInfo
+                activeNetworkInfo?.type == android.net.ConnectivityManager.TYPE_WIFI && activeNetworkInfo.isConnected
+            }
+        }
+        
+        /**
+         * Obtiene una descripción legible del tipo de conexión.
+         */
+        fun getConnectionType(context: android.content.Context): String {
+            return when {
+                isWifiConnected(context) -> "WiFi"
+                isNetworkAvailable(context) -> "Datos móviles"
+                else -> "Sin conexión"
+            }
+        }
+    }
 }

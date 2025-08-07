@@ -17,6 +17,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -119,17 +120,14 @@ class LoginActivity : AppCompatActivity() {
         loginViewModel.loginResult.observe(this@LoginActivity, Observer {
             val loginResult = it ?: return@Observer
 
-            // Ocultar el indicador de progreso
+            // Ocultar el indicador de progreso y habilitar controles
             progressBar.visibility = View.GONE
-            
-            // Habilitar el botón de login y los campos de entrada
             btnLogin.isEnabled = true
             textDni.isEnabled = true
             textClave.isEnabled = true
 
             // Manejar el resultado del login
             if (loginResult.error != null) {
-                // Mostrar mensaje de error específico
                 showLoginFailed(loginResult.error)
             }
             
@@ -159,7 +157,6 @@ class LoginActivity : AppCompatActivity() {
         textDni.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                // Limpiar el error cuando el usuario empieza a escribir
                 if (dniLayout.error != null) {
                     dniLayout.error = null
                 }
@@ -170,7 +167,6 @@ class LoginActivity : AppCompatActivity() {
         textClave.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                // Limpiar el error cuando el usuario empieza a escribir
                 if (passwordLayout.error != null) {
                     passwordLayout.error = null
                 }
@@ -207,6 +203,8 @@ class LoginActivity : AppCompatActivity() {
             return // Detener si el formulario no es válido
         }
 
+
+
         // Mostrar indicador de progreso
         progressBar.visibility = View.VISIBLE
         
@@ -224,26 +222,36 @@ class LoginActivity : AppCompatActivity() {
      * @param errorMsg El mensaje de error a mostrar
      */
     private fun showLoginFailed(errorMsg: String) {
-        // Limpiar errores anteriores
+        // Limpiar errores anteriores de los campos
         dniLayout.error = null
         passwordLayout.error = null
 
-        // Determinar qué tipo de mensaje mostrar según el contenido
         when (errorMsg) {
             LoginViewModel.ERROR_USER_NOT_FOUND -> {
-                // Mostrar error en el campo de DNI
                 dniLayout.error = getString(R.string.error_user_not_found)
-                // No verificar la contraseña si el usuario no existe
             }
             LoginViewModel.ERROR_INVALID_PASSWORD -> {
-                // Mostrar error en el campo de contraseña
                 passwordLayout.error = getString(R.string.error_invalid_password)
             }
+            LoginViewModel.ERROR_NETWORK -> {
+                showNetworkErrorSnackbar("Sin conexión a internet")
+            }
+            LoginViewModel.ERROR_SERVER_UNAVAILABLE -> {
+                showNetworkErrorSnackbar("Servidor no disponible")
+            }
             else -> {
-                // Para otros errores, mostrar un mensaje genérico
-                Snackbar.make(findViewById(android.R.id.content), errorMsg, Snackbar.LENGTH_LONG).show()
+                showNetworkErrorSnackbar("Error de conexión")
             }
         }
+    }
+
+    /**
+     * Muestra un Snackbar para errores de red con opción de reintentar
+     */
+    private fun showNetworkErrorSnackbar(message: String) {
+        Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_LONG)
+            .setAction("REINTENTAR") { attemptLogin() }
+            .show()
     }
 
     /**

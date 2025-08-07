@@ -284,6 +284,7 @@ interface ApiService {
      * 
      * @param token Token de autenticación en formato "Bearer {token}"
      * @param esFeriado Filtro para excluir feriados (siempre false para días laborables)
+     * @param active Filtro para obtener solo almuerzos activos (por defecto: true)
      * @param ordering Campo por el cual ordenar los resultados (por defecto: fecha)
      * @return Response<List<Almuerzo>> Lista de almuerzos disponibles
      */
@@ -291,6 +292,7 @@ interface ApiService {
     suspend fun getAlmuerzos(
         @Header("Authorization") token: String,
         @Query("es_feriado") esFeriado: Boolean = false,
+        @Query("active") active: Boolean = true,
         @Query("ordering") ordering: String = "fecha"
     ): Response<List<com.tecsup.aquanqa.data.model.content.Almuerzo>>
 } 

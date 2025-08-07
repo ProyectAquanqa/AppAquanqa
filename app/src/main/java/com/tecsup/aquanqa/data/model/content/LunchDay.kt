@@ -1,24 +1,13 @@
 package com.tecsup.aquanqa.data.model.content
 
 import com.google.gson.annotations.SerializedName
+import com.tecsup.aquanqa.utils.DateUtils
 
 /**
- * Modelo de datos que representa un almuerzo del comedor de Tecsup.
+ * Modelo de datos limpio y optimizado para almuerzos.
  * 
- * Esta clase mapea directamente con la respuesta de la API de almuerzos,
- * incluyendo todos los campos necesarios para mostrar el menú del día
- * y permitir la navegación al link de pedidos.
- * 
- * @property id Identificador único del almuerzo
- * @property fecha Fecha del almuerzo en formato YYYY-MM-DD  
- * @property entrada Plato de entrada del menú
- * @property platoFondo Plato principal del menú
- * @property refresco Bebida incluida en el menú
- * @property esFeriado Indica si ese día es feriado (no se debe mostrar)
- * @property link URL para realizar el pedido del almuerzo
- * @property nombreDia Nombre del día de la semana en español (calculado por la API)
- * @property createdAt Fecha de creación del registro (auditoría)
- * @property updatedAt Fecha de última actualización (auditoría)
+ * Representa un menú diario del comedor con toda la información necesaria
+ * para mostrar en la UI y permitir pedidos.
  */
 data class Almuerzo(
     @SerializedName("id")
@@ -42,12 +31,59 @@ data class Almuerzo(
     @SerializedName("link")
     val link: String?,
     
+    @SerializedName("active")
+    val active: Boolean,
+    
+    @SerializedName("dieta")
+    val dieta: String?,
+    
     @SerializedName("nombre_dia")
     val nombreDia: String,
+    
+    @SerializedName("fecha_formateada")
+    val fechaFormateadaBackend: String?,
     
     @SerializedName("created_at")
     val createdAt: String,
     
     @SerializedName("updated_at") 
     val updatedAt: String
-)
+) {
+    
+    /**
+     * Verifica si el almuerzo está disponible para pedidos.
+     */
+    val isAvailable: Boolean
+        get() = active && !esFeriado
+    
+    /**
+     * Verifica si tiene menú de dieta disponible.
+     */
+    val hasDietMenu: Boolean
+        get() = !dieta.isNullOrBlank()
+    
+    /**
+     * Verifica si tiene link de pedido disponible.
+     */
+    val hasOrderLink: Boolean
+        get() = !link.isNullOrBlank()
+    
+    /**
+     * Mensaje user-friendly del estado del almuerzo.
+     */
+    val statusMessage: String
+        get() = when {
+            esFeriado -> "Día feriado - No hay servicio"
+            !active -> "Menú no disponible"
+            !hasOrderLink -> "Pedidos no habilitados"
+            else -> "Disponible para pedidos"
+        }
+    
+    /**
+     * Fecha formateada para mostrar en la UI como "Lunes 18 de agosto".
+     * Prioriza el formato del backend, fallback a cálculo local.
+     */
+    val fechaFormateada: String
+        get() = fechaFormateadaBackend?.takeIf { it.isNotBlank() } 
+            ?: DateUtils.formatLunchDateFromISO(fecha)
+}

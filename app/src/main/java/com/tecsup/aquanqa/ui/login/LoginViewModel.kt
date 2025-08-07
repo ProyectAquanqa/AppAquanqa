@@ -11,6 +11,8 @@ import com.tecsup.aquanqa.data.LoginRepository
 import com.tecsup.aquanqa.data.Result
 import com.tecsup.aquanqa.data.network.InvalidPasswordException
 import com.tecsup.aquanqa.data.network.UserNotFoundException
+import com.tecsup.aquanqa.data.network.NetworkException
+import com.tecsup.aquanqa.data.network.ServerUnavailableException
 import kotlinx.coroutines.launch
 
 /**
@@ -31,6 +33,8 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
     companion object {
         const val ERROR_USER_NOT_FOUND = "Usuario no registrado"
         const val ERROR_INVALID_PASSWORD = "Contraseña incorrecta"
+        const val ERROR_NETWORK = "NETWORK_ERROR"
+        const val ERROR_SERVER_UNAVAILABLE = "SERVER_UNAVAILABLE"
         const val ERROR_UNKNOWN = "Error desconocido"
         private const val TAG = "LoginViewModel"
     }
@@ -47,32 +51,18 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
                 val result = loginRepository.login(dni, password)
 
                 if (result is Result.Success) {
-                    Log.d(TAG, "Login exitoso para usuario: ${result.data.displayName}")
                     _loginResult.value = LoginResult(success = LoggedInUserView(displayName = result.data.displayName))
                 } else {
-                    // Manejar diferentes tipos de errores
                     val exception = (result as Result.Error).exception
                     
-                    // Log detallado del error
-                    Log.e(TAG, "Error en login. Tipo de excepción: ${exception.javaClass.simpleName}")
-                    
-                    // Verificar primero si el usuario existe, siguiendo la prioridad indicada
                     val errorMessage = when (exception) {
-                        is UserNotFoundException -> {
-                            Log.e(TAG, "Usuario no encontrado: $dni")
-                            ERROR_USER_NOT_FOUND
-                        }
-                        is InvalidPasswordException -> {
-                            Log.e(TAG, "Contraseña incorrecta para: $dni")
-                            ERROR_INVALID_PASSWORD
-                        }
-                        else -> {
-                            Log.e(TAG, "Error desconocido: ${exception.message}")
-                            exception.message ?: ERROR_UNKNOWN
-                        }
+                        is UserNotFoundException -> ERROR_USER_NOT_FOUND
+                        is InvalidPasswordException -> ERROR_INVALID_PASSWORD
+                        is NetworkException -> ERROR_NETWORK
+                        is ServerUnavailableException -> ERROR_SERVER_UNAVAILABLE
+                        else -> exception.message ?: ERROR_UNKNOWN
                     }
                     
-                    Log.e(TAG, "Error final de login: $errorMessage", exception)
                     _loginResult.value = LoginResult(error = errorMessage)
                 }
             } catch (e: Exception) {

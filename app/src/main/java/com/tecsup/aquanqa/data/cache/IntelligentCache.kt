@@ -22,6 +22,9 @@ class IntelligentCache {
     companion object {
         private const val TAG = "IntelligentCache"
         private const val SEPARATOR = "::"
+        // ✅ CRÍTICO: Límites para prevenir memory leaks
+        private const val MAX_CACHE_ENTRIES = 500
+        private const val CLEANUP_THRESHOLD = 450 // Limpiar cuando llegue a 450
     }
     
     /**
@@ -44,6 +47,11 @@ class IntelligentCache {
         )
         
         cacheStorage[fullKey] = entry
+        
+        // ✅ CRÍTICO: Auto-cleanup cuando se alcanza el límite
+        if (cacheStorage.size >= CLEANUP_THRESHOLD) {
+            performAutomaticCleanup()
+        }
         
         // Notificar actualización
         _cacheUpdates.value = CacheUpdateEvent.DataUpdated(fullKey, cacheType)
@@ -168,6 +176,50 @@ class IntelligentCache {
         userId: String?
     ): String {
         return "${cacheType.name}$SEPARATOR${userId ?: "global"}$SEPARATOR$key"
+    }
+    
+    /**
+     * ✅ CRÍTICO: Limpieza automática para prevenir memory leaks
+     */
+    private fun performAutomaticCleanup() {
+        try {
+            val currentTime = System.currentTimeMillis()
+            var removedCount = 0
+            
+            // 1. Remover entradas expiradas primero
+            val expiredKeys = cacheStorage.entries
+                .filter { (_, entry) ->
+                    val type = CacheStrategy.CacheType.values().find { 
+                        entry.toString().contains(it.name) 
+                    } ?: CacheStrategy.CacheType.EVENTS
+                    entry.isExpired(type.duration)
+                }
+                .map { it.key }
+                .take(50) // Máximo 50 entradas por limpieza
+            
+            expiredKeys.forEach { key ->
+                cacheStorage.remove(key)
+                removedCount++
+            }
+            
+            // 2. Si aún hay muchas entradas, remover las más antiguas
+            if (cacheStorage.size > MAX_CACHE_ENTRIES) {
+                val oldestKeys = cacheStorage.entries
+                    .sortedBy { it.value.timestamp }
+                    .take(50)
+                    .map { it.key }
+                
+                oldestKeys.forEach { key ->
+                    cacheStorage.remove(key)
+                    removedCount++
+                }
+            }
+            
+            Log.i(TAG, "Auto-cleanup completed: $removedCount entries removed, ${cacheStorage.size} remaining")
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Error during auto-cleanup: ${e.message}")
+        }
     }
 }
 

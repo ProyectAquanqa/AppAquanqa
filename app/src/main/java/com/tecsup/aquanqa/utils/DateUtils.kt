@@ -82,6 +82,46 @@ object DateUtils {
     }
     
     /**
+     * Formatea una fecha para almuerzos con día y fecha sin año.
+     * 
+     * @param date LocalDate La fecha a formatear
+     * @return String Fecha en formato "Lunes 18 de agosto"
+     */
+    fun formatLunchDate(date: LocalDate): String {
+        val dayOfWeek = daysOfWeekSpanish[date.dayOfWeek.toString()] ?: "Lunes"
+        val dayOfMonth = date.dayOfMonth
+        val month = monthsSpanish[date.monthValue] ?: "enero"
+        
+        return "$dayOfWeek $dayOfMonth de $month"
+    }
+    
+    /**
+     * Convierte fecha ISO de almuerzo a formato para UI.
+     * 
+     * @param isoDateString Fecha en formato "YYYY-MM-DD"
+     * @return String Fecha formateada como "Lunes 18 de agosto"
+     */
+    fun formatLunchDateFromISO(isoDateString: String?): String {
+        if (isoDateString.isNullOrBlank()) return "Fecha no disponible"
+        
+        return try {
+            val parts = isoDateString.split("-")
+            if (parts.size == 3) {
+                val year = parts[0].toInt()
+                val month = parts[1].toInt()
+                val day = parts[2].toInt()
+                
+                val localDate = LocalDate.of(year, month, day)
+                formatLunchDate(localDate)
+            } else {
+                "Fecha inválida"
+            }
+        } catch (e: Exception) {
+            "Fecha inválida"
+        }
+    }
+    
+    /**
      * Obtiene un saludo apropiado según la hora del día.
      * 
      * @return String Saludo apropiado ("Buenos días", "Buenas tardes", "Buenas noches")

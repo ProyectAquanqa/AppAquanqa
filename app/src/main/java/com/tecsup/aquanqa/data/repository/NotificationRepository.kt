@@ -44,7 +44,7 @@ class NotificationRepository(
             if (response.isSuccessful && response.body() != null) {
                 Result.Success(response.body()!!)
             } else {
-                Result.Error(Exception("Error al obtener notificaciones: ${response.code()}"))
+                Result.Error(Exception("Error al obtener notificaciones"))
             }
         } catch (e: Exception) {
             Result.Error(e)

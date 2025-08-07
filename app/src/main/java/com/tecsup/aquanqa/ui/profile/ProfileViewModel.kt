@@ -12,11 +12,12 @@ import com.tecsup.aquanqa.data.api.ApiConfig
 import com.tecsup.aquanqa.data.model.user.UserProfile
 import com.tecsup.aquanqa.data.preferences.UserPreferences
 import com.tecsup.aquanqa.data.repository.UserRepository
+import com.tecsup.aquanqa.utils.ErrorHelper
 import kotlinx.coroutines.launch
 
 /**
- * ViewModel para gestionar la lógica y los datos de la pantalla de perfil del usuario.
- * Se sigue el patrón MVVM, separando la lógica de la UI.
+ * ViewModel optimizado para gestión de perfil con cache híbrido inteligente.
+ * Implementa el mismo patrón que otros ViewModels para consistencia.
  */
 class ProfileViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -27,14 +28,12 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     private val userPreferences = UserPreferences(application)
     private val userRepository = UserRepository(application, userPreferences)
     
-    private val _isLoading = MutableLiveData<Boolean>()
-    val isLoading: LiveData<Boolean> = _isLoading
+    // Estados de UI consolidados
+    private val _uiState = MutableLiveData<ProfileUiState>(ProfileUiState.Idle)
+    val uiState: LiveData<ProfileUiState> = _uiState
     
     private val _userProfile = MutableLiveData<UserProfile>()
     val userProfile: LiveData<UserProfile> = _userProfile
-    
-    private val _error = MutableLiveData<String>()
-    val error: LiveData<String> = _error
     
     private val _updateSuccess = MutableLiveData<Boolean>()
     val updateSuccess: LiveData<Boolean> = _updateSuccess
@@ -44,29 +43,42 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     }
     
     /**
-     * Carga los datos del perfil del usuario desde el repositorio.
-     * Actualiza los LiveData correspondientes (_userProfile, _isLoading, _error).
+     * Carga perfil de usuario con cache híbrido inteligente.
+     * Memoria (rápido) + DataStore fallback (persistente) para máxima disponibilidad.
+     * 
+     * @param forceRefresh Forzar actualización desde API
      */
-    fun loadUserProfile() {
+    fun loadUserProfile(forceRefresh: Boolean = false) {
         viewModelScope.launch {
-            _isLoading.value = true
-            try {
-                when (val result = userRepository.getUserProfile()) {
-                    is Result.Success -> _userProfile.value = result.data
-                    is Result.Error -> _error.value = result.exception.message ?: "Error desconocido al cargar el perfil."
-                    is Result.Loading -> {
-                        // El loading ya se maneja manualmente arriba y abajo
-                    }
-                    else -> {
-                        _error.value = "Error inesperado al cargar el perfil."
-                    }
+            _uiState.value = ProfileUiState.Loading
+            
+            when (val result = userRepository.getUserProfile(forceRefresh)) {
+                is Result.Success -> {
+                    _userProfile.value = result.data
+                    _uiState.value = ProfileUiState.Success
+                    Log.d(TAG, "Profile loaded successfully")
                 }
-            } catch (e: Exception) {
-                _error.value = e.message ?: "Error inesperado al cargar el perfil."
-            } finally {
-                _isLoading.value = false
+                is Result.Error -> {
+                    val errorMessage = ErrorHelper.getErrorMessage(result.exception)
+                    _uiState.value = ProfileUiState.Error(errorMessage)
+                    Log.e(TAG, "Error loading profile: $errorMessage")
+                }
+                is Result.Loading -> {
+                    // El loading ya se maneja arriba
+                }
+                else -> {
+                    _uiState.value = ProfileUiState.Error("Error inesperado al cargar el perfil")
+                }
             }
         }
+    }
+    
+    /**
+     * Refresca datos del perfil forzando llamada a API.
+     */
+    fun refreshProfile() {
+        Log.d(TAG, "Refreshing profile from API")
+        loadUserProfile(forceRefresh = true)
     }
     
     /**
@@ -82,7 +94,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
      */
     fun updateProfile(photoUri: Uri?, signatureUri: Uri?, email: String?, password: String?, currentPassword: String? = null) {
         viewModelScope.launch {
-            _isLoading.value = true
+            _uiState.value = ProfileUiState.Loading
             _updateSuccess.value = false
             var currentProfile: UserProfile? = _userProfile.value
             var textUpdateError: String? = null
@@ -104,8 +116,14 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
             if (textData.isNotEmpty()) {
                 when (val result = userRepository.updateProfileTextData(textData)) {
-                    is Result.Success -> currentProfile = result.data
-                    is Result.Error -> textUpdateError = result.exception.message ?: "Error al actualizar datos de texto"
+                    is Result.Success -> {
+                        currentProfile = result.data
+                        Log.d(TAG, "Profile text data updated successfully")
+                    }
+                    is Result.Error -> {
+                        textUpdateError = result.exception.message ?: "Error al actualizar datos de texto"
+                        Log.e(TAG, "Error updating profile text data: $textUpdateError")
+                    }
                     is Result.Loading -> {
                         // El loading se maneja en el nivel superior
                     }
@@ -117,8 +135,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
             // Si hubo un error en la actualización de texto, lo notificamos y paramos.
             if (textUpdateError != null) {
-                _error.value = textUpdateError
-                _isLoading.value = false
+                _uiState.value = ProfileUiState.Error(textUpdateError)
                 return@launch
             }
             
@@ -127,16 +144,14 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                 when (val result = userRepository.updateProfile(photoUri, signatureUri)) {
                     is Result.Success -> currentProfile = result.data
                     is Result.Error -> {
-                        _error.value = result.exception.message ?: "Error desconocido al subir imágenes."
-                        _isLoading.value = false
+                        _uiState.value = ProfileUiState.Error(result.exception.message ?: "Error desconocido al subir imágenes.")
                         return@launch
                     }
                     is Result.Loading -> {
                         // El loading se maneja en el nivel superior
                     }
                     else -> {
-                        _error.value = "Error inesperado al subir imágenes."
-                        _isLoading.value = false
+                        _uiState.value = ProfileUiState.Error("Error inesperado al subir imágenes.")
                         return@launch
                     }
                 }
@@ -145,7 +160,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             // 3. Finalizar y notificar a la UI
             currentProfile?.let { _userProfile.value = it }
             _updateSuccess.value = true
-            _isLoading.value = false
+            _uiState.value = ProfileUiState.Success
         }
     }
     
@@ -163,5 +178,15 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
      */
     fun getBaseUrl(): String {
         return ApiConfig.MEDIA_URL
+    }
+    
+    /**
+     * Estados de UI consolidados para mejor manejo.
+     */
+    sealed class ProfileUiState {
+        object Idle : ProfileUiState()
+        object Loading : ProfileUiState()
+        object Success : ProfileUiState()
+        data class Error(val message: String) : ProfileUiState()
     }
 } 

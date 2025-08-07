@@ -6,14 +6,16 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import com.google.android.material.snackbar.Snackbar
 import com.tecsup.aquanqa.R
 import com.tecsup.aquanqa.databinding.FragmentProfileBinding
 import com.tecsup.aquanqa.data.model.user.UserProfile
 import com.tecsup.aquanqa.ui.base.BaseFragment
+import com.tecsup.aquanqa.data.api.NetworkConfig
 
 /**
- * Fragment para mostrar el perfil del usuario.
- * Muestra la información del usuario y permite navegar a la pantalla de edición.
+ * Fragment optimizado para mostrar el perfil del usuario con cache híbrido.
+ * Implementa validación de conectividad para navegación a edición.
  */
 class ProfileFragment : BaseFragment<FragmentProfileBinding>() {
 
@@ -37,26 +39,27 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>() {
         
         // Configurar listeners
         setupListeners()
-        
-        // Cargar datos del perfil
-        viewModel.loadUserProfile()
     }
 
     override fun setupObservers() {
         super.setupObservers()
         
-        // Observar cambios en el perfil del usuario
-        viewModel.userProfile.observe(viewLifecycleOwner) { userProfile ->
-            setupUserProfileData(userProfile)
-            // Ocultar SwipeRefreshLayout cuando se cargan los datos
-            binding.swipeRefreshLayout.isRefreshing = false
+        // ✅ PRIMERO: Observar estado de UI (para configurar la vista correctamente)
+        viewModel.uiState.observe(viewLifecycleOwner) { state ->
+            handleUiState(state)
         }
         
-        // Observar errores
-        viewModel.error.observe(viewLifecycleOwner) { error ->
-            showError(error)
-            // Ocultar SwipeRefreshLayout también en caso de error
-            binding.swipeRefreshLayout.isRefreshing = false
+        // ✅ SEGUNDO: Observar datos del perfil
+        viewModel.userProfile.observe(viewLifecycleOwner) { userProfile ->
+            setupUserProfileData(userProfile)
+        }
+        
+        // Observar éxito de actualización
+        viewModel.updateSuccess.observe(viewLifecycleOwner) { success ->
+            if (success) {
+                showToast("Perfil actualizado exitosamente")
+                viewModel.onUpdateFinished()
+            }
         }
     }
     
@@ -66,8 +69,8 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>() {
      */
     private fun setupSwipeRefresh() {
         binding.swipeRefreshLayout.setOnRefreshListener {
-            // Refrescar datos del perfil
-            viewModel.loadUserProfile()
+            // ✅ Usar método de refresh específico
+            viewModel.refreshProfile()
         }
         
         // Personalizar colores del indicador de refresh
@@ -81,8 +84,8 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>() {
     
     override fun onResume() {
         super.onResume()
-        // Recargar perfil al regresar al fragmento (por ejemplo, después de editar)
-        if (::viewModel.isInitialized) {
+        // ✅ Solo recargar si es necesario (evitar llamadas innecesarias)
+        if (::viewModel.isInitialized && viewModel.userProfile.value == null) {
             viewModel.loadUserProfile()
         }
     }
@@ -166,11 +169,60 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>() {
 
     
     private fun setupListeners() {
-        // Configurar botón de edición
+        // ✅ Configurar botón de edición con validación de conectividad
         binding.editButton.setOnClickListener {
-            // Navegar al fragmento de edición de perfil
-            findNavController().navigate(R.id.action_navigation_profile_to_editProfileFragment)
+            navigateToEditProfile()
         }
+    }
+    
+    /**
+     * ✅ Maneja todos los estados de UI de manera centralizada y clara.
+     */
+    private fun handleUiState(state: ProfileViewModel.ProfileUiState) {
+        when (state) {
+            is ProfileViewModel.ProfileUiState.Idle -> {
+                binding.swipeRefreshLayout.isRefreshing = false
+            }
+            is ProfileViewModel.ProfileUiState.Loading -> {
+                binding.swipeRefreshLayout.isRefreshing = true
+            }
+            is ProfileViewModel.ProfileUiState.Success -> {
+                binding.swipeRefreshLayout.isRefreshing = false
+            }
+            is ProfileViewModel.ProfileUiState.Error -> {
+                binding.swipeRefreshLayout.isRefreshing = false
+                showProfileError(state.message)
+            }
+        }
+    }
+    
+    /**
+     * ✅ CRÍTICO: Valida conectividad antes de navegar a edición.
+     * Solo permite entrar al fragment de edición si hay conexión.
+     */
+    private fun navigateToEditProfile() {
+        if (NetworkConfig.ConnectivityUtils.isNetworkAvailable(requireContext())) {
+            // ✅ HAY CONEXIÓN: Permitir navegación
+            findNavController().navigate(R.id.action_navigation_profile_to_editProfileFragment)
+        } else {
+            // ❌ SIN CONEXIÓN: Mostrar error y NO navegar
+            Snackbar.make(
+                binding.root, 
+                "Error de conexión. No se puede editar el perfil sin internet.", 
+                Snackbar.LENGTH_LONG
+            ).show()
+        }
+    }
+    
+    /**
+     * Muestra errores específicos del perfil sin conflicto con BaseFragment.
+     */
+    private fun showProfileError(message: String) {
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG)
+            .setAction("Reintentar") { 
+                viewModel.refreshProfile() 
+            }
+            .show()
     }
 
 

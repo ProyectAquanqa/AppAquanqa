@@ -17,7 +17,7 @@
         android:fontFamily="@font/montserrat_bold"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        tools:text="Lunes" />
+        tools:text="Lunes 18 de agosto" />
 
     <!-- Card con el menú del día -->
     <androidx.cardview.widget.CardView
@@ -107,6 +107,20 @@
                     android:fontFamily="@font/montserrat"
                     android:lineSpacingExtra="3dp"
                     tools:text="Bebida: Limonada" />
+
+                <TextView
+                    android:id="@+id/tv_dieta"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/montserrat"
+                    android:lineSpacingExtra="3dp"
+                    android:visibility="gone"
+                    tools:text="*Dieta: Ensalada verde"
+                    tools:visibility="visible"
+                    />
 
             </LinearLayout>
 

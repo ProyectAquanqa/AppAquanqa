@@ -55,7 +55,7 @@ class HomeRepository(
             
             // Verificar cache primero (si no es refresh forzado)
             if (!forceRefresh) {
-                when (val cacheResult = cacheManager.getCachedUserProfile(userId)) {
+                when (val cacheResult = cacheManager.getCachedUserProfile("user_profile", userId)) {
                     is CacheResult.Hit -> {
                         Log.d(TAG, "User profile from cache (${cacheResult.source})")
                         return Result.Success(cacheResult.data)
@@ -83,13 +83,13 @@ class HomeRepository(
                 )
                 
                 // Guardar en cache inteligente
-                cacheManager.cacheUserProfile(userProfile, userId)
+                cacheManager.cacheUserProfile("user_profile", userProfile, userId)
                 
                 Log.d(TAG, "User profile updated from API and cached")
                 Result.Success(userProfile)
             } else {
                 // Si hay datos expirados en cache, usarlos como fallback
-                when (val cacheResult = cacheManager.getCachedUserProfile(userId)) {
+                when (val cacheResult = cacheManager.getCachedUserProfile("user_profile", userId)) {
                     is CacheResult.Expired -> {
                         Log.w(TAG, "API failed, using expired cache as fallback")
                         Result.Success(cacheResult.data)
@@ -100,7 +100,7 @@ class HomeRepository(
         } catch (e: Exception) {
             // Intentar usar cache expirado como último recurso
             val userId = getCurrentUserId()
-            when (val cacheResult = cacheManager.getCachedUserProfile(userId)) {
+            when (val cacheResult = cacheManager.getCachedUserProfile("user_profile", userId)) {
                 is CacheResult.Expired -> {
                     Log.w(TAG, "Network error, using expired cache as fallback: ${e.message}")
                     Result.Success(cacheResult.data)

@@ -58,6 +58,10 @@ class UserPreferences(private val context: Context) {
         // Claves para fallback de anuncios (datos básicos)
         private val CACHED_ANUNCIOS_FALLBACK = stringPreferencesKey("cached_anuncios_fallback")
         private val ANUNCIOS_FALLBACK_CACHE_TIME = longPreferencesKey("anuncios_fallback_cache_time")
+        
+        // Claves para cache de perfil de usuario
+        private val CACHED_USER_PROFILE = stringPreferencesKey("cached_user_profile")
+        private val USER_PROFILE_CACHE_TIME = longPreferencesKey("user_profile_cache_time")
     }
 
 
@@ -205,6 +209,22 @@ class UserPreferences(private val context: Context) {
      */
     val anunciosFallbackCacheTime: Flow<Long?> = context.dataStore.data.map { preferences ->
         preferences[ANUNCIOS_FALLBACK_CACHE_TIME]
+    }
+
+    /**
+     * ✅ NUEVO: Flow que emite el perfil de usuario del cache.
+     * retorna Flow<String?> JSON de perfil de usuario o null si no existe
+     */
+    val cachedUserProfile: Flow<String?> = context.dataStore.data.map { preferences ->
+        preferences[CACHED_USER_PROFILE]
+    }
+
+    /**
+     * ✅ NUEVO: Flow que emite el timestamp del cache de perfil de usuario.
+     * retorna Flow<Long?> Timestamp de cuando se guardó el perfil
+     */
+    val userProfileCacheTime: Flow<Long?> = context.dataStore.data.map { preferences ->
+        preferences[USER_PROFILE_CACHE_TIME]
     }
 
     // metodos de guardado
@@ -390,7 +410,7 @@ class UserPreferences(private val context: Context) {
         val cacheTime = almuerzosCacheTime.first() ?: return true
         val currentTime = System.currentTimeMillis()
         val cacheAgeMs = currentTime - cacheTime
-        val maxCacheAgeMs = 5 * 60 * 1000L // 5 minutos (muy frecuente)
+        val maxCacheAgeMs = 2 * 60 * 60 * 1000L // 2 horas (los menús no cambian frecuentemente)
         return cacheAgeMs > maxCacheAgeMs
     }
 
@@ -507,6 +527,46 @@ class UserPreferences(private val context: Context) {
         context.dataStore.edit { preferences ->
             preferences.remove(CACHED_ANUNCIOS_FALLBACK)
             preferences.remove(ANUNCIOS_FALLBACK_CACHE_TIME)
+        }
+    }
+
+    // ================= MÉTODOS PARA CACHE DE PERFIL DE USUARIO =================
+
+    /**
+     * ✅ NUEVO: Guarda perfil de usuario en cache persistente.
+     * Para usar cuando no hay internet y cache de memoria está vacío.
+     */
+    suspend fun saveUserProfileCache(userProfileJson: String) {
+        context.dataStore.edit { preferences ->
+            preferences[CACHED_USER_PROFILE] = userProfileJson
+            preferences[USER_PROFILE_CACHE_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    /**
+     * ✅ NUEVO: Obtiene perfil de usuario del cache.
+     */
+    fun getUserProfileCache(): Flow<String?> = cachedUserProfile
+
+    /**
+     * ✅ NUEVO: Verifica si el cache de perfil de usuario ha expirado.
+     * Cache de perfil dura 1 hora.
+     */
+    suspend fun isUserProfileCacheExpired(): Boolean {
+        val cacheTime = userProfileCacheTime.first() ?: return true
+        val currentTime = System.currentTimeMillis()
+        val cacheAgeMs = currentTime - cacheTime
+        val maxCacheAgeMs = 60 * 60 * 1000L // 1 hora (perfil no cambia frecuentemente)
+        return cacheAgeMs > maxCacheAgeMs
+    }
+
+    /**
+     * ✅ NUEVO: Limpia el cache de perfil de usuario.
+     */
+    suspend fun clearUserProfileCache() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(CACHED_USER_PROFILE)
+            preferences.remove(USER_PROFILE_CACHE_TIME)
         }
     }
 } 

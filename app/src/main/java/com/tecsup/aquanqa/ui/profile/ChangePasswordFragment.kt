@@ -4,12 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.textfield.TextInputLayout
 import com.tecsup.aquanqa.R
 import com.tecsup.aquanqa.databinding.BottomSheetChangePasswordBinding
 import com.tecsup.aquanqa.data.model.user.PasswordChangeData
+import com.tecsup.aquanqa.utils.ValidationHelper
 
 /**
  * Bottom Sheet Fragment para cambiar la contraseña del usuario.
@@ -79,13 +79,6 @@ class ChangePasswordFragment : BottomSheetDialogFragment() {
                 // Notificar al listener
                 onPasswordSavedListener?.invoke(passwordChangeData)
 
-                // Mostrar mensaje de éxito
-                Toast.makeText(
-                    requireContext(),
-                    "Contraseña actualizada correctamente",
-                    Toast.LENGTH_SHORT
-                ).show()
-
                 // Cerrar el bottom sheet
                 dismiss()
             }
@@ -93,6 +86,13 @@ class ChangePasswordFragment : BottomSheetDialogFragment() {
     }
 
     private fun setupPasswordValidation() {
+        // Validación en tiempo real para contraseña actual
+        binding.currentPasswordEditText.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                validateCurrentPassword()
+            }
+        }
+
         // Validación en tiempo real para nueva contraseña
         binding.newPasswordEditText.setOnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) {
@@ -137,17 +137,15 @@ class ChangePasswordFragment : BottomSheetDialogFragment() {
      */
     private fun validateCurrentPassword(): Boolean {
         val currentPassword = binding.currentPasswordEditText.text.toString().trim()
+        val (isValid, errorMessage) = ValidationHelper.validateCurrentPassword(currentPassword)
 
-        return when {
-            currentPassword.isEmpty() -> {
-                setInputLayoutError(binding.currentPasswordInputLayout, "La contraseña actual es requerida")
-                false
-            }
-            else -> {
-                clearInputLayoutError(binding.currentPasswordInputLayout)
-                true
-            }
+        if (!isValid) {
+            setInputLayoutError(binding.currentPasswordInputLayout, errorMessage)
+        } else {
+            clearInputLayoutError(binding.currentPasswordInputLayout)
         }
+
+        return isValid
     }
 
     /**
@@ -155,24 +153,15 @@ class ChangePasswordFragment : BottomSheetDialogFragment() {
      */
     private fun validateNewPassword(): Boolean {
         val newPassword = binding.newPasswordEditText.text.toString().trim()
+        val (isValid, errorMessage) = ValidationHelper.validatePassword(newPassword)
 
-        return when {
-            newPassword.isEmpty() -> {
-                setInputLayoutError(binding.newPasswordInputLayout, "La nueva contraseña es requerida")
-                false
-            }
-            newPassword.length < MIN_PASSWORD_LENGTH -> {
-                setInputLayoutError(
-                    binding.newPasswordInputLayout,
-                    "La contraseña debe tener al menos $MIN_PASSWORD_LENGTH caracteres"
-                )
-                false
-            }
-            else -> {
-                clearInputLayoutError(binding.newPasswordInputLayout)
-                true
-            }
+        if (!isValid) {
+            setInputLayoutError(binding.newPasswordInputLayout, errorMessage)
+        } else {
+            clearInputLayoutError(binding.newPasswordInputLayout)
         }
+
+        return isValid
     }
 
     /**
@@ -181,21 +170,15 @@ class ChangePasswordFragment : BottomSheetDialogFragment() {
     private fun validatePasswordConfirmation(): Boolean {
         val newPassword = binding.newPasswordEditText.text.toString().trim()
         val confirmPassword = binding.confirmPasswordEditText.text.toString().trim()
+        val (isValid, errorMessage) = ValidationHelper.validatePasswordConfirmation(newPassword, confirmPassword)
 
-        return when {
-            confirmPassword.isEmpty() -> {
-                setInputLayoutError(binding.confirmPasswordInputLayout, "Confirma la nueva contraseña")
-                false
-            }
-            newPassword != confirmPassword -> {
-                setInputLayoutError(binding.confirmPasswordInputLayout, "Las contraseñas no coinciden")
-                false
-            }
-            else -> {
-                clearInputLayoutError(binding.confirmPasswordInputLayout)
-                true
-            }
+        if (!isValid) {
+            setInputLayoutError(binding.confirmPasswordInputLayout, errorMessage)
+        } else {
+            clearInputLayoutError(binding.confirmPasswordInputLayout)
         }
+
+        return isValid
     }
 
     /**
