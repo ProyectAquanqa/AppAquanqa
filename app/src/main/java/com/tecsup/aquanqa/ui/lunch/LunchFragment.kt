@@ -13,6 +13,7 @@ import com.tecsup.aquanqa.databinding.FragmentLunchBinding
 import com.tecsup.aquanqa.ui.adapters.LunchAdapter
 import com.tecsup.aquanqa.ui.base.BaseFragment
 import com.google.android.material.snackbar.Snackbar
+import com.tecsup.aquanqa.R
 
 /**
  * Fragment optimizado para mostrar menús de almuerzo.
@@ -57,12 +58,12 @@ class LunchFragment : BaseFragment<FragmentLunchBinding>() {
         binding.swipeRefreshLayout.setOnRefreshListener {
             lunchViewModel.refreshAlmuerzos()
         }
-        
+
         binding.swipeRefreshLayout.setColorSchemeResources(
-            android.R.color.holo_blue_bright,
-            android.R.color.holo_green_light,
-            android.R.color.holo_orange_light,
-            android.R.color.holo_red_light
+            R.color.aquanqa_blue,
+            R.color.success,
+            R.color.warning_color,
+            R.color.error_color
         )
     }
 

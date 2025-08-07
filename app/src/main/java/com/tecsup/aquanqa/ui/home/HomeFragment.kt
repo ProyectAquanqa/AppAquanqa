@@ -1,6 +1,7 @@
 package com.tecsup.aquanqa.ui.home
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.tecsup.aquanqa.R
 import com.tecsup.aquanqa.data.Result
 import com.tecsup.aquanqa.data.api.ApiClient
 import com.tecsup.aquanqa.data.model.content.Anuncio
@@ -22,17 +24,15 @@ import com.tecsup.aquanqa.utils.DateUtils
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 
+/**
+ * Fragment optimizado para Home con cache híbrido inteligente.
+ * Sigue el mismo patrón exitoso del ProfileFragment para consistencia.
+ */
 class HomeFragment : BaseFragment<FragmentHomeBinding>() {
 
     private lateinit var viewModel: HomeViewModel
     private lateinit var categoryAdapter: CategoryAdapter
     private lateinit var eventsAdapter: AnunciosAdapterWrapper
-    
-    // Variables para retry automático
-    private var categoriesRetryCount = 0
-    private var eventsRetryCount = 0
-    private val maxRetries = 3
-    private val baseDelayMs = 1000L
 
     override fun getViewBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentHomeBinding {
         return FragmentHomeBinding.inflate(inflater, container, false)
@@ -47,7 +47,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
 
     override fun onResume() {
         super.onResume()
-        // SIEMPRE intentar refresh para detectar contenido nuevo
+        // ✅ Solo recargar si es necesario (evitar llamadas innecesarias, patrón ProfileFragment)
         if (::viewModel.isInitialized) {
             viewModel.onAppResumed()
         }
@@ -127,61 +127,30 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
 
 
     override fun setupObservers() {
-        // Observer optimizado del nombre de usuario
+        super.setupObservers()
+        
+        // ✅ PRIMERO: Observar estado de UI global (siguiendo patrón ProfileFragment)
+        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            handleLoadingState(isLoading)
+        }
+        
+        // ✅ SEGUNDO: Observar datos del usuario
         viewModel.userFirstName.observe(viewLifecycleOwner) { firstName ->
             binding.tvUserName.text = "¡Hola, $firstName!"
             binding.tvDate.text = viewModel.currentDateSpanish
         }
         
-        // Observer de estados de carga global
-        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            // Ocultar indicador de pull-to-refresh cuando termine la carga
-            if (!isLoading) {
-                binding.swipeRefreshLayout.isRefreshing = false
-            }
-        }
-        
-        // Observer mejorado de categorías con retry automático
+        // ✅ TERCERO: Observar datos de categorías con manejo inteligente
         viewModel.categoriesState.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is Result.Success -> {
-                    categoriesRetryCount = 0 // Reset contador en éxito
-                    categoryAdapter.submitList(result.data)
-                    // Ocultar SwipeRefreshLayout cuando las categorías se cargan exitosamente
-                    binding.swipeRefreshLayout.isRefreshing = false
-                }
-                is Result.Error -> {
-                    handleCategoriesError(result.exception)
-                    // Ocultar SwipeRefreshLayout también en caso de error
-                    binding.swipeRefreshLayout.isRefreshing = false
-                }
-                is Result.Loading -> {
-                    // Mostrar indicador de carga si es necesario
-                }
-            }
+            handleCategoriesState(result)
         }
         
-        // Observer mejorado de eventos con retry automático
+        // ✅ CUARTO: Observar datos de eventos con manejo inteligente
         viewModel.eventsState.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is Result.Success -> {
-                    eventsRetryCount = 0 // Reset contador en éxito
-                    eventsAdapter.submitList(result.data)
-                    // Ocultar SwipeRefreshLayout cuando los eventos se cargan exitosamente
-                    binding.swipeRefreshLayout.isRefreshing = false
-                }
-                is Result.Error -> {
-                    handleEventsError(result.exception)
-                    // Ocultar SwipeRefreshLayout también en caso de error
-                    binding.swipeRefreshLayout.isRefreshing = false
-                }
-                is Result.Loading -> {
-                    // Mostrar indicador de carga si es necesario
-                }
-            }
+            handleEventsState(result)
         }
         
-        // Observer de categoría seleccionada
+        // ✅ QUINTO: Observar categoría seleccionada
         lifecycleScope.launch {
             viewModel.selectedCategory.collect { category ->
                 category?.let { 
@@ -192,52 +161,71 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
     }
     
     /**
-     * Maneja errores de categorías con retry automático inteligente
+     * ✅ Maneja el estado de carga global de manera centralizada (patrón ProfileFragment)
      */
-    private fun handleCategoriesError(exception: Exception) {
-        if (categoriesRetryCount < maxRetries) {
-            categoriesRetryCount++
-            val delay = baseDelayMs * categoriesRetryCount
-            
-            lifecycleScope.launch {
-                delay(delay)
-                viewModel.refreshData()
+    private fun handleLoadingState(isLoading: Boolean) {
+        binding.swipeRefreshLayout.isRefreshing = isLoading
+    }
+    
+    /**
+     * ✅ Maneja todos los estados de categorías de manera centralizada y clara
+     */
+    private fun handleCategoriesState(result: Result<List<Category>>) {
+        when (result) {
+            is Result.Success -> {
+                categoryAdapter.submitList(result.data)
+                binding.swipeRefreshLayout.isRefreshing = false
             }
-        } else {
-            showUserFriendlyError("No se pudieron cargar las categorías. Verifica tu conexión.")
+            is Result.Error -> {
+                binding.swipeRefreshLayout.isRefreshing = false
+                showHomeError("No se pudieron cargar las categorías", "Reintentar categorías") {
+                    viewModel.refreshData()
+                }
+            }
+            is Result.Loading -> {
+                // El loading se maneja en handleLoadingState
+            }
+
+            else -> {Log.w("Categorias", "Error de conexion")}
         }
     }
     
     /**
-     * Maneja errores de eventos con retry automático inteligente
+     * ✅ Maneja todos los estados de eventos de manera centralizada y clara
      */
-    private fun handleEventsError(exception: Exception) {
-        if (eventsRetryCount < maxRetries) {
-            eventsRetryCount++
-            val delay = baseDelayMs * eventsRetryCount
-            
-            lifecycleScope.launch {
-                delay(delay)
-                viewModel.refreshData()
+    private fun handleEventsState(result: Result<List<Anuncio>>) {
+        when (result) {
+            is Result.Success -> {
+                eventsAdapter.submitList(result.data)
+                binding.swipeRefreshLayout.isRefreshing = false
             }
-        } else {
-            showUserFriendlyError("No se pudieron cargar los eventos. Verifica tu conexión.")
+            is Result.Error -> {
+                binding.swipeRefreshLayout.isRefreshing = false
+                showHomeError("No se pudieron cargar los eventos", "Reintentar eventos") {
+                    viewModel.refreshData()
+                }
+            }
+            is Result.Loading -> {
+                // El loading se maneja en handleLoadingState
+            }
+
+            else -> {Log.w("Eventos", "Error de conexiónn")}
         }
     }
     
     /**
-     * Muestra mensajes de error más amigables al usuario
+     * ✅ Muestra errores específicos del home sin conflicto con BaseFragment (patrón ProfileFragment)
      */
-    private fun showUserFriendlyError(message: String) {
-        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+    private fun showHomeError(message: String, actionText: String, action: () -> Unit) {
+        com.google.android.material.snackbar.Snackbar.make(binding.root, message, com.google.android.material.snackbar.Snackbar.LENGTH_LONG)
+            .setAction(actionText) { action() }
+            .show()
     }
 
     /**
-     * Refresca datos con reset de contadores de retry y cache inteligente
+     * ✅ Refresca datos con cache inteligente (patrón ProfileFragment)
      */
     fun refreshData(forceRefresh: Boolean = true) {
-        categoriesRetryCount = 0
-        eventsRetryCount = 0
         viewModel.refreshData(forceRefresh)
     }
     
@@ -253,10 +241,10 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         
         // Personalizar colores del indicador de refresh
         binding.swipeRefreshLayout.setColorSchemeResources(
-            android.R.color.holo_blue_bright,
-            android.R.color.holo_green_light,
-            android.R.color.holo_orange_light,
-            android.R.color.holo_red_light
+            R.color.aquanqa_blue,
+            R.color.success,
+            R.color.warning_color,
+            R.color.error_color
         )
     }
 

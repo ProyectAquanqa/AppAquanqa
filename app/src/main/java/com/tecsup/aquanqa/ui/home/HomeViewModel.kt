@@ -1,5 +1,6 @@
 package com.tecsup.aquanqa.ui.home
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -72,162 +73,141 @@ class HomeViewModel(
     }
     
     /**
-     * Carga optimizada de datos con cache inteligente
+     * ✅ Carga inicial de datos con cache inteligente
      */
     private fun loadDataOptimized() {
         viewModelScope.launch {
             _isLoading.value = true
             
-            try {
-                coroutineScope {
-                    // Cargar datos en paralelo aprovechando el cache inteligente
-                    val userNameDeferred = async { loadUserName() }
-                    val categoriesDeferred = async { loadCategories() }
+            // ✅ Cargar datos en paralelo
+            coroutineScope {
+                val userNameJob = async { loadUserName() }
+                val categoriesJob = async { loadCategories() }
+                
+                // ✅ Esperar resultados
+                userNameJob.await()
+                val categoriesResult = categoriesJob.await()
+                
+                // ✅ Seleccionar categoría por defecto y cargar eventos
+                if (categoriesResult is Result.Success && categoriesResult.data.isNotEmpty()) {
+                    val defaultCategory = categoriesResult.data.find { it.isAllCategoriesOption() } 
+                        ?: categoriesResult.data.first()
                     
-                    // Esperar ambas operaciones
-                    userNameDeferred.await()
-                    val categoriesResult = categoriesDeferred.await()
-                    
-                    // Solo cargar eventos si las categorías se cargaron correctamente
-                    if (categoriesResult is Result.Success && categoriesResult.data.isNotEmpty()) {
-                        val defaultCategory = categoriesResult.data.find { it.isAllCategoriesOption() } 
-                            ?: categoriesResult.data.first()
-                        
-                        _selectedCategory.value = defaultCategory
-                        loadEventsForCategory(defaultCategory.nombre)
-                    }
+                    _selectedCategory.value = defaultCategory
+                    loadEventsForCategory(defaultCategory.nombre)
                 }
-            } finally {
-                _isLoading.value = false
             }
+            
+            _isLoading.value = false
         }
     }
     
     /**
-     * Carga rápida del nombre de usuario con cache
+     * ✅ Carga nombre de usuario con fallback
      */
     private suspend fun loadUserName() {
         try {
             val firstName = repository.getUserFirstName().first()
             _userFirstName.value = firstName
             
-            // Solo hacer llamada al API si no tenemos nombre válido
+            // ✅ Si no hay nombre válido, intentar actualizar desde API
             if (firstName == "Usuario") {
                 repository.getUserProfile()
-                // Reintenta obtener el nombre actualizado
-                val updatedName = repository.getUserFirstName().first()
-                _userFirstName.value = updatedName
+                _userFirstName.value = repository.getUserFirstName().first()
             }
         } catch (e: Exception) {
-            // Manejar error silenciosamente para no bloquear la UI
             _userFirstName.value = "Usuario"
         }
     }
     
     /**
-     * Carga optimizada de categorías con cache inteligente
+     * ✅ Carga categorías con cache inteligente
      */
     private suspend fun loadCategories(forceRefresh: Boolean = false): Result<List<Category>> {
         _categoriesState.value = Result.Loading
-        return try {
-            val result = repository.getCategories(forceRefresh)
-            _categoriesState.value = result
-            result
-        } catch (e: Exception) {
-            val errorResult = Result.Error(e)
-            _categoriesState.value = errorResult
-            errorResult
-        }
+        val result = repository.getCategories(forceRefresh)
+        _categoriesState.value = result
+        return result
     }
     
     /**
-     * Carga optimizada de eventos con cache inteligente
+     * ✅ Carga eventos por categoría con manejo inteligente de cache
      */
     private fun loadEventsForCategory(categoryName: String?, forceRefresh: Boolean = false) {
         viewModelScope.launch {
-            try {
-                _eventsState.value = Result.Loading
-                
-                val eventsResult = repository.getFilteredEvents(
-                    categoryName = categoryName,
-                    page = 1,
-                    pageSize = 30, // Más elementos para menos llamadas
-                    forceRefresh = forceRefresh
-                )
-                
-                when (eventsResult) {
-                    is Result.Success -> {
-                        val events = eventsResult.data.first
-                        _eventsState.value = Result.Success(events)
-                    }
-                    is Result.Error -> {
-                        _eventsState.value = eventsResult
-                    }
-                    is Result.Loading -> {
-                        _eventsState.value = eventsResult
-                    }
+            _eventsState.value = Result.Loading
+            
+            // ✅ Invalidar cache específico antes de cambiar categoría 
+            if (forceRefresh) {
+                repository.invalidateCache(categoryName = categoryName, invalidateEvents = true)
+            }
+            
+            val eventsResult = repository.getFilteredEvents(
+                categoryName = categoryName,
+                page = 1,
+                pageSize = 30,
+                forceRefresh = forceRefresh
+            )
+            
+            when (eventsResult) {
+                is Result.Success -> {
+                    _eventsState.value = Result.Success(eventsResult.data.first)
                 }
-            } catch (e: Exception) {
-                _eventsState.value = Result.Error(e)
+                is Result.Error -> {
+                    _eventsState.value = Result.Error(eventsResult.exception)
+                }
+                is Result.Loading -> {
+                    _eventsState.value = Result.Loading
+                }
+
+                else -> { Log.w("Eventos", "Error de conexion")}
             }
         }
     }
     
     /**
-     * Selección optimizada de categoría con prevención de cargas duplicadas
+     * ✅ Selección de categoría con cache invalidation para datos frescos
      */
     fun onCategorySelected(category: Category) {
         if (_selectedCategory.value?.id != category.id) {
             _selectedCategory.value = category
-            loadEventsForCategory(category.nombre)
+            // ✅ IMPORTANTE: Forzar refresh al cambiar categoría para evitar cache incorrecto
+            loadEventsForCategory(category.nombre, forceRefresh = true)
         }
     }
     
     /**
-     * Refresh optimizado con cache inteligente que conserva datos válidos durante la carga
+     * ✅ Refresca todos los datos con invalidación de cache
      */
     fun refreshData(forceRefresh: Boolean = true) {
         viewModelScope.launch {
-            try {
-                // Refrescar cache del repositorio usando smart refresh
-                repository.refreshAllData()
-                
-                // Recargar categorías con refresh forzado si se solicita
-                val categoriesResult = loadCategories(forceRefresh)
-                
-                if (categoriesResult is Result.Success && categoriesResult.data.isNotEmpty()) {
-                    // Mantener categoría seleccionada si sigue existiendo
-                    val currentCategory = _selectedCategory.value
-                    val updatedCategory = if (currentCategory != null) {
-                        categoriesResult.data.find { it.id == currentCategory.id }
-                            ?: categoriesResult.data.find { it.isAllCategoriesOption() }
-                            ?: categoriesResult.data.first()
-                    } else {
-                        categoriesResult.data.find { it.isAllCategoriesOption() }
-                            ?: categoriesResult.data.first()
-                    }
-                    
-                    _selectedCategory.value = updatedCategory
-                    loadEventsForCategory(updatedCategory.nombre, forceRefresh)
-                }
-            } catch (e: Exception) {
-                // Error silencioso para no interrumpir la experiencia del usuario
-                // El cache inteligente ya maneja fallbacks automáticamente
-            }
+            _isLoading.value = true
+            
+            // ✅ Smart refresh del repositorio
+            repository.refreshAllData()
+            
+            // ✅ Recargar categorías
+            loadCategories(forceRefresh)
+            
+            // ✅ Recargar eventos de la categoría actual
+            val currentCategory = _selectedCategory.value
+            loadEventsForCategory(currentCategory?.nombre, forceRefresh)
+            
+            _isLoading.value = false
         }
     }
     
     /**
-     * Obtiene estadísticas del cache para debugging
+     * ✅ Obtiene estadísticas del cache para debugging
      */
     fun getCacheStats() = repository.getCacheStats()
     
     /**
-     * Invalida cache específico
+     * ✅ Invalida cache específico por categoría
      */
     fun invalidateCache(categoryName: String? = null) {
         viewModelScope.launch {
-            repository.invalidateCache(categoryName = categoryName)
+            repository.invalidateCache(categoryName = categoryName, invalidateEvents = true)
         }
     }
 }

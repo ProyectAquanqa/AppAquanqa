@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import com.tecsup.aquanqa.utils.ImageLoadingUtils
 import com.google.android.material.snackbar.Snackbar
 import com.tecsup.aquanqa.R
 import com.tecsup.aquanqa.databinding.FragmentProfileBinding
@@ -134,23 +135,18 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>() {
      * Carga las imágenes del perfil y firma
      */
     private fun loadProfileImages(userProfile: UserProfile) {
-        // Cargar foto de perfil
-        userProfile.foto_perfil?.let { fotoUrl ->
-            val imageUrl = if (fotoUrl.startsWith("http")) fotoUrl else viewModel.getBaseUrl() + fotoUrl
-            
-            Glide.with(requireContext())
-                .load(imageUrl)
-                .apply(RequestOptions.circleCropTransform())
-                .placeholder(R.drawable.ic_person_outline)
-                .error(R.drawable.ic_person_outline)
-                .into(binding.profileImageView)
-        } ?: run {
-            // Si no hay foto de perfil, mostrar el icono por defecto
-            Glide.with(requireContext())
-                .load(R.drawable.ic_person_outline)
-                .apply(RequestOptions.circleCropTransform())
-                .into(binding.profileImageView)
+        // Cargar foto de perfil usando ImageLoadingUtils
+        val imageUrl = userProfile.foto_perfil?.let { fotoUrl ->
+            if (fotoUrl.startsWith("http")) fotoUrl else viewModel.getBaseUrl() + fotoUrl
         }
+        
+        // Usar ImageLoadingUtils para cargar la imagen con ic_profile.png por defecto
+        ImageLoadingUtils.loadProfileImage(
+            context = requireContext(),
+            imageView = binding.profileImageView,
+            imageUrl = imageUrl,
+            useCircleCrop = true
+        )
         
         // Cargar firma digital
         userProfile.firma?.let { firmaUrl ->

@@ -23,7 +23,7 @@ object ImageDisplayHelper {
         fallbackUrl: String? = null,
         baseUrl: String = ""
     ) {
-        val imageToLoad = imageUri ?: fallbackUrl?.let { url ->
+        val imageToLoad = imageUri ?: fallbackUrl?.takeIf { it.isNotBlank() }?.let { url ->
             if (url.startsWith("http")) {
                 Uri.parse(url)
             } else {
@@ -32,10 +32,10 @@ object ImageDisplayHelper {
         }
         
         Glide.with(context)
-            .load(imageToLoad ?: R.drawable.ic_person_outline)
+            .load(imageToLoad ?: R.drawable.ic_profile)
             .apply(RequestOptions.circleCropTransform())
-            .placeholder(R.drawable.ic_person_outline)
-            .error(R.drawable.ic_person_outline)
+            .placeholder(R.drawable.ic_profile)
+            .error(R.drawable.ic_profile)
             .into(imageView)
     }
     

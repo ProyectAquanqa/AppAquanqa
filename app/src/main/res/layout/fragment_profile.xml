@@ -43,14 +43,14 @@
 
                     <com.google.android.material.imageview.ShapeableImageView
                         android:id="@+id/profileImageView"
-                        android:layout_width="100dp"
-                        android:layout_height="100dp"
+                        android:layout_width="115dp"
+                        android:layout_height="115dp"
                         android:scaleType="centerCrop"
                         app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CircleImageView"
-
+                        app:contentPadding="6dp"
                         app:strokeWidth="3dp"
 
-                        tools:src="@drawable/fondo_blue" />
+                        tools:src="@tools:sample/avatars" />
 
                     <!-- Indicador de estado online -->
                     <View

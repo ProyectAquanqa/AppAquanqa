@@ -22,6 +22,7 @@ import com.bumptech.glide.Glide
 import com.tecsup.aquanqa.R
 import com.tecsup.aquanqa.data.model.content.Anuncio
 import com.tecsup.aquanqa.databinding.ItemAnuncioBinding
+import com.tecsup.aquanqa.utils.ImageLoadingUtils
 import com.github.chrisbanes.photoview.PhotoView
 import java.text.SimpleDateFormat
 import java.util.*
@@ -82,27 +83,28 @@ class AnunciosAdapter(private var anuncios: List<Anuncio>) :
         }
 
         /**
-         * Configura las imágenes del autor y del anuncio.
-         * Implementa click para abrir vista con zoom
+         * ✅ Configura las imágenes del autor y del anuncio con manejo inteligente de conectividad.
+         * Implementa click para abrir vista con zoom y usa imágenes por defecto cuando no hay internet.
          */
         private fun loadImages(anuncio: Anuncio) {
-            // Foto del autor
-            Glide.with(itemView.context)
-                .load(anuncio.autor.fotoPerfil)
-                .placeholder(R.drawable.ic_profile)
-                .error(R.drawable.ic_profile)
-                .circleCrop()
-                .into(binding.ivAuthorPhoto)
+            // ✅ Foto del autor con manejo inteligente de conectividad
+            ImageLoadingUtils.loadProfileImage(
+                context = itemView.context,
+                imageView = binding.ivAuthorPhoto,
+                imageUrl = anuncio.autor.fotoPerfil,
+                useCircleCrop = true
+            )
 
-            // Imagen del anuncio (si existe)
+            // ✅ Imagen del anuncio con manejo inteligente de conectividad
             if (anuncio.imagen != null) {
                 binding.ivAnnouncementImage.visibility = View.VISIBLE
                 
-                // Cargar imagen en el ImageView
-                Glide.with(itemView.context)
-                    .load(anuncio.imagen)
-                    .placeholder(R.drawable.logo_aq)
-                    .into(binding.ivAnnouncementImage)
+                // Cargar imagen en el ImageView usando utilidad inteligente
+                ImageLoadingUtils.loadAnuncioImage(
+                    context = itemView.context,
+                    imageView = binding.ivAnnouncementImage,
+                    imageUrl = anuncio.imagen
+                )
                 
                 // Configurar click para abrir pantalla completa 
                 setupFullScreenZoom(anuncio.imagen, anuncio.titulo)
@@ -157,11 +159,14 @@ class AnunciosAdapter(private var anuncios: List<Anuncio>) :
                 setAllowParentInterceptOnEdge(true)
             }
             
-            // Cargar la imagen en el PhotoView de pantalla completa
-            Glide.with(itemView.context)
-                .load(imageUrl)
-                .placeholder(R.drawable.logo_aq)
-                .into(fullScreenPhotoView)
+            // ✅ Cargar la imagen en el PhotoView de pantalla completa con manejo inteligente
+            ImageLoadingUtils.loadGenericImage(
+                context = itemView.context,
+                imageView = fullScreenPhotoView,
+                imageUrl = imageUrl,
+                placeholderRes = R.drawable.logo_aq,
+                errorRes = R.drawable.logo_aq
+            )
             
             // Añadir PhotoView al overlay
             overlay.addView(fullScreenPhotoView)

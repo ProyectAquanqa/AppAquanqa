@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
+import com.tecsup.aquanqa.R
 import com.tecsup.aquanqa.databinding.FragmentAnunciosBinding
 import com.tecsup.aquanqa.ui.base.BaseFragment
 
@@ -35,7 +36,24 @@ class AnunciosFragment : BaseFragment<FragmentAnunciosBinding>() {
 
     override fun setupObservers() {
         super.setupObservers()
-        observeViewModel()
+        
+        // ✅ PRIMERO: Observar estado de carga (siguiendo patrón ProfileFragment)
+        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            handleLoadingState(isLoading)
+        }
+        
+        // ✅ SEGUNDO: Observar datos de anuncios
+        viewModel.anuncios.observe(viewLifecycleOwner) { anuncios ->
+            adapter.updateData(anuncios)
+            binding.swipeRefreshLayout.isRefreshing = false
+        }
+        
+        // ✅ TERCERO: Observar errores
+        viewModel.error.observe(viewLifecycleOwner) { errorMsg ->
+            if (errorMsg.isNotEmpty()) {
+                handleAnunciosError(errorMsg)
+            }
+        }
     }
 
     /**
@@ -58,45 +76,38 @@ class AnunciosFragment : BaseFragment<FragmentAnunciosBinding>() {
         
         // Personalizar colores del indicador de refresh
         binding.swipeRefreshLayout.setColorSchemeResources(
-            android.R.color.holo_blue_bright,
-            android.R.color.holo_green_light,
-            android.R.color.holo_orange_light,
-            android.R.color.holo_red_light
+            R.color.aquanqa_blue ,
+            R.color.success,
+            R.color.warning_color,
+            R.color.error_color
         )
     }
 
     override fun onResume() {
         super.onResume()
-        // SIEMPRE intentar refresh para detectar contenido nuevo
-        viewModel.refreshAnuncios()
+        // ✅ Solo recargar si es necesario (evitar llamadas innecesarias, patrón ProfileFragment)
+        viewModel.onAppResumed()
     }
-
+    
     /**
-     * Configura los observadores con cache híbrido inteligente.
-     * Ahora los anuncios persisten al cerrar la app.
+     * ✅ Maneja el estado de carga de manera centralizada (patrón ProfileFragment)
      */
-    private fun observeViewModel() {
-        viewModel.anuncios.observe(viewLifecycleOwner) { anuncios ->
-            // Actualizar adapter con anuncios (con imagen por defecto si no hay internet)
-            adapter.updateData(anuncios)
-            // Ocultar SwipeRefreshLayout cuando se cargan los datos
+    private fun handleLoadingState(isLoading: Boolean) {
+        if (!isLoading) {
             binding.swipeRefreshLayout.isRefreshing = false
         }
-
-        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            // Ocultar SwipeRefreshLayout cuando termine la carga
-            if (!isLoading) {
-                binding.swipeRefreshLayout.isRefreshing = false
+    }
+    
+    /**
+     * ✅ Maneja errores específicos de anuncios sin conflicto con BaseFragment (patrón ProfileFragment)
+     */
+    private fun handleAnunciosError(message: String) {
+        binding.swipeRefreshLayout.isRefreshing = false
+        com.google.android.material.snackbar.Snackbar.make(binding.root, message, com.google.android.material.snackbar.Snackbar.LENGTH_LONG)
+            .setAction("Reintentar") { 
+                viewModel.refreshAnuncios() 
             }
-        }
-
-        viewModel.error.observe(viewLifecycleOwner) { errorMsg ->
-            if (errorMsg.isNotEmpty()) {
-                showError(errorMsg)
-                // Ocultar SwipeRefreshLayout también en caso de error
-                binding.swipeRefreshLayout.isRefreshing = false
-            }
-        }
+            .show()
     }
 
     /**

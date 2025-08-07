@@ -17,6 +17,7 @@ import com.tecsup.aquanqa.data.api.ApiClient
 import com.tecsup.aquanqa.databinding.FragmentChatbotBinding
 import com.tecsup.aquanqa.ui.adapters.ChatAdapter
 import com.tecsup.aquanqa.BuildConfig
+import com.tecsup.aquanqa.R
 import com.tecsup.aquanqa.utils.ValidationResult
 
 /**
@@ -82,7 +83,7 @@ class ChatbotFragment : Fragment() {
                 is ChatUiState.ValidationError -> {
                     // Mostrar error de validación al usuario
                     Snackbar.make(binding.root, state.error, Snackbar.LENGTH_LONG)
-                        .setBackgroundTint(ContextCompat.getColor(requireContext(), android.R.color.holo_red_light))
+                        .setBackgroundTint(ContextCompat.getColor(requireContext(), R.color.error_color))
                         .show()
                 }
             }

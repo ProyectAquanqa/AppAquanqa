@@ -34,7 +34,7 @@
 
     <!-- ========== COLORES DE ESTADO ========== -->
     <color name="success">#28A745</color>
-    <color name="success_color">#28A745</color>
+
     <color name="error_color">#DC3545</color>
     <color name="warning_color">#FFC107</color>
 

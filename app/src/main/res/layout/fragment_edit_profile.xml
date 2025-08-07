@@ -41,14 +41,14 @@
 
                     <com.google.android.material.imageview.ShapeableImageView
                         android:id="@+id/profileImageView"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:layout_width="115dp"
+                        android:layout_height="115dp"
                         android:scaleType="centerCrop"
                         app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CircleImageView"
-
+                        app:contentPadding="6dp"
                         app:strokeWidth="3dp"
-                        android:elevation="4dp"
-                        tools:src="@tools:sample/avatars" />
+
+                        tools:src="@drawable/ic_profile" />
 
                     <!-- Botón de edición de foto -->
                     <com.google.android.material.floatingactionbutton.FloatingActionButton
