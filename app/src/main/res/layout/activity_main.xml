@@ -24,9 +24,11 @@
 
         android:fitsSystemWindows="true"
         android:background="@color/background_card"
-        app:itemIconTint="@color/text_secondary"
+
         app:itemTextColor="@color/text_primary"
         app:headerLayout="@layout/nav_header_main"
-        app:menu="@menu/drawer_menu" />
+
+        app:menu="@menu/drawer_menu"
+        />
 
 </androidx.drawerlayout.widget.DrawerLayout>

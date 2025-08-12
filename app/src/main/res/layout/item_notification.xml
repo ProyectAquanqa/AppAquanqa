@@ -35,7 +35,7 @@
             android:id="@+id/tv_notification_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="16dp"
+            android:textSize="17dp"
             android:textColor="@color/text_primary"
             android:fontFamily="@font/montserrat_bold"
             android:lineSpacingExtra="2dp"
@@ -49,14 +49,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
-            android:textSize="12sp"
+            android:textSize="13sp"
             android:textColor="@color/text_secondary"
             android:fontFamily="@font/montserrat"
             android:maxLines="1"
             android:ellipsize="end"
             tools:text="Se ha publicado un nuevo evento en la comunidad" />
 
-        <!-- hora de la notificación -->
+        <!-- hora en la que llego la notificacion utiliznado el date util -->
         <TextView
             android:id="@+id/tv_notification_time"
             android:layout_width="match_parent"
@@ -69,7 +69,7 @@
 
     </LinearLayout>
 
-    <!-- Indicador de notificación no leída (opcional) -->
+    <!-- Indicador de notificación no leída  -->
     <View
         android:id="@+id/unread_indicator"
         android:layout_width="8dp"

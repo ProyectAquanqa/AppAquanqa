@@ -4,9 +4,11 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.tecsup.aquanqa.R
 import com.tecsup.aquanqa.databinding.FragmentAnunciosBinding
 import com.tecsup.aquanqa.ui.base.BaseFragment
+import com.tecsup.aquanqa.utils.InfiniteScrollListener
 
 /**
  * Fragment refactorizado para anuncios con cache híbrido inteligente.
@@ -23,6 +25,7 @@ class AnunciosFragment : BaseFragment<FragmentAnunciosBinding>() {
     }
 
     private lateinit var adapter: AnunciosAdapter
+    private lateinit var infiniteScrollListener: InfiniteScrollListener
 
     override fun getViewBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentAnunciosBinding {
         return FragmentAnunciosBinding.inflate(inflater, container, false)
@@ -32,36 +35,73 @@ class AnunciosFragment : BaseFragment<FragmentAnunciosBinding>() {
         super.setupUI()
         setupRecyclerView()
         setupSwipeRefresh()
+        
+        // Configurar botón de reintentar
+        binding.btnRetry.setOnClickListener {
+            viewModel.refreshAnuncios()
+        }
     }
 
     override fun setupObservers() {
         super.setupObservers()
         
-        // ✅ PRIMERO: Observar estado de carga (siguiendo patrón ProfileFragment)
+        //  PRIMERO: Observar estado de carga
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            handleLoadingState(isLoading)
+            if (isLoading) {
+                showLoading()
+            }
         }
         
-        // ✅ SEGUNDO: Observar datos de anuncios
+        //  Observar estado de carga de más elementos
+        viewModel.isLoadingMore.observe(viewLifecycleOwner) { isLoadingMore ->
+            // El estado de loading more se puede mostrar en el último item del adapter si es necesario
+        }
+        
+        //  SEGUNDO: Observar datos de anuncios
         viewModel.anuncios.observe(viewLifecycleOwner) { anuncios ->
-            adapter.updateData(anuncios)
-            binding.swipeRefreshLayout.isRefreshing = false
+            if (anuncios.isEmpty()) {
+                showEmptyState()
+            } else {
+                showContent()
+                adapter.updateData(anuncios)
+            }
         }
         
-        // ✅ TERCERO: Observar errores
+        //  TERCERO: Observar errores
         viewModel.error.observe(viewLifecycleOwner) { errorMsg ->
             if (errorMsg.isNotEmpty()) {
-                handleAnunciosError(errorMsg)
+                showErrorState(errorMsg)
             }
         }
     }
 
     /**
-     * Inicializa el RecyclerView con un adapter vacío.
+     * Inicializa el RecyclerView con un adapter vacío y configura infinite scroll.
      */
     private fun setupRecyclerView() {
         adapter = AnunciosAdapter(emptyList())
-        binding.rvAnuncios.adapter = adapter
+        
+        val layoutManager = LinearLayoutManager(requireContext())
+        
+        // Configurar InfiniteScrollListener
+        infiniteScrollListener = InfiniteScrollListener(
+            layoutManager = layoutManager,
+            visibleThreshold = 5
+        ) {
+            // Callback para cargar más datos
+            if (viewModel.canLoadMore()) {
+                viewModel.loadMoreAnuncios()
+            }
+        }
+        
+        binding.rvAnuncios.apply {
+            adapter = this@AnunciosFragment.adapter
+            this.layoutManager = layoutManager
+            setHasFixedSize(true)
+            
+            // Agregar el scroll listener para infinite scroll
+            addOnScrollListener(infiniteScrollListener)
+        }
     }
     
     /**
@@ -85,29 +125,59 @@ class AnunciosFragment : BaseFragment<FragmentAnunciosBinding>() {
 
     override fun onResume() {
         super.onResume()
-        // ✅ Solo recargar si es necesario (evitar llamadas innecesarias, patrón ProfileFragment)
+        //  Solo recargar si es necesario (evitar llamadas innecesarias, patrón ProfileFragment)
         viewModel.onAppResumed()
     }
     
     /**
-     * ✅ Maneja el estado de carga de manera centralizada (patrón ProfileFragment)
+     * Muestra el estado de carga inicial
      */
-    private fun handleLoadingState(isLoading: Boolean) {
-        if (!isLoading) {
-            binding.swipeRefreshLayout.isRefreshing = false
+    private fun showLoading() {
+        binding.apply {
+            progressBar.visibility = android.view.View.VISIBLE
+            swipeRefreshLayout.visibility = android.view.View.GONE
+            emptyState.visibility = android.view.View.GONE
+            errorState.visibility = android.view.View.GONE
         }
     }
-    
+
     /**
-     * ✅ Maneja errores específicos de anuncios sin conflicto con BaseFragment (patrón ProfileFragment)
+     * Muestra el contenido con datos
      */
-    private fun handleAnunciosError(message: String) {
-        binding.swipeRefreshLayout.isRefreshing = false
-        com.google.android.material.snackbar.Snackbar.make(binding.root, message, com.google.android.material.snackbar.Snackbar.LENGTH_LONG)
-            .setAction("Reintentar") { 
-                viewModel.refreshAnuncios() 
-            }
-            .show()
+    private fun showContent() {
+        binding.apply {
+            progressBar.visibility = android.view.View.GONE
+            swipeRefreshLayout.visibility = android.view.View.VISIBLE
+            swipeRefreshLayout.isRefreshing = false
+            emptyState.visibility = android.view.View.GONE
+            errorState.visibility = android.view.View.GONE
+        }
+    }
+
+    /**
+     * Muestra el estado vacío cuando no hay datos
+     */
+    private fun showEmptyState() {
+        binding.apply {
+            progressBar.visibility = android.view.View.GONE
+            swipeRefreshLayout.visibility = android.view.View.GONE
+            emptyState.visibility = android.view.View.VISIBLE
+            errorState.visibility = android.view.View.GONE
+        }
+    }
+
+    /**
+     * Muestra el estado de error con botón reintentar
+     */
+    private fun showErrorState(errorMessage: String) {
+        binding.apply {
+            progressBar.visibility = android.view.View.GONE
+            swipeRefreshLayout.visibility = android.view.View.GONE
+            swipeRefreshLayout.isRefreshing = false
+            emptyState.visibility = android.view.View.GONE
+            errorState.visibility = android.view.View.VISIBLE
+            tvErrorMessage.text = errorMessage
+        }
     }
 
     /**
@@ -118,9 +188,12 @@ class AnunciosFragment : BaseFragment<FragmentAnunciosBinding>() {
     }
 
     /**
-     * Limpia cache y recarga (para debugging).
+     * Limpia cache y recarga
      */
     fun clearCacheAndReload() {
         viewModel.clearCacheAndReload()
     }
+
+
+
 } 

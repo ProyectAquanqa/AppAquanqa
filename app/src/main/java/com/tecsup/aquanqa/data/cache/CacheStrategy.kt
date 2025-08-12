@@ -25,7 +25,7 @@ class CacheStrategy {
     enum class CacheType(val duration: Long) {
         CATEGORIES(CATEGORIES_CACHE_DURATION),
         EVENTS(EVENTS_CACHE_DURATION),
-        ALMUERZOS(ALMUERZOS_CACHE_DURATION), // ✅ Tipo específico para almuerzos
+        ALMUERZOS(ALMUERZOS_CACHE_DURATION), //  Tipo específico para almuerzos
         USER_PROFILE(USER_PROFILE_CACHE_DURATION),
         NOTIFICATIONS(NOTIFICATIONS_CACHE_DURATION)
     }

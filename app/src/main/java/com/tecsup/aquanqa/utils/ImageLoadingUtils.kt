@@ -10,7 +10,7 @@ import com.tecsup.aquanqa.R
 /**
  * Utilidad para cargar imágenes con soporte VERDADERO OFFLINE.
  * 
- * ✅ Funcionalidades:
+ *  Funcionalidades:
  * - Cache completo de imágenes con Glide
  * - OFFLINE REAL: Carga desde cache cuando no hay internet
  * - Imágenes por defecto solo si no están en cache
@@ -37,14 +37,14 @@ object ImageLoadingUtils {
         val requestOptions = RequestOptions()
             .placeholder(R.drawable.ic_profile) // Mostrar mientras carga
             .error(R.drawable.ic_profile) // Mostrar si falla la carga
-            .diskCacheStrategy(DiskCacheStrategy.ALL) // ✅ SIEMPRE usar cache completo
+            .diskCacheStrategy(DiskCacheStrategy.ALL) //  SIEMPRE usar cache completo
         
         if (useCircleCrop) {
             requestOptions.circleCrop()
         }
         
         if (!imageUrl.isNullOrBlank()) {
-            // ✅ VERDADERO OFFLINE: Siempre intentar cargar imagen
+            //  VERDADERO OFFLINE: Siempre intentar cargar imagen
             // Glide automáticamente:
             // - Con internet: Descarga y guarda en cache
             // - Sin internet: Carga desde cache si existe, sino muestra error (ic_profile)
@@ -77,10 +77,10 @@ object ImageLoadingUtils {
         val requestOptions = RequestOptions()
             .placeholder(R.drawable.logo_aq) // Logo de Aquanqa mientras carga
             .error(R.drawable.logo_aq) // Logo de Aquanqa si falla la carga
-            .diskCacheStrategy(DiskCacheStrategy.ALL) // ✅ SIEMPRE usar cache completo
+            .diskCacheStrategy(DiskCacheStrategy.ALL) //  SIEMPRE usar cache completo
         
         if (!imageUrl.isNullOrBlank()) {
-            // ✅ VERDADERO OFFLINE: Siempre intentar cargar imagen
+            //  VERDADERO OFFLINE: Siempre intentar cargar imagen
             // Glide automáticamente:
             // - Con internet: Descarga y guarda en cache
             // - Sin internet: Carga desde cache si existe, sino muestra error (logo_aq)
@@ -117,10 +117,10 @@ object ImageLoadingUtils {
         val requestOptions = RequestOptions()
             .placeholder(placeholderRes)
             .error(errorRes)
-            .diskCacheStrategy(DiskCacheStrategy.ALL) // ✅ SIEMPRE usar cache completo
+            .diskCacheStrategy(DiskCacheStrategy.ALL) //  SIEMPRE usar cache completo
         
         if (!imageUrl.isNullOrBlank()) {
-            // ✅ VERDADERO OFFLINE: Siempre intentar cargar imagen
+            //  VERDADERO OFFLINE: Siempre intentar cargar imagen
             // Glide automáticamente:
             // - Con internet: Descarga y guarda en cache
             // - Sin internet: Carga desde cache si existe, sino muestra error

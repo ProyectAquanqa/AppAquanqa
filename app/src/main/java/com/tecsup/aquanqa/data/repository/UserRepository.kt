@@ -38,7 +38,7 @@ class UserRepository(
     }
 
     /**
-     * ✅ Obtiene el perfil con cache híbrido inteligente.
+     *  Obtiene el perfil con cache híbrido inteligente.
      * Memoria (rápido) + DataStore fallback (persistente) para máxima disponibilidad.
      * 
      * @param forceRefresh Forzar actualización desde API
@@ -47,7 +47,7 @@ class UserRepository(
         return try {
             val userId = getCurrentUserId()
             
-            // ✅ 1. PRIMERO: Verificar cache en memoria (rápido)
+            //  1. PRIMERO: Verificar cache en memoria (rápido)
             if (!forceRefresh) {
                 val memoryCacheResult = cacheManager.getCachedUserProfile(USER_PROFILE_CACHE_KEY, userId)
                 when (memoryCacheResult) {
@@ -56,7 +56,7 @@ class UserRepository(
                         return Result.Success(memoryCacheResult.data)
                     }
                     is CacheResult.Miss -> {
-                        // ✅ 2. SEGUNDO: Verificar fallback en DataStore (persistente)
+                        //  2. SEGUNDO: Verificar fallback en DataStore (persistente)
                         val fallbackResult = getUserProfileFallbackFromDataStore()
                         if (fallbackResult != null) {
                             Log.d(TAG, "Profile loaded from DataStore fallback")
@@ -70,31 +70,31 @@ class UserRepository(
                 }
             }
             
-            // ✅ 3. ÚLTIMO: Cargar desde API
+            //  3. ÚLTIMO: Cargar desde API
             val token = getValidToken() ?: return Result.Error(Exception("Su sesión ha expirado."))
             val response = ApiClient.apiService.getUserProfile("Bearer $token")
             
             if (response.isSuccessful && response.body() != null) {
                 val userProfile = response.body()!!
                 
-                // ✅ Guardar en ambos caches
+                //  Guardar en ambos caches
                 cacheManager.cacheUserProfile(USER_PROFILE_CACHE_KEY, userProfile, userId)
                 saveUserProfileFallbackToDataStore(userProfile)
                 
                 Log.d(TAG, "Profile loaded from API and cached")
                 Result.Success(userProfile)
             } else {
-                // ✅ Si falla API, intentar fallback una vez más
+                //  Si falla API, intentar fallback una vez más
                 val fallbackResult = getUserProfileFallbackFromDataStore()
                 if (fallbackResult != null) {
                     Log.w(TAG, "API failed, using DataStore fallback")
                     return Result.Success(fallbackResult)
                 }
                 
-                Result.Error(IOException("Error al obtener perfil: ${response.code()}"))
+                Result.Error(IOException("No se pudo cargar el perfil. Intenta nuevamente"))
             }
         } catch (e: Exception) {
-            // ✅ En caso de excepción, intentar fallback
+            //  En caso de excepción, intentar fallback
             val fallbackResult = getUserProfileFallbackFromDataStore()
             if (fallbackResult != null) {
                 Log.w(TAG, "Exception occurred, using DataStore fallback: ${e.message}")
@@ -249,7 +249,7 @@ class UserRepository(
     }
     
     /**
-     * ✅ Limpia el cache híbrido de perfil de usuario.
+     *  Limpia el cache híbrido de perfil de usuario.
      */
     suspend fun clearCache() {
         val userId = getCurrentUserId()

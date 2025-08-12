@@ -45,11 +45,44 @@ class AnunciosAdapter(private var anuncios: List<Anuncio>) :
 
     override fun getItemCount(): Int = anuncios.size
     
-    //Actualiza la lista de anuncios en el adapter y notifica al RecyclerView para que se redibuje.
-
+    /**
+     * Actualiza la lista completa de anuncios en el adapter.
+     * Usado para refresh completo o primera carga.
+     */
     fun updateData(newAnuncios: List<Anuncio>) {
+        val oldSize = anuncios.size
         anuncios = newAnuncios
-        notifyDataSetChanged()
+        
+        // Usar notificaciones más específicas para mejor performance
+        if (oldSize == 0) {
+            notifyItemRangeInserted(0, newAnuncios.size)
+        } else {
+            notifyDataSetChanged() // Para refresh completo
+        }
+    }
+    
+    /**
+     * Agrega nuevos anuncios al final de la lista.
+     * Usado para infinite scroll / lazy loading.
+     */
+    fun addMoreData(moreAnuncios: List<Anuncio>) {
+        if (moreAnuncios.isEmpty()) return
+        
+        val startPosition = anuncios.size
+        anuncios = anuncios + moreAnuncios // Crear nueva lista inmutable
+        
+        // Notificar solo los elementos nuevos agregados
+        notifyItemRangeInserted(startPosition, moreAnuncios.size)
+    }
+    
+    /**
+     * Limpia todos los datos del adapter.
+     * Usado antes de recargar datos completamente.
+     */
+    fun clearData() {
+        val oldSize = anuncios.size
+        anuncios = emptyList()
+        notifyItemRangeRemoved(0, oldSize)
     }
 
     /**
@@ -76,18 +109,37 @@ class AnunciosAdapter(private var anuncios: List<Anuncio>) :
             // Cargar imágenes con Glide
             loadImages(anuncio)
 
-            // Lógica para los contadores (a implementar cuando la API los devuelva)
-            binding.tvLikeCount.text = "123"
-            binding.tvCommentCount.text = "45"
-            binding.tvShareCount.text = "20"
+            // Compartir
+            binding.btnShare.setOnClickListener {
+                val title = anuncio.titulo
+                val desc = anuncio.descripcion
+                val imageUrl = anuncio.imagen
+                val author = anuncio.autor.fullName
+
+                val shareText = buildString {
+                    appendLine(title)
+                    if (author.isNotBlank()) appendLine("Por: $author")
+                    if (desc.isNotBlank()) appendLine().append(desc)
+                    if (!imageUrl.isNullOrBlank()) appendLine().append("\nImagen: ").append(imageUrl)
+                }.trim()
+
+                val sendIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(android.content.Intent.EXTRA_SUBJECT, title)
+                    putExtra(android.content.Intent.EXTRA_TEXT, shareText)
+                }
+                val chooser = android.content.Intent.createChooser(sendIntent, "Compartir evento")
+                itemView.context.startActivity(chooser)
+            }
+
         }
 
         /**
-         * ✅ Configura las imágenes del autor y del anuncio con manejo inteligente de conectividad.
+         *  Configura las imágenes del autor y del anuncio con manejo inteligente de conectividad.
          * Implementa click para abrir vista con zoom y usa imágenes por defecto cuando no hay internet.
          */
         private fun loadImages(anuncio: Anuncio) {
-            // ✅ Foto del autor con manejo inteligente de conectividad
+            //  Foto del autor con manejo inteligente de conectividad
             ImageLoadingUtils.loadProfileImage(
                 context = itemView.context,
                 imageView = binding.ivAuthorPhoto,
@@ -95,7 +147,7 @@ class AnunciosAdapter(private var anuncios: List<Anuncio>) :
                 useCircleCrop = true
             )
 
-            // ✅ Imagen del anuncio con manejo inteligente de conectividad
+            //  Imagen del anuncio con manejo inteligente de conectividad
             if (anuncio.imagen != null) {
                 binding.ivAnnouncementImage.visibility = View.VISIBLE
                 
@@ -159,7 +211,7 @@ class AnunciosAdapter(private var anuncios: List<Anuncio>) :
                 setAllowParentInterceptOnEdge(true)
             }
             
-            // ✅ Cargar la imagen en el PhotoView de pantalla completa con manejo inteligente
+            //  Cargar la imagen en el PhotoView de pantalla completa con manejo inteligente
             ImageLoadingUtils.loadGenericImage(
                 context = itemView.context,
                 imageView = fullScreenPhotoView,

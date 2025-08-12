@@ -28,7 +28,7 @@ class CacheManager(
         private const val EVENTS_BY_CATEGORY_KEY = "events_category"
         private const val ALMUERZOS_KEY = "almuerzos"
         
-        // ✅ NUEVO: Limits para prevenir memory leaks en multi-usuario
+        //Limits para prevenir memory leaks en multi-usuario
         private const val MAX_USERS_IN_MEMORY = 10
         private const val MAX_ENTRIES_PER_USER = 50
     }
@@ -210,7 +210,7 @@ class CacheManager(
         cache.put(
             key = cacheKey,
             data = almuerzos,
-            cacheType = CacheStrategy.CacheType.ALMUERZOS, // ✅ Tipo específico
+            cacheType = CacheStrategy.CacheType.ALMUERZOS, //  Tipo específico
             userId = userId,
             metadata = mapOf(
                 "count" to almuerzos.size,
@@ -247,7 +247,7 @@ class CacheManager(
     }
     
     /**
-     * ✅ NUEVO: Limpieza inteligente para apps multi-usuario
+     * Limpieza para apps multi-usuario
      */
     fun smartCleanup(): CleanupResult {
         val stats = cache.getStats()
@@ -355,7 +355,7 @@ class CacheManager(
 }
 
 /**
- * ✅ NUEVO: Resultado de limpieza automática
+ *Resultado de limpieza automática
  */
 data class CleanupResult(
     val entriesCleanedUp: Int,

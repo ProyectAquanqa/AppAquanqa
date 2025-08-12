@@ -117,7 +117,7 @@ class LunchRepository(
                     }
                 }
                 
-                Result.Error(IOException("Error al obtener almuerzos: ${response.code()} ${response.message()}"))
+                Result.Error(IOException("No se pudieron cargar los almuerzos. Intenta nuevamente"))
             }
         } catch (e: Exception) {
             // 5. ERROR DE RED - USAR TODOS LOS FALLBACKS DISPONIBLES

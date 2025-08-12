@@ -17,15 +17,13 @@ interface ChatbotApiService {
 
     /**
      * Envía una pregunta al chatbot y recibe una respuesta.
-
-     * @param request El objeto que contiene la pregunta del usuario y el ID de sesión.
-     * @return Un objeto [ApiResponse] con la respuesta del chatbot envuelta.
      */
-    @POST("api/chatbot/query/")
+    @POST("api/mobile/chatbot/query/")
     suspend fun sendMessage(@Body request: ChatbotRequest): Response<ApiResponse<ChatbotResponse>>
 
-    // Obtiene una lista de las preguntas más frecuentes para mostrar al inicio del chat.
+    // Obtiene una lista de las preguntas más frecuentes para mostrar al inicio del chat
+    //En caso de no obtener respuesta se usa preguntas por defecto harcodeadas
 
-    @GET("api/chatbot-knowledge/frequent_questions/")
+    @GET("api/mobile/chatbot/recommended-questions/")
     suspend fun getFrequentQuestions(): Response<ApiResponse<RecommendedQuestionsResponse>>
 } 

@@ -41,6 +41,16 @@ class HomeViewModel(
     
     val currentDateSpanish: String get() = DateUtils.getCurrentDateInSpanish()
     
+    // Estados para paginación
+    private val _isLoadingMore = MutableLiveData(false)
+    val isLoadingMore: LiveData<Boolean> = _isLoadingMore
+    
+    private val _allEvents = mutableListOf<Anuncio>()
+    private var currentPage = 1
+    private var hasMorePages = true
+    private var isLoadingPage = false
+    private val pageSize = 10
+    
     init {
         // Carga optimizada paralela con refresh inteligente
         loadDataOptimized()
@@ -59,7 +69,7 @@ class HomeViewModel(
     
     /**
      * Verifica si hay nuevos eventos disponibles y los carga.
-     * Útil para detectar contenido nuevo después de agregar eventos.
+     * Útil para detectar contenido nuevo después de agregar eventos
      */
     fun checkForNewEvents() {
         viewModelScope.launch {
@@ -73,22 +83,22 @@ class HomeViewModel(
     }
     
     /**
-     * ✅ Carga inicial de datos con cache inteligente
+     *  Carga inicial de datos con cache inteligente
      */
     private fun loadDataOptimized() {
         viewModelScope.launch {
             _isLoading.value = true
             
-            // ✅ Cargar datos en paralelo
+            //  Cargar datos en paralelo
             coroutineScope {
                 val userNameJob = async { loadUserName() }
                 val categoriesJob = async { loadCategories() }
                 
-                // ✅ Esperar resultados
+                //  Esperar resultados
                 userNameJob.await()
                 val categoriesResult = categoriesJob.await()
                 
-                // ✅ Seleccionar categoría por defecto y cargar eventos
+                //  Seleccionar categoría por defecto y cargar eventos
                 if (categoriesResult is Result.Success && categoriesResult.data.isNotEmpty()) {
                     val defaultCategory = categoriesResult.data.find { it.isAllCategoriesOption() } 
                         ?: categoriesResult.data.first()
@@ -103,14 +113,14 @@ class HomeViewModel(
     }
     
     /**
-     * ✅ Carga nombre de usuario con fallback
+     *  Carga nombre de usuario con fallback
      */
     private suspend fun loadUserName() {
         try {
             val firstName = repository.getUserFirstName().first()
             _userFirstName.value = firstName
             
-            // ✅ Si no hay nombre válido, intentar actualizar desde API
+            //  Si no hay nombre válido, intentar actualizar desde API
             if (firstName == "Usuario") {
                 repository.getUserProfile()
                 _userFirstName.value = repository.getUserFirstName().first()
@@ -121,7 +131,7 @@ class HomeViewModel(
     }
     
     /**
-     * ✅ Carga categorías con cache inteligente
+     *  Carga categorías con cache inteligente
      */
     private suspend fun loadCategories(forceRefresh: Boolean = false): Result<List<Category>> {
         _categoriesState.value = Result.Loading
@@ -131,65 +141,102 @@ class HomeViewModel(
     }
     
     /**
-     * ✅ Carga eventos por categoría con manejo inteligente de cache
+     *  Carga eventos por categoría con paginación incremental
      */
-    private fun loadEventsForCategory(categoryName: String?, forceRefresh: Boolean = false) {
+    private fun loadEventsForCategory(categoryName: String?, forceRefresh: Boolean = false, isLoadingMore: Boolean = false) {
+        if (isLoadingPage) return // Evitar llamadas múltiples simultáneas
+        
         viewModelScope.launch {
-            _eventsState.value = Result.Loading
+            isLoadingPage = true
             
-            // ✅ Invalidar cache específico antes de cambiar categoría 
+            if (isLoadingMore) {
+                _isLoadingMore.value = true
+            } else {
+                _eventsState.value = Result.Loading
+                // Reiniciar paginación para nueva categoría o refresh
+                currentPage = 1
+                hasMorePages = true
+                _allEvents.clear()
+            }
+            
+            //  Invalidar cache específico antes de cambiar categoría 
             if (forceRefresh) {
                 repository.invalidateCache(categoryName = categoryName, invalidateEvents = true)
             }
             
             val eventsResult = repository.getFilteredEvents(
                 categoryName = categoryName,
-                page = 1,
-                pageSize = 30,
+                page = currentPage,
+                pageSize = pageSize,
                 forceRefresh = forceRefresh
             )
             
             when (eventsResult) {
                 is Result.Success -> {
-                    _eventsState.value = Result.Success(eventsResult.data.first)
+                    val (newEvents, paginationInfo) = eventsResult.data
+                    
+                    if (isLoadingMore) {
+                        // Agregar nuevos eventos a la lista existente
+                        _allEvents.addAll(newEvents)
+                    } else {
+                        // Primera carga o refresh completo
+                        _allEvents.clear()
+                        _allEvents.addAll(newEvents)
+                    }
+                    
+                    // Actualizar estado de paginación
+                    hasMorePages = paginationInfo.hasNext
+                    if (hasMorePages) currentPage++
+                    
+                    // Emitir lista completa actualizada
+                    _eventsState.value = Result.Success(_allEvents.toList())
                 }
                 is Result.Error -> {
-                    _eventsState.value = Result.Error(eventsResult.exception)
+                    if (isLoadingMore) {
+                        // Si falla la carga de más elementos, mantener los existentes
+                        Log.e("HomeViewModel", "Error loading more events: ${eventsResult.exception.message}")
+                    } else {
+                        _eventsState.value = Result.Error(eventsResult.exception)
+                    }
                 }
                 is Result.Loading -> {
-                    _eventsState.value = Result.Loading
+                    if (!isLoadingMore) {
+                        _eventsState.value = Result.Loading
+                    }
                 }
-
                 else -> { Log.w("Eventos", "Error de conexion")}
             }
+            
+            _isLoadingMore.value = false
+            isLoadingPage = false
         }
     }
     
     /**
-     * ✅ Selección de categoría con cache invalidation para datos frescos
+     *  Selección de categoría con cache invalidation para datos frescos
      */
     fun onCategorySelected(category: Category) {
         if (_selectedCategory.value?.id != category.id) {
             _selectedCategory.value = category
-            // ✅ IMPORTANTE: Forzar refresh al cambiar categoría para evitar cache incorrecto
+            //  IMPORTANTE: Forzar refresh al cambiar categoría para evitar cache incorrecto
             loadEventsForCategory(category.nombre, forceRefresh = true)
         }
     }
     
     /**
-     * ✅ Refresca todos los datos con invalidación de cache
+     *  Refresca todos los datos con invalidación de cache
      */
     fun refreshData(forceRefresh: Boolean = true) {
         viewModelScope.launch {
             _isLoading.value = true
             
-            // ✅ Smart refresh del repositorio
+            //  Smart refresh del repositorio
             repository.refreshAllData()
             
-            // ✅ Recargar categorías
+            //  Recargar categorías
             loadCategories(forceRefresh)
             
-            // ✅ Recargar eventos de la categoría actual
+            //  Recargar eventos de la categoría actual
             val currentCategory = _selectedCategory.value
             loadEventsForCategory(currentCategory?.nombre, forceRefresh)
             
@@ -198,22 +245,37 @@ class HomeViewModel(
     }
     
     /**
-     * ✅ Obtiene estadísticas del cache para debugging
+     *  Obtiene estadísticas del cache para debugging
      */
     fun getCacheStats() = repository.getCacheStats()
     
     /**
-     * ✅ Invalida cache específico por categoría
+     *  Invalida cache específico por categoría
      */
     fun invalidateCache(categoryName: String? = null) {
         viewModelScope.launch {
             repository.invalidateCache(categoryName = categoryName, invalidateEvents = true)
         }
     }
+    
+    /**
+     * Carga la siguiente página de eventos para infinite scroll
+     */
+    fun loadMoreEvents() {
+        if (!hasMorePages || isLoadingPage) return
+        
+        val currentCategory = _selectedCategory.value
+        loadEventsForCategory(currentCategory?.nombre, forceRefresh = false, isLoadingMore = true)
+    }
+    
+    /**
+     * Verifica si se pueden cargar más eventos
+     */
+    fun canLoadMore(): Boolean = hasMorePages && !isLoadingPage
 }
 
 /**
- * Factory para crear instancias de HomeViewModel con dependencias manuales.
+ * Factory para crear instancias de HomeViewModel con dependencias manuales
  */
 class HomeViewModelFactory(
     private val repository: com.tecsup.aquanqa.data.repository.HomeRepository

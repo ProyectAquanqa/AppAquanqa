@@ -64,8 +64,16 @@ class AnunciosRepository(
                 }
             }
             
-            // 2. LLAMAR API PARA DATOS FRESCOS
-            val response = ApiClient.apiService.getEventosPorCategoria("Anuncios")
+            // 2. LLAMAR API PARA DATOS FRESCOS (solo categoría "Anuncios")
+            val token = userPreferences.accessToken.first()
+            if (token.isNullOrEmpty()) {
+                return Result.Error(IllegalStateException("Token de acceso no disponible"))
+            }
+            val response = ApiClient.apiService.getEventosAndroid(
+                token = "Bearer $token",
+                categoriaNombre = "Anuncios",
+                ordering = "-fecha"
+            )
             
             if (response.isSuccessful) {
                 val anuncios = response.body()
@@ -109,7 +117,7 @@ class AnunciosRepository(
                     }
                 }
                 
-                Result.Error(IOException("Error al obtener anuncios: ${response.code()} ${response.message()}"))
+                Result.Error(IOException("No se pudieron cargar los anuncios. Intenta nuevamente"))
             }
         } catch (e: Exception) {
             // 5. ERROR DE RED - USAR TODOS LOS FALLBACKS DISPONIBLES
@@ -123,6 +131,28 @@ class AnunciosRepository(
             }
             
             Result.Error(IOException("Error de red al obtener anuncios.", e))
+        }
+    }
+
+    /**
+     * Obtiene el detalle de un evento por ID desde la API.
+     * Usa cache híbrido opcionalmente a futuro; por ahora directa a API.
+     */
+    suspend fun getEventoById(id: Int): Result<Anuncio> {
+        return try {
+            val token = userPreferences.accessToken.first()
+            if (token.isNullOrEmpty()) {
+                return Result.Error(IllegalStateException("Token de acceso no disponible"))
+            }
+
+            val response = ApiClient.apiService.getEventoById("Bearer $token", id)
+            if (response.isSuccessful && response.body() != null) {
+                Result.Success(response.body()!!)
+            } else {
+                Result.Error(IOException("No se pudo obtener el evento"))
+            }
+        } catch (e: Exception) {
+            Result.Error(IOException("Error de red al obtener evento", e))
         }
     }
 

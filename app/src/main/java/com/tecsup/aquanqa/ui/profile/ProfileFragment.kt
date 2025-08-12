@@ -40,17 +40,22 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>() {
         
         // Configurar listeners
         setupListeners()
+        
+        // Configurar botón de reintentar
+        binding.btnRetry.setOnClickListener {
+            viewModel.refreshProfile()
+        }
     }
 
     override fun setupObservers() {
         super.setupObservers()
         
-        // ✅ PRIMERO: Observar estado de UI (para configurar la vista correctamente)
+        //  PRIMERO: Observar estado de UI (para configurar la vista correctamente)
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             handleUiState(state)
         }
         
-        // ✅ SEGUNDO: Observar datos del perfil
+        //  SEGUNDO: Observar datos del perfil
         viewModel.userProfile.observe(viewLifecycleOwner) { userProfile ->
             setupUserProfileData(userProfile)
         }
@@ -70,7 +75,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>() {
      */
     private fun setupSwipeRefresh() {
         binding.swipeRefreshLayout.setOnRefreshListener {
-            // ✅ Usar método de refresh específico
+            //  Usar método de refresh específico
             viewModel.refreshProfile()
         }
         
@@ -85,7 +90,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>() {
     
     override fun onResume() {
         super.onResume()
-        // ✅ Solo recargar si es necesario (evitar llamadas innecesarias)
+        //  Solo recargar si es necesario (evitar llamadas innecesarias)
         if (::viewModel.isInitialized && viewModel.userProfile.value == null) {
             viewModel.loadUserProfile()
         }
@@ -165,40 +170,39 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>() {
 
     
     private fun setupListeners() {
-        // ✅ Configurar botón de edición con validación de conectividad
+        //  Configurar botón de edición con validación de conectividad
         binding.editButton.setOnClickListener {
             navigateToEditProfile()
         }
     }
     
     /**
-     * ✅ Maneja todos los estados de UI de manera centralizada y clara.
+     * Maneja todos los estados de UI de manera centralizada y clara.
      */
     private fun handleUiState(state: ProfileViewModel.ProfileUiState) {
         when (state) {
             is ProfileViewModel.ProfileUiState.Idle -> {
-                binding.swipeRefreshLayout.isRefreshing = false
+                showContent()
             }
             is ProfileViewModel.ProfileUiState.Loading -> {
-                binding.swipeRefreshLayout.isRefreshing = true
+                showLoading()
             }
             is ProfileViewModel.ProfileUiState.Success -> {
-                binding.swipeRefreshLayout.isRefreshing = false
+                showContent()
             }
             is ProfileViewModel.ProfileUiState.Error -> {
-                binding.swipeRefreshLayout.isRefreshing = false
-                showProfileError(state.message)
+                showErrorState(state.message)
             }
         }
     }
     
     /**
-     * ✅ CRÍTICO: Valida conectividad antes de navegar a edición.
+     *  CRÍTICO: Valida conectividad antes de navegar a edición.
      * Solo permite entrar al fragment de edición si hay conexión.
      */
     private fun navigateToEditProfile() {
         if (NetworkConfig.ConnectivityUtils.isNetworkAvailable(requireContext())) {
-            // ✅ HAY CONEXIÓN: Permitir navegación
+            //  HAY CONEXIÓN: Permitir navegación
             findNavController().navigate(R.id.action_navigation_profile_to_editProfileFragment)
         } else {
             // ❌ SIN CONEXIÓN: Mostrar error y NO navegar
@@ -211,15 +215,38 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>() {
     }
     
     /**
-     * Muestra errores específicos del perfil sin conflicto con BaseFragment.
+     * Muestra el estado de carga inicial
      */
-    private fun showProfileError(message: String) {
-        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG)
-            .setAction("Reintentar") { 
-                viewModel.refreshProfile() 
-            }
-            .show()
+    private fun showLoading() {
+        binding.apply {
+            progressBar.visibility = android.view.View.VISIBLE
+            swipeRefreshLayout.visibility = android.view.View.GONE
+            errorState.visibility = android.view.View.GONE
+        }
     }
 
+    /**
+     * Muestra el contenido del perfil
+     */
+    private fun showContent() {
+        binding.apply {
+            progressBar.visibility = android.view.View.GONE
+            swipeRefreshLayout.visibility = android.view.View.VISIBLE
+            swipeRefreshLayout.isRefreshing = false
+            errorState.visibility = android.view.View.GONE
+        }
+    }
 
+    /**
+     * Muestra el estado de error con botón reintentar
+     */
+    private fun showErrorState(errorMessage: String) {
+        binding.apply {
+            progressBar.visibility = android.view.View.GONE
+            swipeRefreshLayout.visibility = android.view.View.GONE
+            swipeRefreshLayout.isRefreshing = false
+            errorState.visibility = android.view.View.VISIBLE
+            tvErrorMessage.text = errorMessage
+        }
+    }
 } 

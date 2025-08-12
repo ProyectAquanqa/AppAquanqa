@@ -94,7 +94,7 @@ class HomeRepository(
                         Log.w(TAG, "API failed, using expired cache as fallback")
                         Result.Success(cacheResult.data)
                     }
-                    else -> Result.Error(Exception("Error al obtener perfil del usuario: ${response.code()}"))
+                    else -> Result.Error(Exception("No se pudo cargar la información del usuario"))
                 }
             }
         } catch (e: Exception) {
@@ -166,7 +166,7 @@ class HomeRepository(
                     }
                 }
                 
-                Result.Error(Exception("Error al obtener categorías: ${response.code()}"))
+                Result.Error(Exception("No se pudieron cargar las categorías"))
             }
         } catch (e: Exception) {
             // 5. ERROR DE RED - USAR CACHE COMO ÚLTIMO RECURSO
@@ -211,7 +211,7 @@ class HomeRepository(
                 
                 Result.Success(Pair(paginatedResponse.results, paginationInfo))
             } else {
-                Result.Error(Exception("Error al obtener eventos: ${response.code()}"))
+                Result.Error(Exception("No se pudieron cargar los eventos"))
             }
         } catch (e: Exception) {
             Result.Error(e)
@@ -245,7 +245,7 @@ class HomeRepository(
                 
                 Result.Success(Pair(paginatedResponse.results, paginationInfo))
             } else {
-                Result.Error(Exception("Error al obtener eventos por categoría: ${response.code()}"))
+                Result.Error(Exception("No se pudieron cargar los eventos de esta categoría"))
             }
         } catch (e: Exception) {
             Result.Error(e)
@@ -366,7 +366,7 @@ class HomeRepository(
                     }
                 }
                 
-                Result.Error(Exception("Error al obtener eventos: ${response.code()}"))
+                Result.Error(Exception("No se pudieron cargar más eventos"))
             }
         } catch (e: Exception) {
             // 5. ERROR DE RED - USAR TODOS LOS FALLBACKS DISPONIBLES

@@ -212,7 +212,7 @@ class UserPreferences(private val context: Context) {
     }
 
     /**
-     * ✅ NUEVO: Flow que emite el perfil de usuario del cache.
+     * Flow que emite el perfil de usuario del cache.
      * retorna Flow<String?> JSON de perfil de usuario o null si no existe
      */
     val cachedUserProfile: Flow<String?> = context.dataStore.data.map { preferences ->
@@ -220,7 +220,7 @@ class UserPreferences(private val context: Context) {
     }
 
     /**
-     * ✅ NUEVO: Flow que emite el timestamp del cache de perfil de usuario.
+     * Flow que emite el timestamp del cache de perfil de usuario.
      * retorna Flow<Long?> Timestamp de cuando se guardó el perfil
      */
     val userProfileCacheTime: Flow<Long?> = context.dataStore.data.map { preferences ->
@@ -533,7 +533,7 @@ class UserPreferences(private val context: Context) {
     // ================= MÉTODOS PARA CACHE DE PERFIL DE USUARIO =================
 
     /**
-     * ✅ NUEVO: Guarda perfil de usuario en cache persistente.
+     *  Guarda perfil de usuario en cache persistente.
      * Para usar cuando no hay internet y cache de memoria está vacío.
      */
     suspend fun saveUserProfileCache(userProfileJson: String) {
@@ -544,12 +544,12 @@ class UserPreferences(private val context: Context) {
     }
 
     /**
-     * ✅ NUEVO: Obtiene perfil de usuario del cache.
+     *  Obtiene perfil de usuario del cache.
      */
     fun getUserProfileCache(): Flow<String?> = cachedUserProfile
 
     /**
-     * ✅ NUEVO: Verifica si el cache de perfil de usuario ha expirado.
+     * Verifica si el cache de perfil de usuario ha expirado.
      * Cache de perfil dura 1 hora.
      */
     suspend fun isUserProfileCacheExpired(): Boolean {
@@ -561,7 +561,7 @@ class UserPreferences(private val context: Context) {
     }
 
     /**
-     * ✅ NUEVO: Limpia el cache de perfil de usuario.
+     * Limpia el cache de perfil de usuario.
      */
     suspend fun clearUserProfileCache() {
         context.dataStore.edit { preferences ->

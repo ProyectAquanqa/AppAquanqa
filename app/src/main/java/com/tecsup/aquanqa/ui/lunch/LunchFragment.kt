@@ -40,6 +40,11 @@ class LunchFragment : BaseFragment<FragmentLunchBinding>() {
         super.setupUI()
         setupRecyclerView()
         setupSwipeRefresh()
+        
+        // Configurar botón de reintentar
+        binding.btnRetry.setOnClickListener {
+            lunchViewModel.refreshAlmuerzos()
+        }
     }
 
     private fun setupRecyclerView() {
@@ -76,12 +81,12 @@ class LunchFragment : BaseFragment<FragmentLunchBinding>() {
     override fun setupObservers() {
         super.setupObservers()
         
-        // ✅ PRIMERO: Observar estado de UI (para configurar la vista correctamente)
+        //  PRIMERO: Observar estado de UI (para configurar la vista correctamente)
         lunchViewModel.uiState.observe(viewLifecycleOwner) { state ->
             handleUiState(state)
         }
         
-        // ✅ SEGUNDO: Observar lista de almuerzos (para mostrar los datos)
+        //  SEGUNDO: Observar lista de almuerzos (para mostrar los datos)
         lunchViewModel.almuerzos.observe(viewLifecycleOwner) { almuerzos ->
             // Forzar actualización creando una nueva lista para evitar problemas con DiffUtil
             val nuevaLista = almuerzos.toList()
@@ -100,57 +105,72 @@ class LunchFragment : BaseFragment<FragmentLunchBinding>() {
     private fun handleUiState(state: LunchViewModel.LunchUiState) {
         when (state) {
             is LunchViewModel.LunchUiState.Idle -> {
-                hideLoading()
-                hideEmptyState()
-                binding.rvLunchMenu.visibility = View.VISIBLE
+                showContent()
             }
             is LunchViewModel.LunchUiState.Loading -> {
                 showLoading()
-                hideEmptyState()
             }
             is LunchViewModel.LunchUiState.Success -> {
-                hideLoading()
-                hideEmptyState()
-                binding.rvLunchMenu.visibility = View.VISIBLE
+                showContent()
             }
             is LunchViewModel.LunchUiState.Empty -> {
-                hideLoading()
                 showEmptyState()
             }
             is LunchViewModel.LunchUiState.Error -> {
-                hideLoading()
-                hideEmptyState()
-                showLunchError(state.message)
+                showErrorState(state.message)
             }
         }
     }
 
+    /**
+     * Muestra el estado de carga inicial
+     */
     private fun showLoading() {
-        binding.swipeRefreshLayout.isRefreshing = true
-        binding.rvLunchMenu.visibility = View.VISIBLE
+        binding.apply {
+            progressBar.visibility = View.VISIBLE
+            swipeRefreshLayout.visibility = View.GONE
+            emptyState.visibility = View.GONE
+            errorState.visibility = View.GONE
+        }
     }
 
-    private fun hideLoading() {
-        binding.swipeRefreshLayout.isRefreshing = false
-        binding.rvLunchMenu.visibility = View.VISIBLE
+    /**
+     * Muestra el contenido con datos
+     */
+    private fun showContent() {
+        binding.apply {
+            progressBar.visibility = View.GONE
+            swipeRefreshLayout.visibility = View.VISIBLE
+            swipeRefreshLayout.isRefreshing = false
+            emptyState.visibility = View.GONE
+            errorState.visibility = View.GONE
+        }
     }
 
+    /**
+     * Muestra el estado vacío cuando no hay datos
+     */
     private fun showEmptyState() {
-        binding.rvLunchMenu.visibility = View.GONE
-        showToast("No hay almuerzos disponibles en este momento", Toast.LENGTH_LONG)
+        binding.apply {
+            progressBar.visibility = View.GONE
+            swipeRefreshLayout.visibility = View.GONE
+            emptyState.visibility = View.VISIBLE
+            errorState.visibility = View.GONE
+        }
     }
 
-    private fun hideEmptyState() {
-        binding.rvLunchMenu.visibility = View.VISIBLE
-    }
-
-    private fun showLunchError(message: String) {
-        binding.rvLunchMenu.visibility = View.VISIBLE
-        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG)
-            .setAction("Reintentar") {
-                lunchViewModel.refreshAlmuerzos()
-            }
-            .show()
+    /**
+     * Muestra el estado de error con botón reintentar
+     */
+    private fun showErrorState(errorMessage: String) {
+        binding.apply {
+            progressBar.visibility = View.GONE
+            swipeRefreshLayout.visibility = View.GONE
+            swipeRefreshLayout.isRefreshing = false
+            emptyState.visibility = View.GONE
+            errorState.visibility = View.VISIBLE
+            tvErrorMessage.text = errorMessage
+        }
     }
 
     /**

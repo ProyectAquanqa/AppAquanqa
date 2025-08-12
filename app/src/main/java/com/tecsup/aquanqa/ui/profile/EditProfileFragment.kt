@@ -83,7 +83,7 @@ class EditProfileFragment : Fragment() {
     }
     
     private fun setupObservers() {
-        // ✅ Observar estado de UI consolidado
+        //  Observar estado de UI consolidado
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
             handleUiState(state)
         }
@@ -101,7 +101,7 @@ class EditProfileFragment : Fragment() {
     }
     
     /**
-     * ✅ Maneja todos los estados de UI de manera centralizada.
+     *  Maneja todos los estados de UI de manera centralizada.
      */
     private fun handleUiState(state: ProfileViewModel.ProfileUiState) {
         when (state) {
@@ -177,7 +177,7 @@ class EditProfileFragment : Fragment() {
             // Errores generales - mostrar como toast ya que no corresponden a un input específico
             else -> {
                 val userFriendlyMessage = when {
-                    errorMessage.contains("401") || errorMessage.contains("sesión ha expirado") -> 
+                    errorMessage.contains("sesión ha expirado") || errorMessage.contains("Token de acceso no disponible") -> 
                         "Tu sesión ha expirado. Inicia sesión nuevamente"
                     errorMessage.contains("network") || errorMessage.contains("conectar") || errorMessage.contains("conexión") -> 
                         "No hay conexión a internet. Verifica tu conexión"
@@ -188,7 +188,8 @@ class EditProfileFragment : Fragment() {
                     errorMessage.contains("formato") && errorMessage.contains("imagen") -> 
                         "Formato de imagen no válido. Usa JPG o PNG"
                     errorMessage.length < 80 && !errorMessage.contains("Exception") && 
-                    !errorMessage.contains("Error:") && !errorMessage.contains("IOException") -> 
+                    !errorMessage.contains("Error:") && !errorMessage.contains("IOException") && 
+                    !errorMessage.contains("401") && !errorMessage.contains("400") && !errorMessage.contains("500") -> 
                         errorMessage
                     else -> "Error al actualizar el perfil. Intenta nuevamente"
                 }

@@ -22,7 +22,7 @@ class IntelligentCache {
     companion object {
         private const val TAG = "IntelligentCache"
         private const val SEPARATOR = "::"
-        // ✅ CRÍTICO: Límites para prevenir memory leaks
+        //Límites para prevenir memory leaks
         private const val MAX_CACHE_ENTRIES = 500
         private const val CLEANUP_THRESHOLD = 450 // Limpiar cuando llegue a 450
     }
@@ -48,7 +48,7 @@ class IntelligentCache {
         
         cacheStorage[fullKey] = entry
         
-        // ✅ CRÍTICO: Auto-cleanup cuando se alcanza el límite
+        //  Auto-cleanup cuando se alcanza el límite
         if (cacheStorage.size >= CLEANUP_THRESHOLD) {
             performAutomaticCleanup()
         }
@@ -179,7 +179,7 @@ class IntelligentCache {
     }
     
     /**
-     * ✅ CRÍTICO: Limpieza automática para prevenir memory leaks
+     * Limpieza automática para prevenir memory leaks
      */
     private fun performAutomaticCleanup() {
         try {

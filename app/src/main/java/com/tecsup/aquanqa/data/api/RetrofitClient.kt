@@ -12,7 +12,7 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 
 /**
- * RetrofitClient mejorado con reconexion inteligente y manejo robusto de red
+ * RetrofitClient con reconexion y lo que es el manejor de la red
  */
 class RetrofitClient(private val context: Context) {
 
@@ -25,7 +25,7 @@ class RetrofitClient(private val context: Context) {
         private const val CACHE_SIZE = 50 * 1024 * 1024L // 50MB cache
     }
 
-    // Cache para modo offline
+    // Cache para modo offline para cuando no se tenga lo que es el wifi
     private val cache = Cache(
         directory = File(context.cacheDir, "http_cache"),
         maxSize = CACHE_SIZE
@@ -40,7 +40,7 @@ class RetrofitClient(private val context: Context) {
         }
     }
 
-    // Cliente HTTP principal con todas las mejoras
+    // Cliente HTTP principal
     private val defaultOkHttpClient = clientBuilder.build().newBuilder()
         .cache(cache)
         .addNetworkInterceptor(loggingInterceptor) // Network interceptor para cache
@@ -72,7 +72,7 @@ class RetrofitClient(private val context: Context) {
         .addConverterFactory(GsonConverterFactory.create())
         .build()
     
-    // Cliente Retrofit para subidas
+    // Cliente Retrofit para subidas de archivos
     private val uploadRetrofit = Retrofit.Builder()
         .baseUrl(ApiConfig.BASE_URL)
         .client(uploadOkHttpClient)
@@ -168,7 +168,7 @@ class RetrofitClient(private val context: Context) {
      */
     fun getNetworkStats(): String {
         return buildString {
-            appendLine("=== RetrofitClient Network Stats ===")
+            appendLine("== RetrofitClient Network Stats ==")
             append(connectivityManager.getNetworkStats())
             appendLine()
             append(getCacheStats())
@@ -182,11 +182,11 @@ class RetrofitClient(private val context: Context) {
      */
     suspend fun performHealthCheck(): Boolean {
         return try {
-            Log.d(TAG, "Performing network health check")
+            Log.d(TAG, "Realizar una comprobacion del estado de la red")
             val connectivityInfo = checkConnectivity()
             
             if (!connectivityInfo.isConnected) {
-                Log.w(TAG, "Health check failed: no connectivity")
+                Log.w(TAG, "Comprobacion de estado fallida, no hay conectividad")
                 return false
             }
             
@@ -204,7 +204,7 @@ class RetrofitClient(private val context: Context) {
             isHealthy
             
         } catch (e: Exception) {
-            Log.e(TAG, "Health check failed with exception", e)
+            Log.e(TAG, "La comprobacion de salud fallo, con excepcion", e)
             false
         }
     }

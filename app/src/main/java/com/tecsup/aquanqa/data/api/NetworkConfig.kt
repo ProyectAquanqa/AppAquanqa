@@ -263,7 +263,7 @@ object NetworkConfig {
     }
     
     /**
-     * ✅ NUEVO: Utilidades simples de conectividad (integradas aquí)
+
      * Para casos de uso directos como validación antes de navegación.
      */
     object ConnectivityUtils {

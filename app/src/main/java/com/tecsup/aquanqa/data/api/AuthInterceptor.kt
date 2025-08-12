@@ -86,7 +86,7 @@ class AuthInterceptor(private val context: Context) : Interceptor {
                 }
 
             } catch (e: Exception) {
-                Log.e(TAG, "Error in auth interceptor", e)
+                Log.e(TAG, "Error en el interceptor de lo de autenticacion", e)
                 chain.proceed(originalRequest)
             }
         }
@@ -101,7 +101,7 @@ class AuthInterceptor(private val context: Context) : Interceptor {
             Log.d(TAG, "Token refresh already in progress, waiting...")
             refreshMutex.withLock {
                 // Si aún está refrescando cuando obtenemos el lock, el token ya debería estar actualizado
-                Log.d(TAG, "Acquired refresh lock, getting updated token")
+                Log.d(TAG, "Acquired refresh lock, obtiene el token actualizado")
             }
         }
         

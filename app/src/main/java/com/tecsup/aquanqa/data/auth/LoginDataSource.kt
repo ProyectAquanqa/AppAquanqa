@@ -128,7 +128,7 @@ class LoginDataSource(private val userPreferences: UserPreferences) {
                     }
                     else -> {
                         Log.e("LoginDataSource", "Error HTTP ${response.code()}: ${response.message()}")
-                        Result.Error(IOException("Error en el login: ${response.message()}"))
+                        Result.Error(IOException("Ocurrió un problema durante el inicio de sesión. Intenta nuevamente"))
                     }
                 }
                 }

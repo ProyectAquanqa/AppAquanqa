@@ -1,4 +1,4 @@
-package com.tecsup.aquanqa.ui.home
+package com.tecsup.aquanqa.utils
 
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView

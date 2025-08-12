@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="240dp"
     android:fitsSystemWindows="true"
+    android:animateLayoutChanges="true"
     >
 
     <!-- Fondo con gradiente azul corporativo -->
@@ -49,6 +50,7 @@
             android:scaleType="centerCrop"
             app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CircleImageView"
             app:srcCompat="@drawable/ic_profile"
+            android:background="@color/white"
             app:strokeColor="@color/white"
             app:strokeWidth="1dp" />
 

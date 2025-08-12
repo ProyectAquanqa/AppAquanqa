@@ -246,7 +246,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     /**
-     * Muestra un Snackbar para errores de red con opción de reintentar
+     * Muestra un Snackbar para errores de red con opción de reintenta reconectar
      */
     private fun showNetworkErrorSnackbar(message: String) {
         Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_LONG)
@@ -342,7 +342,7 @@ class LoginActivity : AppCompatActivity() {
                         Log.w("LoginActivity", "Sesion activa pero sin token valido")
                     }
                 } else {
-                    Log.d("LoginActivity", "No hay sesion activa")
+                    Log.d("LoginActivity", "No hay una sesion activa")
                 }
                 
                 // Si llegamos aqui, no hay sesion valida - continuar con login normal
@@ -350,7 +350,7 @@ class LoginActivity : AppCompatActivity() {
                 
             } catch (e: Exception) {
                 Log.e("LoginActivity", "Error verificando sesion existente", e)
-                // En caso de error, continuar con el flujo normal de login
+                // En caso de error, continuar con el flujo normal de login actual que se tiene
             }
         }
     }

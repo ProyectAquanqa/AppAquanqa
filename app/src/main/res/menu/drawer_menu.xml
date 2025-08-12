@@ -22,7 +22,10 @@
             android:id="@+id/navigation_chatbot"
             android:icon="@drawable/ic_chatbot"
             android:title="@string/menu_chatbot"
-            android:titleCondensed="AquaBot" />
+
+            android:titleCondensed="AquaBot"
+
+            />
             
         <item
             android:id="@+id/navigation_profile"

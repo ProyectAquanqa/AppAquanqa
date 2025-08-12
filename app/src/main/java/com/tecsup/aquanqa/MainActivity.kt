@@ -21,6 +21,8 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DecodeFormat
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.navigation.NavigationView
 import com.tecsup.aquanqa.data.FirebaseManager
 import com.tecsup.aquanqa.data.LoginDataSource
@@ -103,10 +105,31 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         
-        // Configurar navegación para Drawer y BottomNav <color name="dark_success">#10B981</color>
-
+        // Configurar navegación para Drawer y BottomNav
         navView.setupWithNavController(navController)
-        binding.appBarMain.bottomNavView.setupWithNavController(navController)
+        
+        // Configurar Bottom Navigation con gestión correcta del back stack
+        setupBottomNavigationWithBackStackManagement()
+
+        // Optimizar rendimiento del drawer durante el deslizamiento
+        binding.drawerLayout.addDrawerListener(object : DrawerLayout.SimpleDrawerListener() {
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
+                // Forzar capa de hardware mientras se desliza para evitar jank
+                if (binding.appBarMain.root.layerType != View.LAYER_TYPE_HARDWARE) {
+                    binding.appBarMain.root.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+                }
+            }
+
+            override fun onDrawerOpened(drawerView: View) {
+                // Restaurar capa
+                binding.appBarMain.root.setLayerType(View.LAYER_TYPE_NONE, null)
+            }
+
+            override fun onDrawerClosed(drawerView: View) {
+                // Restaurar capa
+                binding.appBarMain.root.setLayerType(View.LAYER_TYPE_NONE, null)
+            }
+        })
 
         // Configurar la cabecera del Drawer
         setupDrawerHeader()
@@ -134,6 +157,7 @@ class MainActivity : AppCompatActivity() {
             val isProfile = destination.id == R.id.navigation_profile
             val isEditProfile = destination.id == R.id.editProfileFragment
             val isNotifications = destination.id == R.id.navigation_notifications
+            val isEventDetail = destination.id == R.id.eventDetailFragment
             
             // Ocultar FAB en chatbot, perfil, editar perfil y notificaciones
             val shouldHideFab = isChatbot || isProfile || isEditProfile || isNotifications
@@ -141,6 +165,30 @@ class MainActivity : AppCompatActivity() {
             
             // Solo ocultar bottom nav en chatbot
             binding.appBarMain.bottomNavView.visibility = if (isChatbot) View.GONE else View.VISIBLE
+
+            // Actualizar selección del bottom navigation solo si estamos en un destino principal
+            val topLevelDestinations = setOf(
+                R.id.navigation_home,
+                R.id.navigation_anuncios,
+                R.id.navigation_lunch,
+                R.id.navigation_profile
+            )
+            
+            if (topLevelDestinations.contains(destination.id)) {
+                // Actualizar la selección del bottom nav sin disparar el listener
+                val bottomNav = binding.appBarMain.bottomNavView
+                if (bottomNav.selectedItemId != destination.id) {
+                    bottomNav.selectedItemId = destination.id
+                    Log.d("MainActivity", "Bottom nav actualizado a: ${destination.id}")
+                }
+            }
+
+            // Pre-cargar liviano el header del drawer cuando se entra al drawer destination
+            // para que el drawer se sienta más fluido (evita cargas pesadas al abrir)
+            if (::profileViewModel.isInitialized) {
+                // No hace trabajo pesado, solo asegura datos listos
+                profileViewModel.userProfile.value ?: profileViewModel.loadUserProfile()
+            }
         }
 
         supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_menu)
@@ -160,6 +208,51 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Configura el Bottom Navigation con gestión correcta del back stack.
+     * Asegura que al cambiar entre tabs, siempre se muestre el fragment raíz correspondiente.
+     */
+    private fun setupBottomNavigationWithBackStackManagement() {
+        // IDs de los fragments del bottom navigation
+        val topLevelDestinations = setOf(
+            R.id.navigation_home,
+            R.id.navigation_anuncios, 
+            R.id.navigation_lunch,
+            R.id.navigation_profile
+        )
+
+        binding.appBarMain.bottomNavView.setOnItemSelectedListener { item ->
+            val selectedId = item.itemId
+            
+            // Solo proceder si el item seleccionado está en los top level destinations
+            if (topLevelDestinations.contains(selectedId)) {
+                // Si ya estamos en el destino seleccionado, no hacer nada
+                if (navController.currentDestination?.id == selectedId) {
+                    return@setOnItemSelectedListener true
+                }
+                
+                // Limpiar todo el back stack hasta el grafo de navegación raíz
+                navController.popBackStack(R.id.mobile_navigation, false)
+                
+                // Navegar al destino seleccionado
+                try {
+                    navController.navigate(selectedId)
+                    Log.d("MainActivity", "Navegado correctamente a: $selectedId")
+                } catch (e: Exception) {
+                    Log.e("MainActivity", "Error navegando a $selectedId: ${e.message}")
+                    return@setOnItemSelectedListener false
+                }
+                
+                return@setOnItemSelectedListener true
+            }
+            
+            false
+        }
+        
+        // Configurar el estado inicial del bottom navigation
+        binding.appBarMain.bottomNavView.selectedItemId = R.id.navigation_home
+    }
+
     private fun setupDrawerHeader() {
         val headerView = binding.drawerNavView.getHeaderView(0)
         val profileImage = headerView.findViewById<ImageView>(R.id.nav_header_profile_image)
@@ -177,11 +270,16 @@ class MainActivity : AppCompatActivity() {
                     if (url.startsWith("http")) url else userRepository.getBaseUrl() + url
                 }
 
-                    // Cargar imagen de perfil con Glide
+                    // Cargar imagen de perfil con Glide optimizado para scroll suave
                     Glide.with(this@MainActivity)
-                    .load(imageUrl)
-                    .placeholder(R.drawable.ic_profile)
-                    .error(R.drawable.ic_profile)
+                        .load(imageUrl)
+                        .dontAnimate()
+                        .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+                        .thumbnail(0.25f)
+                        .format(DecodeFormat.PREFER_RGB_565)
+                        .override(256, 256)
+                        .placeholder(R.drawable.ic_profile)
+                        .error(R.drawable.ic_profile)
                         .circleCrop()
                         .into(profileImage)
                 }
@@ -245,9 +343,93 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+        // Manejar navegación hacia atrás con gestión especial para fragments anidados
+        return handleBackNavigation() || navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+    }
+
+    /**
+     * Maneja la navegación hacia atrás con lógica especial para fragments anidados
+     */
+    private fun handleBackNavigation(): Boolean {
+        val currentDestination = navController.currentDestination?.id
+        
+        return when (currentDestination) {
+            R.id.navigation_notifications -> {
+                // Desde notificaciones, volver al último tab activo del bottom navigation
+                navigateToLastActiveBottomNavTab()
+                true
+            }
+            R.id.eventDetailFragment -> {
+                // Desde detalle de evento, volver a notificaciones
+                navController.popBackStack()
+                true
+            }
+            else -> false
+        }
+    }
+
+    /**
+     * Navega al último tab activo del bottom navigation
+     */
+    private fun navigateToLastActiveBottomNavTab() {
+        // Obtener el item actualmente seleccionado en el bottom navigation
+        val selectedItemId = binding.appBarMain.bottomNavView.selectedItemId
+        
+        // Limpiar el back stack hasta el nivel raíz
+        navController.popBackStack(R.id.mobile_navigation, false)
+        
+        // Navegar al tab seleccionado
+        try {
+            navController.navigate(selectedItemId)
+            Log.d("MainActivity", "Navegando de vuelta al tab: $selectedItemId")
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Error navegando de vuelta: ${e.message}")
+            // Fallback al home
+            navController.navigate(R.id.navigation_home)
+        }
     }
     
+    override fun onBackPressed() {
+        // Manejar el botón de atrás del sistema
+        if (!handleSystemBackPress()) {
+            super.onBackPressed()
+        }
+    }
+
+    /**
+     * Maneja el botón de atrás del sistema con lógica especial para fragments anidados
+     */
+    private fun handleSystemBackPress(): Boolean {
+        val currentDestination = navController.currentDestination?.id
+        
+        return when (currentDestination) {
+            R.id.navigation_notifications -> {
+                // Desde notificaciones, volver al último tab activo del bottom navigation
+                navigateToLastActiveBottomNavTab()
+                true
+            }
+            R.id.eventDetailFragment -> {
+                // Desde detalle de evento, volver a notificaciones
+                navController.popBackStack()
+                true
+            }
+            R.id.navigation_home, R.id.navigation_anuncios, 
+            R.id.navigation_lunch, R.id.navigation_profile -> {
+                // Si estamos en un tab principal, salir de la app
+                false
+            }
+            else -> {
+                // Para otros casos, usar la navegación estándar
+                if (!navController.popBackStack()) {
+                    // Si no hay más fragments en el stack, salir de la app
+                    false
+                } else {
+                    true
+                }
+            }
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         // Detener monitoreo de tokens y limpiar recursos

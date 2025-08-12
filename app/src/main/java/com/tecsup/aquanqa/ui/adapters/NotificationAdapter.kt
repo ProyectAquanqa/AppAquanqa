@@ -22,6 +22,26 @@ import de.hdodenhof.circleimageview.CircleImageView
 class NotificationAdapter(
     private val onNotificationClick: (Notification) -> Unit
 ) : ListAdapter<NotificationItem, RecyclerView.ViewHolder>(NotificationDiffCallback()) {
+    
+    /**
+     * Agrega más datos al final de la lista actual.
+     * Usado para infinite scroll / lazy loading.
+     */
+    fun addMoreData(moreItems: List<NotificationItem>) {
+        if (moreItems.isEmpty()) return
+        
+        val currentList = currentList.toMutableList()
+        currentList.addAll(moreItems)
+        submitList(currentList)
+    }
+    
+    /**
+     * Limpia todos los datos del adapter.
+     * Usado antes de recargar datos completamente.
+     */
+    fun clearData() {
+        submitList(emptyList())
+    }
 
     companion object {
         private const val VIEW_TYPE_DATE_HEADER = 0
@@ -108,7 +128,20 @@ class NotificationAdapter(
             
             // Configurar click listener
             itemView.setOnClickListener {
+                android.util.Log.d("NotificationAdapter", "=== CLICK EN NOTIFICACIÓN ===")
+                android.util.Log.d("NotificationAdapter", "Notification ID: ${notification.id}")
+                android.util.Log.d("NotificationAdapter", "Notification título: '${notification.title}'")
+                android.util.Log.d("NotificationAdapter", "¿Tiene evento?: ${notification.evento != null}")
+                notification.evento?.let { evento ->
+                    android.util.Log.d("NotificationAdapter", "Evento ID: ${evento.id}")
+                    android.util.Log.d("NotificationAdapter", "Evento título: '${evento.titulo}'")
+                } ?: run {
+                    android.util.Log.w("NotificationAdapter", "Esta notificación NO tiene evento asociado")
+                }
+                
+                android.util.Log.d("NotificationAdapter", "Ejecutando onNotificationClick...")
                 onNotificationClick(notification)
+                android.util.Log.d("NotificationAdapter", "onNotificationClick completado")
             }
         }
 

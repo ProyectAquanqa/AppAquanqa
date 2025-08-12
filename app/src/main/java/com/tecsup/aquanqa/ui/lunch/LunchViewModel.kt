@@ -27,7 +27,7 @@ class LunchViewModel(
     val almuerzos: LiveData<List<Almuerzo>> = _almuerzos
 
     init {
-        // ✅ Cargar datos inmediatamente al crear el ViewModel
+        //  Cargar datos inmediatamente al crear el ViewModel
         loadAlmuerzos()
     }
 
@@ -75,7 +75,7 @@ class LunchViewModel(
      * Solo refresca si ya hay datos cargados para evitar doble carga inicial.
      */
     fun onAppResumed() {
-        // ✅ Solo refrescar si ya hay datos, evitar doble carga inicial
+        //  Solo refrescar si ya hay datos, evitar doble carga inicial
         if (_almuerzos.value?.isNotEmpty() == true) {
             refreshAlmuerzos()
         }

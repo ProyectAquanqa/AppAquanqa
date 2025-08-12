@@ -20,18 +20,18 @@ abstract class BaseFragment<VB : ViewBinding> : Fragment() {
     protected val binding get() = _binding!!
 
     /**
-     * Método abstracto que debe ser implementado por los fragments hijos
+     * Metodo abstracto que debe ser implementado por los fragments hijos
      * para inflar su layout específico
      */
     protected abstract fun getViewBinding(inflater: LayoutInflater, container: ViewGroup?): VB
 
     /**
-     * Método opcional para configurar la UI después de que se cree la vista
+     * Metodo opcional para configurar la UI después de que se cree la vista
      */
     protected open fun setupUI() {}
 
     /**
-     * Método opcional para configurar observadores de datos
+     * Metodo opcional para configurar observadores de datos
      */
     protected open fun setupObservers() {}
 
@@ -61,14 +61,14 @@ abstract class BaseFragment<VB : ViewBinding> : Fragment() {
     }
 
     /**
-     * Método de utilidad para mostrar mensajes Toast
+     * Metodo de utilidad para mostrar mensajes Toast
      */
     protected fun showToast(message: String, duration: Int = Toast.LENGTH_SHORT) {
         Toast.makeText(requireContext(), message, duration).show()
     }
 
     /**
-     * Método de utilidad para mostrar mensajes de error
+     * Metodo de utilidad para mostrar los mensajes de error diferentes que se encuentren
      */
     protected fun showError(error: String) {
         if (error.isNotEmpty()) {

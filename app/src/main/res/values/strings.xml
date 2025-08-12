@@ -29,6 +29,7 @@
     <string name="invalid_username">Not a valid username</string>
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="login_failed">"Login failed"</string>
+    <string name="image_firma">Imagen de firma</string>
     
     <!-- Textos para la pantalla de login -->
     <string name="login_title">Iniciar sesión</string>
@@ -44,7 +45,7 @@
     <string name="error_invalid_password">Contraseña incorrecta</string>
     <string name="error_invalid_password_detail">La contraseña ingresada es incorrecta</string>
     <string name="error_authentication">Error de autenticación</string>
-    
+    <string name="errror_carga">Ocurrio un error de carga</string>
     <!-- Textos para el chatbot -->
     <string name="chatbot_title">Ara, tu asistente virtual</string>
     <string name="chatbot_hint">Escribe una pregunta</string>

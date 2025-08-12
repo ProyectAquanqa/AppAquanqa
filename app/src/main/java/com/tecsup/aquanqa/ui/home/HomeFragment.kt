@@ -21,6 +21,7 @@ import com.tecsup.aquanqa.ui.anuncios.AnunciosAdapterWrapper
 import com.tecsup.aquanqa.ui.anuncios.createAnunciosAdapter
 import com.tecsup.aquanqa.ui.base.BaseFragment
 import com.tecsup.aquanqa.utils.DateUtils
+import com.tecsup.aquanqa.utils.InfiniteScrollListener
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 
@@ -33,6 +34,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
     private lateinit var viewModel: HomeViewModel
     private lateinit var categoryAdapter: CategoryAdapter
     private lateinit var eventsAdapter: AnunciosAdapterWrapper
+    private lateinit var infiniteScrollListener: InfiniteScrollListener
 
     override fun getViewBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentHomeBinding {
         return FragmentHomeBinding.inflate(inflater, container, false)
@@ -47,7 +49,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
 
     override fun onResume() {
         super.onResume()
-        // ✅ Solo recargar si es necesario (evitar llamadas innecesarias, patrón ProfileFragment)
+        //  Solo recargar si es necesario (evitar llamadas innecesarias, patrón ProfileFragment)
         if (::viewModel.isInitialized) {
             viewModel.onAppResumed()
         }
@@ -113,14 +115,30 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
             // TODO: Handle event click
         }
         
+        val layoutManager = LinearLayoutManager(requireContext())
+        
+        // Configurar InfiniteScrollListener
+        infiniteScrollListener = InfiniteScrollListener(
+            layoutManager = layoutManager,
+            visibleThreshold = 5
+        ) {
+            // Callback para cargar más datos
+            if (viewModel.canLoadMore()) {
+                viewModel.loadMoreEvents()
+            }
+        }
+        
         binding.rvPublications.apply {
             adapter = eventsAdapter.getAdapter()
-            layoutManager = LinearLayoutManager(requireContext())
+            this.layoutManager = layoutManager
             setHasFixedSize(false) // Permitir altura dinámica
             // Optimizaciones de memoria y scroll
             setItemViewCacheSize(20)
             setDrawingCacheEnabled(true)
             setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH)
+            
+            // Agregar el scroll listener para infinite scroll
+            addOnScrollListener(infiniteScrollListener)
         }
     }
 
@@ -129,46 +147,55 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
     override fun setupObservers() {
         super.setupObservers()
         
-        // ✅ PRIMERO: Observar estado de UI global (siguiendo patrón ProfileFragment)
+        //  PRIMERO: Observar estado de UI global (siguiendo patrón ProfileFragment)
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             handleLoadingState(isLoading)
         }
         
-        // ✅ SEGUNDO: Observar datos del usuario
+        //  Observar estado de carga de más elementos
+        viewModel.isLoadingMore.observe(viewLifecycleOwner) { isLoadingMore ->
+            // El estado de loading more se puede mostrar en el último item del adapter si es necesario
+        }
+        
+        //  SEGUNDO: Observar datos del usuario
         viewModel.userFirstName.observe(viewLifecycleOwner) { firstName ->
             binding.tvUserName.text = "¡Hola, $firstName!"
             binding.tvDate.text = viewModel.currentDateSpanish
         }
         
-        // ✅ TERCERO: Observar datos de categorías con manejo inteligente
+        //  TERCERO: Observar datos de categorías con manejo inteligente
         viewModel.categoriesState.observe(viewLifecycleOwner) { result ->
             handleCategoriesState(result)
         }
         
-        // ✅ CUARTO: Observar datos de eventos con manejo inteligente
+        //  CUARTO: Observar datos de eventos con manejo inteligente
         viewModel.eventsState.observe(viewLifecycleOwner) { result ->
             handleEventsState(result)
         }
         
-        // ✅ QUINTO: Observar categoría seleccionada
+        //  QUINTO: Observar categoría seleccionada
         lifecycleScope.launch {
             viewModel.selectedCategory.collect { category ->
                 category?.let { 
                     categoryAdapter.setSelectedCategory(it.id)
+                    // Resetear scroll listener cuando cambia la categoría
+                    if (::infiniteScrollListener.isInitialized) {
+                        infiniteScrollListener.resetState()
+                    }
                 }
             }
         }
     }
     
     /**
-     * ✅ Maneja el estado de carga global de manera centralizada (patrón ProfileFragment)
+     *  Maneja el estado de carga global de manera centralizada (patrón ProfileFragment)
      */
     private fun handleLoadingState(isLoading: Boolean) {
         binding.swipeRefreshLayout.isRefreshing = isLoading
     }
     
     /**
-     * ✅ Maneja todos los estados de categorías de manera centralizada y clara
+     *  Maneja todos los estados de categorías de manera centralizada y clara
      */
     private fun handleCategoriesState(result: Result<List<Category>>) {
         when (result) {
@@ -191,7 +218,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
     }
     
     /**
-     * ✅ Maneja todos los estados de eventos de manera centralizada y clara
+     *  Maneja todos los estados de eventos de manera centralizada y clara
      */
     private fun handleEventsState(result: Result<List<Anuncio>>) {
         when (result) {
@@ -214,7 +241,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
     }
     
     /**
-     * ✅ Muestra errores específicos del home sin conflicto con BaseFragment (patrón ProfileFragment)
+     *  Muestra errores específicos del home sin conflicto con BaseFragment (patrón ProfileFragment)
      */
     private fun showHomeError(message: String, actionText: String, action: () -> Unit) {
         com.google.android.material.snackbar.Snackbar.make(binding.root, message, com.google.android.material.snackbar.Snackbar.LENGTH_LONG)
@@ -223,7 +250,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
     }
 
     /**
-     * ✅ Refresca datos con cache inteligente (patrón ProfileFragment)
+     *  Refresca datos con cache inteligente (patrón ProfileFragment)
      */
     fun refreshData(forceRefresh: Boolean = true) {
         viewModel.refreshData(forceRefresh)

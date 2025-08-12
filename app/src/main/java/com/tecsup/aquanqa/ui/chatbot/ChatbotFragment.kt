@@ -22,8 +22,8 @@ import com.tecsup.aquanqa.utils.ValidationResult
 
 /**
  * Fragmento que representa la pantalla del chatbot.
- * Su responsabilidad es simple: observar la lista de 'ChatItems' del ViewModel
- * y enviarla al 'ChatAdapter' para que se dibuje en la pantalla.
+ * Se encarga de observar la lista de 'ChatItems' del ViewModel
+ * y enviar al 'ChatAdapter' para que se dibuje en la pantalla.
  */
 class ChatbotFragment : Fragment() {
 

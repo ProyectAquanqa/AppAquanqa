@@ -26,15 +26,15 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 /**
- * Interfaz que define todos los endpoints de la API de Aquanqa.
+ * Interfaz que define todos los endpoints de la API de la aplicacion
  * Esta interfaz utiliza Retrofit para realizar peticiones HTTP a la API del backend de Django.
  */
 interface ApiService {
     /**Endpoint para iniciar sesión y obtener tokens JWT.
-     * @param loginRequest Datos de inicio de sesión (DNI y contraseña)
-     * @return Response<LoginResponse> Respuesta con tokens de acceso y refresco */
+     * loginRequest Datos de inicio de sesión (DNI y contraseña)
+     *  Response<LoginResponse> Respuesta con tokens de acceso y refresco */
 
-    @POST("api/token/")
+    @POST("api/mobile/auth/login/")
     suspend fun login(@Body loginRequest: LoginRequest): Response<LoginResponse>
     
     /**
@@ -42,16 +42,17 @@ interface ApiService {
      * @param refreshToken Objeto con el token de refresco
      * @return Response<RefreshTokenResponse> Nuevo token de acceso
      */
-    @POST("api/token/refresh/")
+    @POST("api/mobile/auth/refresh/")
     suspend fun refreshToken(@Body refreshToken: RefreshTokenRequest): Response<RefreshTokenResponse>
 
+
     /**
-     * Endpoint para obtener el perfil completo del usuario autenticado.
+     * Endpoint para obtener el perfil completo de un usuario autenticado
      * 
      * @param token Token de autenticación en formato "Bearer {token}"
      * @return Response<UserProfile> Datos completos del perfil del usuario
      */
-    @GET("api/profile/")
+    @GET("api/mobile/auth/profile/")
     suspend fun getUserProfile(@Header("Authorization") token: String): Response<UserProfile>
 
     /**
@@ -64,7 +65,7 @@ interface ApiService {
      * @return Response<UserProfile> Respuesta con los datos actualizados del perfil
      */
     @Multipart
-    @PATCH("api/profile/")
+    @PATCH("api/mobile/auth/profile/")
     suspend fun updateProfile(
         @Header("Authorization") token: String,
         @Part fotoPerfil: MultipartBody.Part?,
@@ -79,7 +80,7 @@ interface ApiService {
      * @param textData Mapa con los campos de texto a actualizar
      * @return Response<UserProfile> Respuesta con los datos actualizados del perfil
      */
-    @PATCH("api/profile/")
+    @PATCH("api/mobile/auth/profile/")
     suspend fun updateProfileTextData(
         @Header("Authorization") token: String,
         @Body textData: Map<String, String>
@@ -93,7 +94,7 @@ interface ApiService {
      * @param token Token de autenticación en formato "Bearer {token}"
      * @return Response<List<Category>> Lista de todas las categorías
      */
-    @GET("api/categorias/")
+    @GET("api/mobile/categorias/")
     suspend fun getCategories(@Header("Authorization") token: String): Response<List<Category>>
 
     /**
@@ -103,7 +104,7 @@ interface ApiService {
      * @param search Término de búsqueda para filtrar categorías por nombre
      * @return Response<List<Category>> Lista de categorías que coinciden con la búsqueda
      */
-    @GET("api/categorias/")
+    @GET("api/mobile/categorias/")
     suspend fun searchCategories(
         @Header("Authorization") token: String,
         @Query("search") search: String
@@ -119,7 +120,7 @@ interface ApiService {
      * @param pageSize Cantidad de elementos por página (opcional, por defecto 10)
      * @return Response<PaginatedResponse<Anuncio>> Respuesta paginada con eventos
      */
-    @GET("api/feed/eventos/")
+    @GET("api/mobile/feed/eventos/")
     suspend fun getAllEvents(
         @Query("page") page: Int = 1,
         @Query("page_size") pageSize: Int = 10
@@ -134,7 +135,7 @@ interface ApiService {
      * @param pageSize Cantidad de elementos por página (opcional, por defecto 10)
      * @return Response<PaginatedResponse<Anuncio>> Respuesta paginada con eventos filtrados
      */
-    @GET("api/eventos/")
+    @GET("api/mobile/eventos/")
     suspend fun getEventsByCategory(
         @Header("Authorization") token: String,
         @Query("categoria__nombre") categoriaNombre: String,
@@ -152,7 +153,7 @@ interface ApiService {
      * @param limit Número máximo de resultados a retornar (opcional)
      * @return Response<List<Anuncio>> Lista de eventos filtrados
      */
-    @GET("api/eventos/")
+    @GET("api/mobile/eventos/")
     suspend fun getFilteredEvents(
         @Header("Authorization") token: String,
         @Query("categoria__nombre") categoriaNombre: String? = null,
@@ -163,13 +164,9 @@ interface ApiService {
 
     /**
      * Endpoint específico para Android con filtrado robusto por categoría.
-     * 
-     * @param token Token de autenticación en formato "Bearer {token}"
-     * @param categoriaNombre Nombre de la categoría para filtrar (opcional)
-     * @param ordering Campo por el cual ordenar (opcional, por defecto "-created_at")
-     * @return Response<List<Anuncio>> Lista de eventos filtrados correctamente
+
      */
-    @GET("api/eventos/")
+    @GET("api/mobile/eventos/")
     suspend fun getEventosAndroid(
         @Header("Authorization") token: String,
         @Query("categoria__nombre") categoriaNombre: String? = null,
@@ -183,10 +180,21 @@ interface ApiService {
      * @return Response<List<Anuncio>> Lista de eventos de la categoría especificada
      * @deprecated Usar getEventsByCategory o getFilteredEvents en su lugar
      */
-    @GET("api/eventos/")
+    @GET("api/mobile/eventos/")
     suspend fun getEventosPorCategoria(
         @Query("categoria_nombre") categoriaNombre: String
     ): Response<List<Anuncio>>
+
+    /**
+     * Endpoint para obtener el detalle de un evento por ID.
+     * @param token Token de autenticación en formato "Bearer {token}"
+     * @param id ID del evento
+     */
+    @GET("api/mobile/eventos/{id}/")
+    suspend fun getEventoById(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Response<Anuncio>
 
     // ================= CHATBOT =================
 
@@ -198,7 +206,7 @@ interface ApiService {
      * @return Response<ChatbotResponse> Respuesta del chatbot con la respuesta, 
      *         puntaje de confianza y preguntas recomendadas
      */
-    @POST("api/chatbot/query/")
+    @POST("api/mobile/chatbot/query/")
     suspend fun postChatbotQuery(
         @Header("Authorization") token: String,
         @Body request: ChatbotRequest
@@ -214,7 +222,7 @@ interface ApiService {
      * @param pageSize Cantidad de elementos por página (opcional, por defecto 20)
      * @return Response<List<Notification>> Lista de notificaciones
      */
-    @GET("api/notifications/")
+    @GET("api/mobile/notifications/")
     suspend fun getNotifications(
         @Header("Authorization") token: String,
         @Query("page") page: Int = 1,
@@ -228,7 +236,7 @@ interface ApiService {
      * @param notificationId ID de la notificación a marcar como leída
      * @return Response<Unit> Respuesta de confirmación
      */
-    @PATCH("api/notifications/{id}/")
+    @PATCH("api/mobile/notifications/{id}/")
     suspend fun markNotificationAsRead(
         @Header("Authorization") token: String,
         @Path("id") notificationId: String,
@@ -242,7 +250,7 @@ interface ApiService {
      * @param fcmTokenRequest Objeto que contiene el token FCM del dispositivo
      * @return Response<Unit> Respuesta de confirmación del registro
      */
-    @POST("api/fcm-token/")
+    @POST("api/mobile/fcm-token/")
     suspend fun registerFcmToken(
         @Header("Authorization") token: String,
         @Body fcmTokenRequest: Map<String, String>
@@ -254,7 +262,7 @@ interface ApiService {
      * @param token Token de autenticación en formato "Bearer {token}"
      * @return Response<List<FcmTokenResponse>> Lista de tokens del usuario
      */
-    @GET("api/fcm-token/")
+    @GET("api/mobile/fcm-token/")
     suspend fun getFcmTokens(
         @Header("Authorization") token: String
     ): Response<List<FcmTokenResponse>>
@@ -267,7 +275,7 @@ interface ApiService {
      * @param updateData Datos a actualizar (ej: is_active: false)
      * @return Response<Unit> Respuesta de confirmación
      */
-    @PATCH("api/fcm-token/{id}/")
+    @PATCH("api/mobile/fcm-token/{id}/")
     suspend fun updateFcmToken(
         @Header("Authorization") token: String,
         @Path("id") tokenId: Int,
@@ -288,7 +296,7 @@ interface ApiService {
      * @param ordering Campo por el cual ordenar los resultados (por defecto: fecha)
      * @return Response<List<Almuerzo>> Lista de almuerzos disponibles
      */
-    @GET("api/almuerzos/")
+    @GET("api/mobile/almuerzos/")
     suspend fun getAlmuerzos(
         @Header("Authorization") token: String,
         @Query("es_feriado") esFeriado: Boolean = false,

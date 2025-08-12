@@ -7,7 +7,10 @@
 
     {
      "path": "../Aquanqa_noticias_web" 
-    }
+    },
+    {
+      "path": "../PanelAdmin" 
+     }
 
   ],
   "settings": {}

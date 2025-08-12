@@ -132,111 +132,42 @@
         <!-- Barra de acciones -->
         <LinearLayout
             android:id="@+id/ll_actions"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="16dp"
-            android:paddingHorizontal="16dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/iv_announcement_image">
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@id/iv_announcement_image"
+            android:gravity="center"
+            android:orientation="horizontal">
 
-            <!-- Likes -->
-            <LinearLayout
-                android:id="@+id/ll_like_action"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:padding="6dp">
-
-                <ImageView
-                    android:id="@+id/iv_like"
-                    android:layout_width="23dp"
-                    android:layout_height="23dp"
-                    android:src="@drawable/ic_favortite" />
-
-                <TextView
-                    android:id="@+id/tv_like_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:text="123"
-                    android:textColor="#666666"
-                    android:fontFamily="@font/montserrat"
-                    android:textSize="15sp" />
-
-            </LinearLayout>
-
-            <!-- Comentarios -->
-            <LinearLayout
-                android:id="@+id/ll_comment_action"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginStart="16dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:padding="6dp">
-
-                <ImageView
-                    android:id="@+id/iv_comment"
-                    android:layout_width="23dp"
-                    android:layout_height="23dp"
-                    android:src="@drawable/ic_comment" />
-
-                <TextView
-                    android:id="@+id/tv_comment_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:text="45"
-                    android:textColor="#666666"
-                    android:fontFamily="@font/montserrat"
-                    android:textSize="15sp" />
-
-            </LinearLayout>
-
-            <!--  Espaciador flexible
-            <View
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_like"
+                style="@style/Widget.Material3.Button.TextButton.Icon"
                 android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1" />
-            -->
-
-            <!-- Compartir -->
-            <LinearLayout
-                android:id="@+id/ll_share_action"
-                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginStart="16dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:padding="6dp">
+                android:layout_weight="1"
+                android:text="Me gusta"
+                app:icon="@drawable/ic_like_outline"
+                app:iconTint="@color/text_secondary" />
 
-                <ImageView
-                    android:id="@+id/iv_share"
-                    android:layout_width="23dp"
-                    android:layout_height="23dp"
-                    android:src="@drawable/ic_share" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_comment"
+                style="@style/Widget.Material3.Button.TextButton.Icon"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Comentar"
+                app:icon="@drawable/ic_comment"
+                app:iconTint="@color/text_secondary" />
 
-                <TextView
-                    android:id="@+id/tv_share_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:text="20"
-                    android:textColor="#666666"
-                    android:fontFamily="@font/montserrat"
-                    android:textSize="15sp" />
-
-            </LinearLayout>
-
-
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_share"
+                style="@style/Widget.Material3.Button.TextButton.Icon"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Compartir"
+                app:icon="@drawable/ic_share"
+                app:iconTint="@color/text_secondary" />
 
         </LinearLayout>
 

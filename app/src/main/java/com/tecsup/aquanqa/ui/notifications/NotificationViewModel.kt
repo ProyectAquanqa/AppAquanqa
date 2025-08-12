@@ -15,7 +15,7 @@ import java.util.*
 
 /**
  * ViewModel para la pantalla de notificaciones.
- * Maneja la lógica de presentación y el estado de las notificaciones.
+ * Maneja la lógica de presentación y el estado de las notificaciones con paginación.
  */
 class NotificationViewModel(
     private val repository: NotificationRepository
@@ -27,37 +27,97 @@ class NotificationViewModel(
     private val _isRefreshing = MutableLiveData<Boolean>()
     val isRefreshing: LiveData<Boolean> = _isRefreshing
     
+    // Estados para paginación
+    private val _isLoadingMore = MutableLiveData<Boolean>()
+    val isLoadingMore: LiveData<Boolean> = _isLoadingMore
+    
+    private val _allNotificationItems = mutableListOf<NotificationItem>()
+    private var currentPage = 1
+    private var hasMorePages = true
+    private var isLoadingPage = false
+    private val pageSize = 15
+    
     init {
         android.util.Log.d("NotificationViewModel", "ViewModel inicializado, cargando notificaciones")
         loadNotifications()
     }
     
     /**
-     * Carga las notificaciones desde el repositorio.
+     * Carga las notificaciones desde el repositorio con paginación simulada.
      * Agrupa las notificaciones por fecha y las convierte en items para el adapter.
      */
-    fun loadNotifications() {
-        android.util.Log.d("NotificationViewModel", "Iniciando carga de notificaciones")
+    fun loadNotifications(isLoadingMore: Boolean = false) {
+        if (isLoadingPage) return // Evitar llamadas múltiples simultáneas
+        
+        android.util.Log.d("NotificationViewModel", "Iniciando carga de notificaciones (loadMore: $isLoadingMore)")
         viewModelScope.launch {
-            _notificationsState.value = Result.Loading
+            isLoadingPage = true
+            
+            if (isLoadingMore) {
+                _isLoadingMore.value = true
+            } else {
+                _notificationsState.value = Result.Loading
+                // Reiniciar paginación para nueva carga o refresh
+                currentPage = 1
+                hasMorePages = true
+                _allNotificationItems.clear()
+            }
             
             when (val result = repository.getNotifications()) {
                 is Result.Success -> {
                     android.util.Log.d("NotificationViewModel", "Repositorio devolvió ${result.data.size} notificaciones")
+                    
+                    // Agrupar y convertir todas las notificaciones del servidor
                     val groupedNotifications = repository.groupNotificationsByDate(result.data)
                     android.util.Log.d("NotificationViewModel", "Agrupadas en ${groupedNotifications.size} grupos")
-                    val notificationItems = convertToNotificationItems(groupedNotifications)
-                    android.util.Log.d("NotificationViewModel", "Convertidas a ${notificationItems.size} items")
-                    _notificationsState.value = Result.Success(notificationItems)
+                    val allNotificationItems = convertToNotificationItems(groupedNotifications)
+                    
+                    // Simular paginación dividiendo los datos del servidor
+                    val startIndex = (currentPage - 1) * pageSize
+                    val endIndex = minOf(startIndex + pageSize, allNotificationItems.size)
+                    
+                    if (startIndex < allNotificationItems.size) {
+                        val pageData = allNotificationItems.subList(startIndex, endIndex)
+                        
+                        if (isLoadingMore) {
+                            // Agregar nuevas notificaciones a la lista existente
+                            _allNotificationItems.addAll(pageData)
+                        } else {
+                            // Primera carga o refresh completo
+                            _allNotificationItems.clear()
+                            _allNotificationItems.addAll(pageData)
+                        }
+                        
+                        // Actualizar estado de paginación
+                        hasMorePages = endIndex < allNotificationItems.size
+                        if (hasMorePages) currentPage++
+                        
+                        // Emitir lista completa actualizada
+                        android.util.Log.d("NotificationViewModel", "Mostrando ${_allNotificationItems.size} items")
+                        _notificationsState.value = Result.Success(_allNotificationItems.toList())
+                    } else {
+                        // No hay más datos
+                        hasMorePages = false
+                    }
                 }
                 is Result.Error -> {
                     android.util.Log.e("NotificationViewModel", "Error: ${result.exception.message}")
-                    _notificationsState.value = result
+                    if (isLoadingMore) {
+                        // Si falla la carga de más elementos, mantener los existentes
+                        android.util.Log.e("NotificationViewModel", "Error loading more notifications: ${result.exception.message}")
+                    } else {
+                        _notificationsState.value = result
+                    }
                 }
                 is Result.Loading -> {
-                    _notificationsState.value = result
+                    if (!isLoadingMore) {
+                        _notificationsState.value = result
+                    }
                 }
             }
+            
+            _isLoadingMore.value = false
+            isLoadingPage = false
         }
     }
     
@@ -142,4 +202,17 @@ class NotificationViewModel(
             }
         }
     }
+    
+    /**
+     * Carga la siguiente página de notificaciones para infinite scroll
+     */
+    fun loadMoreNotifications() {
+        if (!hasMorePages || isLoadingPage) return
+        loadNotifications(isLoadingMore = true)
+    }
+    
+    /**
+     * Verifica si se pueden cargar más notificaciones
+     */
+    fun canLoadMore(): Boolean = hasMorePages && !isLoadingPage
 }

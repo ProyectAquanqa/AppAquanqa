@@ -44,7 +44,7 @@ class ChatbotRepository(private val chatbotApiService: ChatbotApiService) {
                         }
                     } ?: Result.failure(Exception("La respuesta del chatbot está vacía."))
                 } else {
-                    Result.failure(IOException("Error en la respuesta del servidor: ${response.code()} - ${response.message()}"))
+                    Result.failure(IOException("No se pudo procesar tu consulta. Intenta nuevamente"))
                 }
             } catch (e: IOException) {
                 Result.failure(e)
@@ -102,7 +102,7 @@ class ChatbotRepository(private val chatbotApiService: ChatbotApiService) {
                 } else {
                     android.util.Log.e("ChatbotRepository", "Error del servidor: ${response.code()} - ${response.message()}")
                     android.util.Log.e("ChatbotRepository", "Cuerpo del error: ${response.errorBody()?.string()}")
-                    Result.failure(IOException("Error en la respuesta del servidor: ${response.code()} - ${response.message()}"))
+                    Result.failure(IOException("No se pudieron cargar las preguntas frecuentes. Intenta más tarde"))
                 }
             } catch (e: IOException) {
                 android.util.Log.e("ChatbotRepository", "IOException en getFrequentQuestions", e)
@@ -134,7 +134,7 @@ class ChatbotRepository(private val chatbotApiService: ChatbotApiService) {
     private fun getDefaultQuestions(): List<RecommendedQuestion> {
         return listOf(
             RecommendedQuestion(-1, "¿Cómo puedo contactar con soporte?"),
-            RecommendedQuestion(-2, "¿Cuáles son los horarios de atención?"),
+            RecommendedQuestion(-2, "¿Cuáles son los horarios de trabajo?"),
             RecommendedQuestion(-3, "¿Dónde puedo encontrar más información?"),
             RecommendedQuestion(-4, "¿Cómo puedo reportar un problema?")
         )

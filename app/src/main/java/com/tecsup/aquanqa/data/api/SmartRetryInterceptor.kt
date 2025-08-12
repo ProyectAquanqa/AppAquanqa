@@ -29,7 +29,7 @@ class SmartRetryInterceptor(
         private const val TAG = "SmartRetryInterceptor"
         private const val MAX_ABSOLUTE_RETRIES = 10 // Limite absoluto para evitar loops infinitos
         private const val BASE_DELAY_MS = 1000L
-        private const val MAX_DELAY_MS = 30000L // 30 segundos max delay
+        private const val MAX_DELAY_MS = 30000L // 30 segundos max por el delay
     }
     
     override fun intercept(chain: Interceptor.Chain): Response {
@@ -74,7 +74,6 @@ class SmartRetryInterceptor(
         val timeoutConfig = NetworkConfig.getAdjustedTimeouts(operationType, connectivityState)
         
         var lastException: Exception? = null
-        var lastResponse: Response? = null
         
         for (attempt in 0 until min(timeoutConfig.maxRetries, MAX_ABSOLUTE_RETRIES)) {
             try {
@@ -98,9 +97,9 @@ class SmartRetryInterceptor(
                     return response
                 }
                 
-                // Cerrar respuesta anterior antes de retry
-                lastResponse?.close()
-                lastResponse = response
+                // Cerrar la respuesta actual antes de retry (CRÍTICO)
+                // Esto previene el error: "cannot make a new request because the previous response is still open"
+                response.close()
                 
                 // Calcular delay para retry
                 val delay = calculateRetryDelay(errorType, attempt, timeoutConfig.retryDelay)
@@ -146,10 +145,9 @@ class SmartRetryInterceptor(
         }
         
         // Si llegamos aqui, todos los intentos fallaron
-        lastResponse?.let { return it }
         lastException?.let { throw it }
         
-        // Fallback (no deberia llegar aqui)
+        // Fallback (no deberia llegar aqui por las validaciones implementada anteroirmente )
         throw IOException("All retry attempts failed")
     }
     

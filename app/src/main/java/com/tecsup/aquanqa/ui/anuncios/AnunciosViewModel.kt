@@ -12,7 +12,7 @@ import com.tecsup.aquanqa.data.Result as DataResult
 import kotlinx.coroutines.launch
 
 /**
- * ViewModel refactorizado para anuncios con cache híbrido inteligente.
+ * ViewModel refactorizado para anuncios con cache híbrido inteligente y paginación.
  * Ahora con persistencia que sobrevive al cierre de la app.
  */
 class AnunciosViewModel(application: Application) : AndroidViewModel(application) {
@@ -31,6 +31,16 @@ class AnunciosViewModel(application: Application) : AndroidViewModel(application
     // LiveData para comunicar errores a la vista.
     private val _error = MutableLiveData<String>()
     val error: LiveData<String> = _error
+    
+    // Estados para paginación
+    private val _isLoadingMore = MutableLiveData<Boolean>()
+    val isLoadingMore: LiveData<Boolean> = _isLoadingMore
+    
+    private val _allAnuncios = mutableListOf<Anuncio>()
+    private var currentPage = 1
+    private var hasMorePages = true
+    private var isLoadingPage = false
+    private val pageSize = 10
 
     init {
         // Cargar los anuncios tan pronto como el ViewModel se crea.
@@ -38,27 +48,73 @@ class AnunciosViewModel(application: Application) : AndroidViewModel(application
     }
 
     /**
-     * Carga anuncios con cache híbrido inteligente.
+     * Carga anuncios con cache híbrido inteligente y paginación simulada.
      * Ahora con persistencia que sobrevive al cierre de la app.
-     * 
-     * @param forceRefresh Forzar actualización desde API
      */
-    fun cargarAnuncios(forceRefresh: Boolean = false) {
+    fun cargarAnuncios(forceRefresh: Boolean = false, isLoadingMore: Boolean = false) {
+        if (isLoadingPage) return // Evitar llamadas múltiples simultáneas
+        
         viewModelScope.launch {
-            _isLoading.value = true
+            isLoadingPage = true
+            
+            if (isLoadingMore) {
+                _isLoadingMore.value = true
+            } else {
+                _isLoading.value = true
+                // Reiniciar paginación para nueva carga o refresh
+                currentPage = 1
+                hasMorePages = true
+                _allAnuncios.clear()
+            }
+            
             when (val result = repository.getAnuncios(forceRefresh)) {
                 is DataResult.Success -> {
-                    _anuncios.value = result.data
-                    _error.value = "" // Limpiar errores previos
+                    val allServerData = result.data
+                    
+                    // Simular paginación dividiendo los datos del servidor
+                    val startIndex = (currentPage - 1) * pageSize
+                    val endIndex = minOf(startIndex + pageSize, allServerData.size)
+                    
+                    if (startIndex < allServerData.size) {
+                        val pageData = allServerData.subList(startIndex, endIndex)
+                        
+                        if (isLoadingMore) {
+                            // Agregar nuevos anuncios a la lista existente
+                            _allAnuncios.addAll(pageData)
+                        } else {
+                            // Primera carga o refresh completo
+                            _allAnuncios.clear()
+                            _allAnuncios.addAll(pageData)
+                        }
+                        
+                        // Actualizar estado de paginación
+                        hasMorePages = endIndex < allServerData.size
+                        if (hasMorePages) currentPage++
+                        
+                        // Emitir lista completa actualizada
+                        _anuncios.value = _allAnuncios.toList()
+                        _error.value = "" // Limpiar errores previos
+                    } else {
+                        // No hay más datos
+                        hasMorePages = false
+                    }
                 }
                 is DataResult.Error -> {
-                    _error.value = result.exception.message ?: "Ocurrió un error desconocido"
+                    if (isLoadingMore) {
+                        // Si falla la carga de más elementos, mantener los existentes
+                        android.util.Log.e("AnunciosViewModel", "Error loading more anuncios: ${result.exception.message}")
+                    } else {
+                        _error.value = result.exception.message ?: "Ocurrió un error desconocido"
+                    }
                 }
                 is DataResult.Loading -> {
                     // El loading ya se maneja manualmente arriba y abajo
                 }
             }
+            
             _isLoading.value = false
+            _isLoadingMore.value = false
+            isLoadingPage = false
         }
     }
 
@@ -69,6 +125,7 @@ class AnunciosViewModel(application: Application) : AndroidViewModel(application
     fun refreshAnuncios() {
         cargarAnuncios(forceRefresh = true)
     }
+
 
     /**
      * Limpia el cache de anuncios y recarga.
@@ -87,4 +144,17 @@ class AnunciosViewModel(application: Application) : AndroidViewModel(application
     fun onAppResumed() {
         refreshAnuncios()
     }
+    
+    /**
+     * Carga la siguiente página de anuncios para infinite scroll
+     */
+    fun loadMoreAnuncios() {
+        if (!hasMorePages || isLoadingPage) return
+        cargarAnuncios(forceRefresh = false, isLoadingMore = true)
+    }
+    
+    /**
+     * Verifica si se pueden cargar más anuncios
+     */
+    fun canLoadMore(): Boolean = hasMorePages && !isLoadingPage
 } 
