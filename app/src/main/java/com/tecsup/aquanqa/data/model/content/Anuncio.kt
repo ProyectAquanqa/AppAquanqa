@@ -1,6 +1,7 @@
 package com.tecsup.aquanqa.data.model.content
 
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 import java.util.Date
 
 /**
@@ -13,7 +14,7 @@ data class Autor(
     val fullName: String,
     @SerializedName("foto_perfil")
     val fotoPerfil: String?
-)
+) : Serializable
 
 //Modelo de datos principal para un anuncio.
 
@@ -31,5 +32,17 @@ data class Anuncio(
     @SerializedName("created_at")
     val createdAt: String? = null,
     @SerializedName("updated_at")
-    val updatedAt: String? = null
-) 
+    val updatedAt: String? = null,
+    
+    // Campos para likes
+    @SerializedName("likes_count")
+    val likesCount: Int = 0,
+    @SerializedName("user_has_liked")
+    val userHasLiked: Boolean = false,
+    
+    // Campos para comentarios
+    @SerializedName("comentarios_count")
+    val comentariosCount: Int = 0,
+    @SerializedName("comentarios_recientes")
+    val comentariosRecientes: List<Comentario> = emptyList()
+) : Serializable 

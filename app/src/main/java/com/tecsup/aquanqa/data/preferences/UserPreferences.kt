@@ -62,6 +62,9 @@ class UserPreferences(private val context: Context) {
         // Claves para cache de perfil de usuario
         private val CACHED_USER_PROFILE = stringPreferencesKey("cached_user_profile")
         private val USER_PROFILE_CACHE_TIME = longPreferencesKey("user_profile_cache_time")
+        
+        // Clave para timestamp de último refresh general
+        private val LAST_REFRESH_TIMESTAMP = longPreferencesKey("last_refresh_timestamp")
     }
 
 
@@ -567,6 +570,27 @@ class UserPreferences(private val context: Context) {
         context.dataStore.edit { preferences ->
             preferences.remove(CACHED_USER_PROFILE)
             preferences.remove(USER_PROFILE_CACHE_TIME)
+        }
+    }
+    
+    // ================= GESTIÓN DE REFRESH TIMESTAMP =================
+    
+    /**
+     * Flow que emite el timestamp de último refresh general.
+     * Útil para determinar si es necesario hacer refresh al volver del background.
+     */
+    val lastRefreshTimestamp: Flow<Long?> = context.dataStore.data.map { preferences ->
+        preferences[LAST_REFRESH_TIMESTAMP]
+    }
+    
+    /**
+     * Actualiza el timestamp de último refresh general.
+     * 
+     * @param timestamp Timestamp en milisegundos del momento del refresh
+     */
+    suspend fun updateLastRefreshTimestamp(timestamp: Long) {
+        context.dataStore.edit { preferences ->
+            preferences[LAST_REFRESH_TIMESTAMP] = timestamp
         }
     }
 } 

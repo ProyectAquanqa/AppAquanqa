@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="12dp">
+
+    <!-- Foto de perfil del usuario que comenta -->
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/iv_user_photo"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:scaleType="centerCrop"
+        android:layout_marginEnd="12dp"
+        app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CircleImageView"
+        tools:src="@tools:sample/avatars" />
+
+    <!-- Contenido del comentario -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <!-- Header con nombre y tiempo -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="4dp">
+
+            <!-- Nombre del usuario -->
+            <TextView
+                android:id="@+id/tv_user_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Usuario Ejemplo"
+                android:fontFamily="@font/montserrat_bold"
+                android:textSize="14sp"
+                android:textColor="@color/text_primary"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <!-- Tiempo transcurrido -->
+            <TextView
+                android:id="@+id/tv_time_ago"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="hace 2h"
+                android:gravity="left"
+                android:fontFamily="@font/montserrat"
+                android:textSize="12sp"
+                android:textColor="@color/text_hint"
+                android:layout_marginStart="8dp" />
+
+        </LinearLayout>
+
+        <!-- Contenido del comentario -->
+        <TextView
+            android:id="@+id/tv_comment_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Este es un comentario de ejemplo que puede ser más largo y ocupar múltiples líneas."
+            android:fontFamily="@font/montserrat"
+            android:textSize="14sp"
+            android:textColor="@color/text_primary"
+            android:lineSpacingExtra="2dp" />
+
+    </LinearLayout>
+
+    <!-- Menú de opciones (solo para comentarios propios) -->
+    <ImageView
+        android:id="@+id/iv_options_menu"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_menu"
+        android:layout_marginStart="8dp"
+        android:padding="4dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Opciones"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+</LinearLayout>

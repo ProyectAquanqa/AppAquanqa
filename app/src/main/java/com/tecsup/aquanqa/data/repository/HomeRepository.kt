@@ -386,7 +386,7 @@ class HomeRepository(
     
     /**
      * Refresca todos los datos con invalidación inteligente de cache.
-     * Utiliza el smart refresh del cache manager.
+     * Utiliza el smart refresh del cache manager y actualiza timestamp.
      */
     suspend fun refreshAllData(): Result<Boolean> {
         return try {
@@ -397,6 +397,9 @@ class HomeRepository(
             
             // Limpiar paginación temporal
             currentPaginationInfo = null
+            
+            // Actualizar timestamp de último refresh
+            userPreferences.updateLastRefreshTimestamp(System.currentTimeMillis())
             
             Log.d(TAG, "Smart refresh completed: ${refreshResult.refreshedTypes.size} types refreshed")
             Result.Success(true)
@@ -457,6 +460,67 @@ class HomeRepository(
         val userId = getCurrentUserId()
         val stats = cacheManager.getDetailedStats()
         return stats.totalEntries > 0
+    }
+    
+    /**
+     * Determina si debe hacer refresh cuando la app vuelve del background.
+     * Evita refresh innecesarios que causan modo offline.
+     */
+    suspend fun shouldRefreshOnResume(): Boolean {
+        val userId = getCurrentUserId()
+        
+        // Verificar si tenemos datos cached válidos
+        val hasValidEvents = when (cacheManager.getCachedEventsWithFallback(userId)) {
+            is CacheResult.Hit -> true
+            else -> false
+        }
+        
+        val hasValidCategories = try {
+            val categoriesJson = userPreferences.cachedCategories.first()
+            categoriesJson != null && !userPreferences.isCategoriesCacheExpired()
+        } catch (e: Exception) {
+            false
+        }
+        
+        // Solo hacer refresh si no tenemos datos válidos o si han pasado más de 10 minutos
+        return !hasValidEvents || !hasValidCategories || shouldForceRefreshBasedOnTime()
+    }
+    
+    /**
+     * Determina si debe hacer refresh para una categoría específica.
+     */
+    suspend fun shouldRefreshForCategory(categoryName: String?): Boolean {
+        val userId = getCurrentUserId()
+        
+        // Para la categoría "Todos" (null), verificar cache general
+        val cacheResult = if (categoryName != null) {
+            cacheManager.getCachedEventsByCategory(categoryName, userId)
+        } else {
+            cacheManager.getCachedEventsWithFallback(userId)
+        }
+        
+        // Solo refresh si no hay datos en cache o están muy desactualizados
+        return when (cacheResult) {
+            is CacheResult.Hit -> false // Tenemos datos válidos
+            is CacheResult.Expired -> shouldForceRefreshBasedOnTime() // Solo si han pasado muchas horas
+            is CacheResult.Miss -> true // No hay datos
+        }
+    }
+    
+    /**
+     * Verifica si debe forzar refresh basado en el tiempo transcurrido.
+     */
+    private suspend fun shouldForceRefreshBasedOnTime(): Boolean {
+        return try {
+            val lastRefreshTime = userPreferences.lastRefreshTimestamp.first() ?: 0L
+            val currentTime = System.currentTimeMillis()
+            val timeDifference = currentTime - lastRefreshTime
+            
+            // Forzar refresh solo si han pasado más de 10 minutos (600,000 ms)
+            timeDifference > 10 * 60 * 1000L
+        } catch (e: Exception) {
+            true // En caso de error, permitir refresh
+        }
     }
     
     // ================= MÉTODOS PRIVADOS AUXILIARES =================

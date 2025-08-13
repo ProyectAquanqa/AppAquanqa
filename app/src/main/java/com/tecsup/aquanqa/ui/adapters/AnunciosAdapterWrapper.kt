@@ -1,25 +1,34 @@
 package com.tecsup.aquanqa.ui.anuncios
 
+import androidx.lifecycle.LifecycleCoroutineScope
 import com.tecsup.aquanqa.data.model.content.Anuncio
 
 /**
  * Wrapper para AnunciosAdapter que proporciona una interfaz compatible
- * con ListAdapter y soporte para callbacks de click.
+ * con ListAdapter y soporte para callbacks de click, likes y comentarios.
  * 
  * Esta clase actúa como un adaptador entre el AnunciosAdapter existente
  * y las necesidades del HomeFragment, proporcionando métodos como submitList()
  * y soporte para callbacks de click en elementos.
  * 
+ * @param lifecycleScope Scope para manejar corrutinas de likes
  * @param onItemClick Función callback que se ejecuta al hacer clic en un anuncio
+ * @param onCommentClick Función callback que se ejecuta al hacer clic en comentarios
  */
 class AnunciosAdapterWrapper(
-    private val onItemClick: (Anuncio) -> Unit
+    private val lifecycleScope: LifecycleCoroutineScope?,
+    private val onItemClick: (Anuncio) -> Unit,
+    private val onCommentClick: ((Anuncio) -> Unit)? = null
 ) {
     
     /**
      * Instancia del adapter original que maneja la vista.
      */
-    private val adapter = AnunciosAdapter(emptyList())
+    private val adapter = AnunciosAdapter(
+        anuncios = emptyList(),
+        lifecycleScope = lifecycleScope,
+        onCommentClick = onCommentClick
+    )
     
     //Lista actual de anuncios para manejar los callbacks de click.
 
@@ -69,9 +78,15 @@ class AnunciosAdapterWrapper(
 /**
  * Función de extensión para facilitar el uso del wrapper con RecyclerView.
  * 
+ * @param lifecycleScope Scope para manejar corrutinas de likes
  * @param onItemClick Función callback para clicks en elementos
+ * @param onCommentClick Función callback para clicks en comentarios
  * @return AnunciosAdapterWrapper Wrapper configurado y listo para usar
  */
-fun createAnunciosAdapter(onItemClick: (Anuncio) -> Unit): AnunciosAdapterWrapper {
-    return AnunciosAdapterWrapper(onItemClick)
+fun createAnunciosAdapter(
+    lifecycleScope: LifecycleCoroutineScope?,
+    onItemClick: (Anuncio) -> Unit,
+    onCommentClick: ((Anuncio) -> Unit)? = null
+): AnunciosAdapterWrapper {
+    return AnunciosAdapterWrapper(lifecycleScope, onItemClick, onCommentClick)
 } 

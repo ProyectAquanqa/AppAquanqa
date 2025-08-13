@@ -15,7 +15,10 @@ import com.tecsup.aquanqa.data.Result
 import com.tecsup.aquanqa.data.repository.AnunciosRepository
 import com.tecsup.aquanqa.databinding.FragmentEventDetailBinding
 import com.tecsup.aquanqa.ui.base.BaseFragment
+import com.tecsup.aquanqa.ui.anuncios.CommentsBottomSheetFragment
+import com.tecsup.aquanqa.utils.LikeManager
 import com.github.chrisbanes.photoview.PhotoView
+import androidx.lifecycle.lifecycleScope
 
 class EventDetailFragment : BaseFragment<FragmentEventDetailBinding>() {
 
@@ -140,6 +143,9 @@ class EventDetailFragment : BaseFragment<FragmentEventDetailBinding>() {
                     itemBinding.llContent.visibility = android.view.View.VISIBLE
                     itemBinding.tvAnnouncementTitle.visibility = android.view.View.VISIBLE
                     itemBinding.tvAnnouncementDescription.visibility = android.view.View.VISIBLE
+                    
+                    // Configurar botones de acción con LikeManager
+                    setupActionButtons(itemBinding, evento)
                     
                     // Compartir
                     itemBinding.btnShare.setOnClickListener {
@@ -298,6 +304,37 @@ class EventDetailFragment : BaseFragment<FragmentEventDetailBinding>() {
                 rootView.removeView(overlay)
             }
             .start()
+    }
+
+    /**
+     * Configura los botones de acción (like, comentar) usando LikeManager.
+     */
+    private fun setupActionButtons(itemBinding: com.tecsup.aquanqa.databinding.ItemAnuncioBinding, evento: com.tecsup.aquanqa.data.model.content.Anuncio) {
+        // Configurar botón de like
+        LikeManager.setupLikeButton(
+            context = requireContext(),
+            button = itemBinding.btnLike,
+            anuncio = evento,
+            lifecycleScope = lifecycleScope
+        )
+        
+        // Configurar botón de comentarios
+        LikeManager.setupCommentButton(
+            button = itemBinding.btnComment,
+            anuncio = evento,
+            comentariosCount = evento.comentariosCount,
+            onCommentClick = { anuncio ->
+                showCommentsModal(anuncio)
+            }
+        )
+    }
+    
+    /**
+     * Muestra el modal de comentarios para un evento específico.
+     */
+    private fun showCommentsModal(anuncio: com.tecsup.aquanqa.data.model.content.Anuncio) {
+        val commentsBottomSheet = CommentsBottomSheetFragment.newInstance(anuncio)
+        commentsBottomSheet.show(parentFragmentManager, "CommentsBottomSheet")
     }
 }
 

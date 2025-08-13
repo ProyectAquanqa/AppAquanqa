@@ -91,7 +91,7 @@
                     android:textColor="@color/text_secondary"
                     android:fontFamily="@font/montserrat_medium"
                     android:gravity="center"
-                    tools:text="Desarrollador Senior" />
+                    tools:text="Analista de Datos" />
 
                 <!-- Badge de edición -->
                 <com.google.android.material.chip.Chip

@@ -123,8 +123,16 @@ class EditProfileFragment : Fragment() {
 
     private fun populateUserData(userProfile: UserProfile) {
         binding.nameTextView.text = userProfile.first_name
-        val role = userProfile.groups?.firstOrNull() ?: "Usuario"
-        binding.roleTextView.text = role
+        
+        // Mostrar solo el cargo
+        val cargo = when {
+            userProfile.cargo_detail != null -> {
+                userProfile.cargo_detail.nombre
+            }
+            else -> "Sin cargo asignado"
+        }
+        
+        binding.roleTextView.text = cargo
         binding.emailEditText.setText(userProfile.email)
     }
 

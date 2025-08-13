@@ -2,6 +2,10 @@ package com.tecsup.aquanqa.data.api
 
 import com.tecsup.aquanqa.data.model.content.Anuncio
 import com.tecsup.aquanqa.data.model.content.Category
+import com.tecsup.aquanqa.data.model.content.Comentario
+import com.tecsup.aquanqa.data.model.content.ComentarioResponse
+import com.tecsup.aquanqa.data.model.content.LikeResponse
+import com.tecsup.aquanqa.data.model.content.NuevoComentarioRequest
 import com.tecsup.aquanqa.data.model.user.FcmTokenResponse
 import com.tecsup.aquanqa.data.model.auth.LoginRequest
 import com.tecsup.aquanqa.data.model.auth.LoginResponse
@@ -195,6 +199,70 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Path("id") id: Int
     ): Response<Anuncio>
+
+    /**
+     * Endpoint para dar o quitar like a un evento (toggle).
+     * @param token Token de autenticación en formato "Bearer {token}"
+     * @param id ID del evento
+     * @return Response<LikeResponse> Respuesta con el estado del like
+     */
+    @POST("api/mobile/eventos/{id}/toggle_like/")
+    suspend fun toggleLike(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Response<LikeResponse>
+
+    // ================= COMENTARIOS =================
+
+    /**
+     * Endpoint para obtener comentarios de un evento específico.
+     * @param token Token de autenticación en formato "Bearer {token}"
+     * @param eventoId ID del evento para obtener sus comentarios
+     * @return Response<List<ComentarioResponse>> Lista de comentarios del evento
+     */
+    @GET("api/mobile/comentarios/")
+    suspend fun getComentarios(
+        @Header("Authorization") token: String,
+        @Query("evento_id") eventoId: Int
+    ): Response<List<ComentarioResponse>>
+
+    /**
+     * Endpoint para crear un nuevo comentario en un evento.
+     * @param token Token de autenticación en formato "Bearer {token}"
+     * @param nuevoComentario Datos del comentario a crear
+     * @return Response<ComentarioResponse> Comentario creado
+     */
+    @POST("api/mobile/comentarios/")
+    suspend fun crearComentario(
+        @Header("Authorization") token: String,
+        @Body nuevoComentario: NuevoComentarioRequest
+    ): Response<ComentarioResponse>
+
+    /**
+     * Endpoint para actualizar un comentario propio.
+     * @param token Token de autenticación en formato "Bearer {token}"
+     * @param comentarioId ID del comentario a actualizar
+     * @param contenido Nuevo contenido del comentario
+     * @return Response<ComentarioResponse> Comentario actualizado
+     */
+    @PUT("api/mobile/comentarios/{id}/")
+    suspend fun actualizarComentario(
+        @Header("Authorization") token: String,
+        @Path("id") comentarioId: Int,
+        @Body contenido: Map<String, String>
+    ): Response<ComentarioResponse>
+
+    /**
+     * Endpoint para eliminar un comentario propio.
+     * @param token Token de autenticación en formato "Bearer {token}"
+     * @param comentarioId ID del comentario a eliminar
+     * @return Response<Unit> Respuesta de confirmación
+     */
+    @retrofit2.http.DELETE("api/mobile/comentarios/{id}/")
+    suspend fun eliminarComentario(
+        @Header("Authorization") token: String,
+        @Path("id") comentarioId: Int
+    ): Response<Unit>
 
     // ================= CHATBOT =================
 

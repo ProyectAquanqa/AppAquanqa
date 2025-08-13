@@ -1,5 +1,7 @@
 package com.tecsup.aquanqa.data.model.content
 
+import java.io.Serializable
+
 /**
  * Modelo de datos que representa una categoría de eventos.
  * Los nombres de los campos están en snake_case para coincidir directamente
@@ -12,7 +14,7 @@ data class Category(
     val descripcion: String?,
     val created_at: String?,
     val updated_at: String?
-) {
+) : Serializable {
     
     /**
      * Compañero objeto que contiene constantes útiles para el manejo de categorías.

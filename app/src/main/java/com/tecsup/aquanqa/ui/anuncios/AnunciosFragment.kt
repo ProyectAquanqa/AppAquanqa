@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.tecsup.aquanqa.R
 import com.tecsup.aquanqa.databinding.FragmentAnunciosBinding
@@ -79,7 +80,14 @@ class AnunciosFragment : BaseFragment<FragmentAnunciosBinding>() {
      * Inicializa el RecyclerView con un adapter vacío y configura infinite scroll.
      */
     private fun setupRecyclerView() {
-        adapter = AnunciosAdapter(emptyList())
+        adapter = AnunciosAdapter(
+            emptyList(),
+            lifecycleScope,
+            onCommentClick = { anuncio ->
+                // TODO: Abrir modal de comentarios
+                showCommentsModal(anuncio)
+            }
+        )
         
         val layoutManager = LinearLayoutManager(requireContext())
         
@@ -192,6 +200,14 @@ class AnunciosFragment : BaseFragment<FragmentAnunciosBinding>() {
      */
     fun clearCacheAndReload() {
         viewModel.clearCacheAndReload()
+    }
+    
+    /**
+     * Muestra el modal de comentarios para un evento específico.
+     */
+    private fun showCommentsModal(anuncio: com.tecsup.aquanqa.data.model.content.Anuncio) {
+        val commentsBottomSheet = CommentsBottomSheetFragment.newInstance(anuncio)
+        commentsBottomSheet.show(parentFragmentManager, "CommentsBottomSheet")
     }
 
 

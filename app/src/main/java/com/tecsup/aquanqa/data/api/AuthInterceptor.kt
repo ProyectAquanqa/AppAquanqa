@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.tecsup.aquanqa.data.SessionManager
 import com.tecsup.aquanqa.data.preferences.UserPreferences
-import kotlinx.coroutines.flow.first
+
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock

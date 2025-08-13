@@ -104,11 +104,18 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>() {
         val fullName = "${userProfile.first_name} ${userProfile.last_name}".trim()
         val dni = userProfile.username // Asumiendo que username contiene el DNI
         val email = userProfile.email ?: getString(R.string.no_email)
-        val role = userProfile.groups?.firstOrNull() ?: "Usuario"
+        
+        // Mostrar solo el cargo
+        val cargo = when {
+            userProfile.cargo_detail != null -> {
+                userProfile.cargo_detail.nombre
+            }
+            else -> "Sin cargo asignado"
+        }
         
         // Configurar información principal
         binding.nameTextView.text = fullName
-        binding.roleTextView.text = role
+        binding.roleTextView.text = cargo
         
         // Configurar campos usando el helper reutilizable
         setupProfileFields(fullName, dni, email)

@@ -22,6 +22,7 @@ import com.tecsup.aquanqa.ui.anuncios.createAnunciosAdapter
 import com.tecsup.aquanqa.ui.base.BaseFragment
 import com.tecsup.aquanqa.utils.DateUtils
 import com.tecsup.aquanqa.utils.InfiniteScrollListener
+import com.tecsup.aquanqa.ui.anuncios.CommentsBottomSheetFragment
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 
@@ -110,10 +111,17 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
             itemAnimator = null // Eliminar animaciones para mayor velocidad
         }
         
-        // Configurar adapter de eventos con lazy loading
-        eventsAdapter = createAnunciosAdapter { anuncio ->
-            // TODO: Handle event click
-        }
+        // Configurar adapter de eventos con lazy loading, likes y comentarios
+        eventsAdapter = createAnunciosAdapter(
+            lifecycleScope = lifecycleScope,
+            onItemClick = { anuncio ->
+                // TODO: Navigate to event detail
+                android.util.Log.d("HomeFragment", "Event clicked: ${anuncio.titulo}")
+            },
+            onCommentClick = { anuncio ->
+                showCommentsModal(anuncio)
+            }
+        )
         
         val layoutManager = LinearLayoutManager(requireContext())
         
@@ -131,11 +139,21 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         binding.rvPublications.apply {
             adapter = eventsAdapter.getAdapter()
             this.layoutManager = layoutManager
-            setHasFixedSize(false) // Permitir altura dinámica
-            // Optimizaciones de memoria y scroll
-            setItemViewCacheSize(20)
-            setDrawingCacheEnabled(true)
-            setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH)
+            setHasFixedSize(false) // Permitir altura dinámica para contenido variable
+            
+            // Optimizaciones de memoria y rendimiento
+            setItemViewCacheSize(10) // Reducir cache para evitar uso excesivo de memoria
+            recycledViewPool.setMaxRecycledViews(0, 20) // Pool más grande para mejor reciclaje
+            
+            // Optimizaciones de drawing (DEPRECATED - remover para mejor rendimiento)
+            // setDrawingCacheEnabled(false) // Desactivado por defecto desde API 28
+            
+            // Optimización de scroll suave
+            isNestedScrollingEnabled = true
+            
+            // Prefetch para mejor scroll
+            (layoutManager as? LinearLayoutManager)?.isItemPrefetchEnabled = true
+            (layoutManager as? LinearLayoutManager)?.initialPrefetchItemCount = 4
             
             // Agregar el scroll listener para infinite scroll
             addOnScrollListener(infiniteScrollListener)
@@ -171,6 +189,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         //  CUARTO: Observar datos de eventos con manejo inteligente
         viewModel.eventsState.observe(viewLifecycleOwner) { result ->
             handleEventsState(result)
+            
+            // Precarga inteligente de imágenes cuando se cargan eventos exitosamente
+            if (result is Result.Success) {
+                preloadImagesInBackground(result.data)
+            }
         }
         
         //  QUINTO: Observar categoría seleccionada
@@ -294,6 +317,53 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
     fun detectNewEvents() {
         if (::viewModel.isInitialized) {
             viewModel.checkForNewEvents()
+        }
+    }
+    
+    /**
+     * Muestra el modal de comentarios para un evento específico.
+     */
+    private fun showCommentsModal(anuncio: Anuncio) {
+        val commentsBottomSheet = CommentsBottomSheetFragment.newInstance(anuncio)
+        commentsBottomSheet.show(parentFragmentManager, "CommentsBottomSheet")
+    }
+    
+    /**
+     * Precarga imágenes en segundo plano para mejorar rendimiento.
+     * Solo precarga las primeras 5 imágenes para evitar uso excesivo de memoria.
+     */
+    private fun preloadImagesInBackground(anuncios: List<Anuncio>) {
+        lifecycleScope.launch {
+            try {
+                // Obtener URLs de imágenes de los primeros 5 anuncios
+                val imageUrls = anuncios.take(5)
+                    .mapNotNull { it.imagen }
+                    .filter { it.isNotBlank() }
+                
+                // Precarga con ImageLoadingUtils optimizado
+                if (imageUrls.isNotEmpty()) {
+                    com.tecsup.aquanqa.utils.ImageLoadingUtils.preloadImages(
+                        context = requireContext(),
+                        imageUrls = imageUrls
+                    )
+                }
+            } catch (e: Exception) {
+                // Silenciosamente manejar errores de precarga - no afecta funcionalidad principal
+                android.util.Log.d("HomeFragment", "Preload images failed: ${e.message}")
+            }
+        }
+    }
+    
+    /**
+     * Optimización de memoria - limpiar cache de imágenes cuando sea necesario
+     */
+    override fun onDestroy() {
+        super.onDestroy()
+        // Limpiar cache de memoria de imágenes para liberar recursos
+        try {
+            com.tecsup.aquanqa.utils.ImageLoadingUtils.clearMemoryCache(requireContext())
+        } catch (e: Exception) {
+            // Ignorar errores de limpieza
         }
     }
 }

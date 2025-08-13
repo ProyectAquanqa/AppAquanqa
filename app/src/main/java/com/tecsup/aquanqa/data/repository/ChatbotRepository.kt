@@ -57,9 +57,7 @@ class ChatbotRepository(private val chatbotApiService: ChatbotApiService) {
     /**
      * Obtiene las preguntas más frecuentes desde la API.
      * Estas se usan como respaldo cuando no hay preguntas específicas recomendadas.
-     *
-     * @return Un objeto Result que contiene la lista de preguntas frecuentes si la llamada es exitosa,
-     *         o una excepción si falla.
+
      */
     suspend fun getFrequentQuestions(): Result<List<RecommendedQuestion>> {
         return withContext(Dispatchers.IO) {

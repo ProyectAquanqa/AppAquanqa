@@ -11,6 +11,14 @@ import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import android.view.KeyEvent
+import android.widget.Toast
+import androidx.lifecycle.LifecycleCoroutineScope
+import com.tecsup.aquanqa.data.api.ApiClient
+import com.tecsup.aquanqa.data.SessionManager
+import com.tecsup.aquanqa.data.preferences.UserPreferences
+import com.tecsup.aquanqa.data.model.content.NuevoComentarioRequest
+import com.tecsup.aquanqa.utils.DateUtils
+import kotlinx.coroutines.launch
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -31,8 +39,11 @@ import java.util.*
  * Adapter para el RecyclerView que muestra la lista de anuncios.
  * Se encarga de vincular los datos de cada `Anuncio` con la vista `item_anuncio`.
  */
-class AnunciosAdapter(private var anuncios: List<Anuncio>) :
-    RecyclerView.Adapter<AnunciosAdapter.AnuncioViewHolder>() {
+class AnunciosAdapter(
+    private var anuncios: List<Anuncio>,
+    private val lifecycleScope: LifecycleCoroutineScope? = null,
+    private val onCommentClick: ((Anuncio) -> Unit)? = null
+) : RecyclerView.Adapter<AnunciosAdapter.AnuncioViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AnuncioViewHolder {
         val binding = ItemAnuncioBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -40,7 +51,7 @@ class AnunciosAdapter(private var anuncios: List<Anuncio>) :
     }
 
     override fun onBindViewHolder(holder: AnuncioViewHolder, position: Int) {
-        holder.bind(anuncios[position])
+        holder.bind(anuncios[position], lifecycleScope, onCommentClick)
     }
 
     override fun getItemCount(): Int = anuncios.size
@@ -97,7 +108,7 @@ class AnunciosAdapter(private var anuncios: List<Anuncio>) :
         private var isExpanded = false
         private val collapsedMaxLines = 7
 
-        fun bind(anuncio: Anuncio) {
+        fun bind(anuncio: Anuncio, lifecycleScope: LifecycleCoroutineScope?, onCommentClick: ((Anuncio) -> Unit)?) {
             // Rellenar datos estáticos
             binding.tvAuthorName.text = anuncio.autor.fullName
             binding.tvPublishDate.text = "Publicado: ${dateFormat.format(anuncio.fecha)}"
@@ -108,6 +119,9 @@ class AnunciosAdapter(private var anuncios: List<Anuncio>) :
 
             // Cargar imágenes con Glide
             loadImages(anuncio)
+            
+            // Configurar botones de acción
+            setupActionButtons(anuncio, lifecycleScope, onCommentClick)
 
             // Compartir
             binding.btnShare.setOnClickListener {
@@ -419,6 +433,31 @@ class AnunciosAdapter(private var anuncios: List<Anuncio>) :
             )
 
             return spannable
+        }
+        
+        /**
+         * Configura los botones de acción (like, comentar, compartir) usando LikeManager.
+         */
+        private fun setupActionButtons(anuncio: Anuncio, lifecycleScope: LifecycleCoroutineScope?, onCommentClick: ((Anuncio) -> Unit)?) {
+            // Configurar botón de like usando LikeManager
+            if (lifecycleScope != null) {
+                com.tecsup.aquanqa.utils.LikeManager.setupLikeButton(
+                    context = itemView.context,
+                    button = binding.btnLike,
+                    anuncio = anuncio,
+                    lifecycleScope = lifecycleScope
+                )
+            }
+            
+            // Configurar botón de comentar usando LikeManager
+            com.tecsup.aquanqa.utils.LikeManager.setupCommentButton(
+                button = binding.btnComment,
+                anuncio = anuncio,
+                comentariosCount = anuncio.comentariosCount,
+                onCommentClick = { evento ->
+                    onCommentClick?.invoke(evento)
+                }
+            )
         }
     }
 } 

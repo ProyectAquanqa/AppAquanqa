@@ -57,13 +57,23 @@ class HomeViewModel(
     }
     
     /**
-     * Refresca datos automáticamente cuando la app vuelve del background.
-     * SIEMPRE intenta obtener datos frescos si hay internet.
+     * Refresca datos de manera inteligente cuando la app vuelve del background.
+     * Solo hace refresh si es realmente necesario para evitar modo offline.
      */
     fun onAppResumed() {
         viewModelScope.launch {
-            // SIEMPRE intentar refresh para detectar contenido nuevo
-            refreshData(forceRefresh = true)
+            // INTELIGENTE: Solo refresh si no hay datos o si han pasado más de 5 minutos
+            val shouldRefresh = repository.shouldRefreshOnResume()
+            
+            if (shouldRefresh) {
+                // Solo hacer refresh suave (no forzado) para mantener datos cached si falla la API
+                refreshData(forceRefresh = false)
+            } else {
+                // Verificar si hay datos cached válidos y mostrarlos inmediatamente
+                if (_eventsState.value !is Result.Success || _categoriesState.value !is Result.Success) {
+                    loadDataOptimized()
+                }
+            }
         }
     }
     
@@ -83,28 +93,37 @@ class HomeViewModel(
     }
     
     /**
-     *  Carga inicial de datos con cache inteligente
+     *  Carga inicial de datos con cache inteligente y mejor manejo de categorías
      */
     private fun loadDataOptimized() {
         viewModelScope.launch {
             _isLoading.value = true
             
-            //  Cargar datos en paralelo
+            //  Cargar datos en paralelo con mejor manejo de errores
             coroutineScope {
                 val userNameJob = async { loadUserName() }
                 val categoriesJob = async { loadCategories() }
                 
-                //  Esperar resultados
+                //  Esperar resultados de usuario (no bloquea si falla)
                 userNameJob.await()
+                
+                //  Manejar categorías de manera inteligente
                 val categoriesResult = categoriesJob.await()
                 
-                //  Seleccionar categoría por defecto y cargar eventos
+                //  Seleccionar categoría "Todos" por defecto SIEMPRE
                 if (categoriesResult is Result.Success && categoriesResult.data.isNotEmpty()) {
-                    val defaultCategory = categoriesResult.data.find { it.isAllCategoriesOption() } 
-                        ?: categoriesResult.data.first()
+                    // Buscar específicamente la categoría "Todos" que se crea en el repositorio
+                    val defaultCategory = categoriesResult.data.find { category ->
+                        category.nombre == "Todos" || category.id == -1
+                    } ?: categoriesResult.data.first() // Fallback al primer elemento si no encuentra "Todos"
                     
                     _selectedCategory.value = defaultCategory
-                    loadEventsForCategory(defaultCategory.nombre)
+                    // IMPORTANTE: Cargar eventos para "Todos" (que internamente maneja null)
+                    val categoryNameForApi = if (defaultCategory.nombre == "Todos") null else defaultCategory.nombre
+                    loadEventsForCategory(categoryNameForApi)
+                } else {
+                    // Si las categorías fallan, cargar eventos sin filtro (modo "Todos")
+                    loadEventsForCategory(null)
                 }
             }
             
@@ -137,6 +156,11 @@ class HomeViewModel(
         _categoriesState.value = Result.Loading
         val result = repository.getCategories(forceRefresh)
         _categoriesState.value = result
+        
+        // SWR: Si cargamos desde cache (forceRefresh=false) y fue exitoso, revalidar silenciosamente en background
+        if (!forceRefresh && result is Result.Success) {
+            revalidateCategoriesInBackground()
+        }
         return result
     }
     
@@ -190,6 +214,11 @@ class HomeViewModel(
                     
                     // Emitir lista completa actualizada
                     _eventsState.value = Result.Success(_allEvents.toList())
+
+                    // SWR: Si la carga no fue forzada (probable cache), revalidar en background
+                    if (!forceRefresh && !isLoadingMore) {
+                        revalidateEventsInBackground(categoryName)
+                    }
                 }
                 is Result.Error -> {
                     if (isLoadingMore) {
@@ -211,34 +240,107 @@ class HomeViewModel(
             isLoadingPage = false
         }
     }
-    
+
     /**
-     *  Selección de categoría con cache invalidation para datos frescos
+     * Revalida categorías silenciosamente en background (stale-while-revalidate)
      */
-    fun onCategorySelected(category: Category) {
-        if (_selectedCategory.value?.id != category.id) {
-            _selectedCategory.value = category
-            //  IMPORTANTE: Forzar refresh al cambiar categoría para evitar cache incorrecto
-            loadEventsForCategory(category.nombre, forceRefresh = true)
+    private fun revalidateCategoriesInBackground() {
+        viewModelScope.launch {
+            try {
+                val fresh = repository.getCategories(forceRefresh = true)
+                if (fresh is Result.Success) {
+                    val current = (_categoriesState.value as? Result.Success)?.data
+                    if (current == null || current != fresh.data) {
+                        _categoriesState.value = fresh
+                    }
+                }
+            } catch (_: Exception) { }
+        }
+    }
+
+    /**
+     * Revalida eventos silenciosamente en background (stale-while-revalidate)
+     */
+    private fun revalidateEventsInBackground(categoryName: String?) {
+        viewModelScope.launch {
+            try {
+                val fresh = repository.getFilteredEvents(
+                    categoryName = categoryName,
+                    page = 1,
+                    pageSize = pageSize,
+                    forceRefresh = true
+                )
+                if (fresh is Result.Success) {
+                    val (freshEvents, paginationInfo) = fresh.data
+                    val current = (_eventsState.value as? Result.Success)?.data
+                    if (current == null || current != freshEvents) {
+                        _allEvents.clear()
+                        _allEvents.addAll(freshEvents)
+                        hasMorePages = paginationInfo.hasNext
+                        currentPage = if (hasMorePages) 2 else 1
+                        _eventsState.value = Result.Success(_allEvents.toList())
+                    }
+                }
+            } catch (_: Exception) { }
         }
     }
     
     /**
-     *  Refresca todos los datos con invalidación de cache
+     *  Selección de categoría con manejo inteligente de "Todos" y cache
+     */
+    fun onCategorySelected(category: Category) {
+        if (_selectedCategory.value?.id != category.id) {
+            _selectedCategory.value = category
+            
+            // IMPORTANTE: Convertir "Todos" a null para la API
+            val categoryNameForApi = if (category.nombre == "Todos") null else category.nombre
+            
+            // Solo forzar refresh si realmente es necesario (evita modo offline)
+            viewModelScope.launch {
+                val forceRefresh = repository.shouldRefreshForCategory(categoryNameForApi)
+                loadEventsForCategory(categoryNameForApi, forceRefresh = forceRefresh)
+            }
+        }
+    }
+    
+    /**
+     *  Refresca datos de manera inteligente basado en el tipo de refresh
      */
     fun refreshData(forceRefresh: Boolean = true) {
         viewModelScope.launch {
             _isLoading.value = true
             
-            //  Smart refresh del repositorio
-            repository.refreshAllData()
-            
-            //  Recargar categorías
-            loadCategories(forceRefresh)
-            
-            //  Recargar eventos de la categoría actual
-            val currentCategory = _selectedCategory.value
-            loadEventsForCategory(currentCategory?.nombre, forceRefresh)
+            try {
+                if (forceRefresh) {
+                    //  Refresh completo: invalidar cache y recargar todo
+                    repository.refreshAllData()
+                    
+                    //  Recargar categorías
+                    loadCategories(forceRefresh = true)
+                    
+                    //  Recargar eventos de la categoría actual
+                    val currentCategory = _selectedCategory.value
+                    val categoryNameForApi = if (currentCategory?.nombre == "Todos") null else currentCategory?.nombre
+                    loadEventsForCategory(categoryNameForApi, forceRefresh = true)
+                } else {
+                    //  Refresh suave: usar cache si está disponible, solo actualizar si es necesario
+                    //  Intentar cargar categorías desde cache primero
+                    val categoriesResult = loadCategories(forceRefresh = false)
+                    
+                    //  Solo recargar eventos si no tenemos datos válidos
+                    if (_eventsState.value !is Result.Success) {
+                        val currentCategory = _selectedCategory.value
+                        val categoryNameForApi = if (currentCategory?.nombre == "Todos") null else currentCategory?.nombre
+                        loadEventsForCategory(categoryNameForApi, forceRefresh = false)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("HomeViewModel", "Error during refresh: ${e.message}")
+                // En caso de error, intentar cargar datos cached
+                if (_eventsState.value !is Result.Success || _categoriesState.value !is Result.Success) {
+                    loadDataOptimized()
+                }
+            }
             
             _isLoading.value = false
         }

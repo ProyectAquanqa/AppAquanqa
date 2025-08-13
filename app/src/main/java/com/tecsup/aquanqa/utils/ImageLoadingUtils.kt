@@ -5,6 +5,8 @@ import android.widget.ImageView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.Priority
+import com.bumptech.glide.load.DecodeFormat
 import com.tecsup.aquanqa.R
 
 /**
@@ -20,7 +22,7 @@ import com.tecsup.aquanqa.R
 object ImageLoadingUtils {
 
     /**
-     * Carga imagen de perfil de usuario con manejo inteligente de conectividad.
+     * Carga imagen de perfil de usuario con manejo inteligente de conectividad y optimización de rendimiento.
      * 
      * @param context Contexto de la aplicación
      * @param imageView ImageView donde cargar la imagen
@@ -38,6 +40,10 @@ object ImageLoadingUtils {
             .placeholder(R.drawable.ic_profile) // Mostrar mientras carga
             .error(R.drawable.ic_profile) // Mostrar si falla la carga
             .diskCacheStrategy(DiskCacheStrategy.ALL) //  SIEMPRE usar cache completo
+            .priority(Priority.HIGH) // Prioridad alta para imágenes de perfil
+            .format(DecodeFormat.PREFER_RGB_565) // Menos memoria para mejor rendimiento
+            .override(120, 120) // Redimensionar para perfiles (120dp típico)
+            .skipMemoryCache(false) // Permitir cache de memoria
         
         if (useCircleCrop) {
             requestOptions.circleCrop()
@@ -62,7 +68,7 @@ object ImageLoadingUtils {
     }
 
     /**
-     * Carga imagen de anuncio con manejo inteligente de conectividad.
+     * Carga imagen de anuncio con manejo inteligente de conectividad y optimización de rendimiento.
      * 
      * @param context Contexto de la aplicación
      * @param imageView ImageView donde cargar la imagen
@@ -78,6 +84,11 @@ object ImageLoadingUtils {
             .placeholder(R.drawable.logo_aq) // Logo de Aquanqa mientras carga
             .error(R.drawable.logo_aq) // Logo de Aquanqa si falla la carga
             .diskCacheStrategy(DiskCacheStrategy.ALL) //  SIEMPRE usar cache completo
+            .priority(Priority.NORMAL) // Prioridad normal para imágenes de anuncios
+            .format(DecodeFormat.PREFER_RGB_565) // Menos memoria para mejor rendimiento
+            .centerCrop() // Crop centrado para mejor presentación
+            .skipMemoryCache(false) // Permitir cache de memoria
+            .override(800, 600) // Tamaño máximo optimizado (4:3 ratio)
         
         if (!imageUrl.isNullOrBlank()) {
             //  VERDADERO OFFLINE: Siempre intentar cargar imagen
@@ -98,7 +109,7 @@ object ImageLoadingUtils {
     }
 
     /**
-     * Carga imagen genérica con manejo inteligente de conectividad.
+     * Carga imagen genérica con manejo inteligente de conectividad y optimización de rendimiento.
      * 
      * @param context Contexto de la aplicación
      * @param imageView ImageView donde cargar la imagen
@@ -118,6 +129,9 @@ object ImageLoadingUtils {
             .placeholder(placeholderRes)
             .error(errorRes)
             .diskCacheStrategy(DiskCacheStrategy.ALL) //  SIEMPRE usar cache completo
+            .priority(Priority.NORMAL)
+            .format(DecodeFormat.PREFER_RGB_565) // Menos memoria para mejor rendimiento
+            .skipMemoryCache(false) // Permitir cache de memoria
         
         if (!imageUrl.isNullOrBlank()) {
             //  VERDADERO OFFLINE: Siempre intentar cargar imagen
@@ -138,20 +152,49 @@ object ImageLoadingUtils {
     }
 
     /**
-     * Precarga imágenes para uso offline futuro.
-     * Glide automáticamente maneja si hay conexión o no.
+     * Precarga imágenes de manera inteligente para uso offline futuro.
+     * Optimizado para rendimiento y gestión de memoria.
      * 
      * @param context Contexto de la aplicación
      * @param imageUrls Lista de URLs a precargar
      */
     fun preloadImages(context: Context, imageUrls: List<String>) {
-        imageUrls.forEach { imageUrl ->
-            if (imageUrl.isNotEmpty()) {
+        imageUrls.take(10) // Limitar a 10 imágenes para evitar sobrecarga de memoria
+            .filter { it.isNotEmpty() }
+            .forEach { imageUrl ->
                 Glide.with(context)
                     .load(imageUrl)
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .priority(Priority.LOW) // Baja prioridad para precarga
+                    .format(DecodeFormat.PREFER_RGB_565)
+                    .override(400, 300) // Precargar en tamaño reducido
                     .preload()
             }
-        }
+    }
+    
+    /**
+     * Limpia la caché de memoria de Glide para liberar espacio.
+     * Útil cuando se detecta baja memoria.
+     * 
+     * @param context Contexto de la aplicación
+     */
+    fun clearMemoryCache(context: Context) {
+        Glide.get(context).clearMemory()
+    }
+    
+    /**
+     * Limpia toda la caché (memoria + disco) de Glide.
+     * Usar solo en casos extremos o por configuración del usuario.
+     * 
+     * @param context Contexto de la aplicación
+     */
+    fun clearAllCache(context: Context) {
+        // Limpiar caché de memoria (hilo principal)
+        Glide.get(context).clearMemory()
+        
+        // Limpiar caché de disco (debe ejecutarse en hilo de background)
+        Thread {
+            Glide.get(context).clearDiskCache()
+        }.start()
     }
 }
