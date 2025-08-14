@@ -204,7 +204,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>() {
     }
     
     /**
-     *  CRÍTICO: Valida conectividad antes de navegar a edición.
+     * Valida conectividad antes de navegar a edición.
      * Solo permite entrar al fragment de edición si hay conexión.
      */
     private fun navigateToEditProfile() {
@@ -212,7 +212,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>() {
             //  HAY CONEXIÓN: Permitir navegación
             findNavController().navigate(R.id.action_navigation_profile_to_editProfileFragment)
         } else {
-            // ❌ SIN CONEXIÓN: Mostrar error y NO navegar
+            //  SIN CONEXIÓN: Mostrar error y NO navegar
             Snackbar.make(
                 binding.root, 
                 "Error de conexión. No se puede editar el perfil sin internet.", 

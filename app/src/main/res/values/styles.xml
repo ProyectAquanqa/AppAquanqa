@@ -48,6 +48,8 @@
         <item name="android:letterSpacing">0.02</item>
     </style>
 
+
+
     <!-- Texto inactivo del bottom navigation -->
     <style name="BottomNavigationView.TextAppearance.Inactive" parent="TextAppearance.MaterialComponents.Caption">
         <item name="android:textSize">10sp</item>

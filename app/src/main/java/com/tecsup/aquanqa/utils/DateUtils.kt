@@ -171,7 +171,7 @@ object DateUtils {
      * Calcula el tiempo transcurrido desde una fecha dada.
      * 
      * @param isoDateString Fecha en formato ISO 8601
-     * @return String Tiempo transcurrido en formato amigable ("hace 2 días", "hace 1 semana")
+     * @return String Tiempo transcurrido en formato amigable ("2 días", "1 semana")
      */
     fun getTimeAgo(isoDateString: String?): String {
         if (isoDateString.isNullOrBlank()) return "Fecha desconocida"
@@ -187,11 +187,11 @@ object DateUtils {
             
             when {
                 diffInMinutes < 1 -> "Hace un momento"
-                diffInMinutes < 60 -> "Hace ${diffInMinutes.toInt()} minutos"
-                diffInHours < 24 -> "Hace ${diffInHours.toInt()} horas"
-                diffInDays < 7 -> "Hace ${diffInDays.toInt()} días"
-                diffInDays < 30 -> "Hace ${(diffInDays / 7).toInt()} semanas"
-                else -> "Hace ${(diffInDays / 30).toInt()} meses"
+                diffInMinutes < 60 -> " ${diffInMinutes.toInt()} min"
+                diffInHours < 24 -> "${diffInHours.toInt()} h"
+                diffInDays < 7 -> " ${diffInDays.toInt()} d"
+                diffInDays < 30 -> "${(diffInDays / 7).toInt()} s"
+                else -> " ${(diffInDays / 30).toInt()} m"
             }
         } catch (e: Exception) {
             "Fecha desconocida"

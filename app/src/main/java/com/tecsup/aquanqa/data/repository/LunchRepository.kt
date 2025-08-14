@@ -172,7 +172,7 @@ class LunchRepository(
         Log.d(TAG, "Almuerzos cache cleared")
     }
 
-    // ==================== MÉTODOS PRIVADOS ====================
+    //metodos privados
 
     /**
      * Obtiene el ID del usuario actual.

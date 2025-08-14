@@ -25,13 +25,9 @@ class NotificationRepository(
 
     /**
      * Obtiene el historial de notificaciones del usuario desde la API.
-     *
      * Realiza una petición GET al endpoint `api/notifications/`, incluyendo el token
-     * de autenticación del usuario. Maneja tanto respuestas exitosas como errores de red
-     * o de la API, devolviendo un objeto `Result` que encapsula el estado de la operación.
-     *
-     * @return `Result.Success(List<Notification>)` si la petición es exitosa.
-     * @return `Result.Error(Exception)` si ocurre algún error.
+     * de autenticación del usuario. Maneja tanto respuestas exitosas como errores de red o de la API, devolviendo un objeto `Result` que encapsula el estado de la operación.
+   .
      */
     suspend fun getNotifications(): Result<List<Notification>> {
         return try {

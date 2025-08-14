@@ -284,7 +284,7 @@ class EditProfileFragment : Fragment() {
         )
     }
     
-    // ========== FUNCIONES PRIVADAS ==========
+    // funciones privadas
 
     /**
      * Maneja la selección de imagen desde ImagePickerManager

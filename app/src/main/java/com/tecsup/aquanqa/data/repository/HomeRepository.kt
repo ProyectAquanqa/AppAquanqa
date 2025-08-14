@@ -309,7 +309,7 @@ class HomeRepository(
             val response = apiService.getEventosAndroid(
                 token = "Bearer $token",
                 categoriaNombre = normalizedCategoryName,
-                ordering = "-created_at"
+                ordering = "-is_pinned,-created_at"
             )
             
             if (response.isSuccessful && response.body() != null) {
@@ -523,7 +523,7 @@ class HomeRepository(
         }
     }
     
-    // ================= MÉTODOS PRIVADOS AUXILIARES =================
+    // metodos privados auxiliares
     
     /**
      * Obtiene el ID del usuario actual desde las preferencias.
@@ -550,7 +550,7 @@ class HomeRepository(
         )
     }
 
-    // ================= MÉTODOS PRIVADOS DE SERIALIZACIÓN =================
+    //metodos privados de serializacion
 
     /**
      * Serializa categorías para DataStore.

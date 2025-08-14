@@ -59,7 +59,7 @@ object ImageLoadingUtils {
                 .apply(requestOptions)
                 .into(imageView)
         } else {
-            // ❌ NO HAY URL: Mostrar ic_profile.png por defecto
+            //  NO HAY URL: Mostrar ic_profile.png por defecto
             glideRequest
                 .load(R.drawable.ic_profile)
                 .apply(requestOptions)
@@ -100,7 +100,7 @@ object ImageLoadingUtils {
                 .apply(requestOptions)
                 .into(imageView)
         } else {
-            // ❌ NO HAY URL: Mostrar logo por defecto
+            //  NO HAY URL: Mostrar logo por defecto
             glideRequest
                 .load(R.drawable.logo_aq)
                 .apply(requestOptions)
@@ -143,7 +143,7 @@ object ImageLoadingUtils {
                 .apply(requestOptions)
                 .into(imageView)
         } else {
-            // ❌ NO HAY URL: Mostrar imagen por defecto
+            //  NO HAY URL: Mostrar imagen por defecto
             glideRequest
                 .load(errorRes)
                 .apply(requestOptions)

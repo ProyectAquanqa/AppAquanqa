@@ -39,6 +39,7 @@ class CommentsBottomSheetFragment : BottomSheetDialogFragment() {
 
     companion object {
         private const val ARG_ANUNCIO = "arg_anuncio"
+        private const val MENU_DELETE_ID = 1001
 
         fun newInstance(anuncio: Anuncio): CommentsBottomSheetFragment {
             val fragment = CommentsBottomSheetFragment()
@@ -88,8 +89,8 @@ class CommentsBottomSheetFragment : BottomSheetDialogFragment() {
     private fun setupRecyclerView() {
         commentsAdapter = CommentsAdapter(
             emptyList(),
-            onOptionsClick = { comentario ->
-                showCommentOptions(comentario)
+            onOptionsClick = { anchor, comentario ->
+                showCommentOptions(anchor, comentario)
             },
             currentUserId = userProfile?.id
         )
@@ -125,19 +126,12 @@ class CommentsBottomSheetFragment : BottomSheetDialogFragment() {
                     if (response.isSuccessful) {
                         userProfile = response.body()
                         userProfile?.let { profile ->
-                            // Cargar foto de perfil del usuario actual
-                            ImageLoadingUtils.loadProfileImage(
-                                context = requireContext(),
-                                imageView = binding.ivUserPhoto,
-                                imageUrl = profile.foto_perfil,
-                                useCircleCrop = true
-                            )
-                            // Actualizar el adapter con el ID del usuario
+                            // Actualizar el adapter con el ID del usuario (sin foto de perfil)
                             val currentComments = commentsAdapter.getComentarios()
                             commentsAdapter = CommentsAdapter(
                                 currentComments,
-                                onOptionsClick = { comentario ->
-                                    showCommentOptions(comentario)
+                                onOptionsClick = { anchor, comentario ->
+                                    showCommentOptions(anchor, comentario)
                                 },
                                 currentUserId = profile.id
                             )
@@ -153,13 +147,13 @@ class CommentsBottomSheetFragment : BottomSheetDialogFragment() {
 
     private fun loadComments() {
         showLoadingState()
-        
+
         lifecycleScope.launch {
             try {
                 val token = sessionManager.getValidAccessToken()
                 if (token != null) {
                     val response = ApiClient.apiService.getComentarios("Bearer $token", anuncio.id)
-                    
+
                     if (response.isSuccessful) {
                         val comentarios = response.body() ?: emptyList()
                         updateCommentsUI(comentarios)
@@ -176,44 +170,27 @@ class CommentsBottomSheetFragment : BottomSheetDialogFragment() {
     }
 
     private fun sendComment(content: String) {
-        lifecycleScope.launch {
-            try {
-                binding.btnSendComment.isEnabled = false
+        binding.btnSendComment.isEnabled = false
+        
+        // Usar CommentManager para crear el comentario y actualizar contadores automáticamente
+        com.tecsup.aquanqa.utils.CommentManager.createComment(
+            context = requireContext(),
+            eventoId = anuncio.id,
+            content = content,
+            lifecycleScope = lifecycleScope
+        ) { success, newCount ->
+            binding.btnSendComment.isEnabled = true
+            
+            if (success) {
+                // Limpiar campo de texto
+                binding.etComment.text?.clear()
                 
-                val token = sessionManager.getValidAccessToken()
-                if (token != null) {
-                    val request = NuevoComentarioRequest(anuncio.id, content)
-                    val response = ApiClient.apiService.crearComentario("Bearer $token", request)
-                    
-                    if (response.isSuccessful) {
-                        val nuevoComentario = response.body()
-                        if (nuevoComentario != null) {
-                            // Agregar comentario a la lista
-                            commentsAdapter.addComment(nuevoComentario)
-                            
-
-                            // Limpiar campo de texto
-                            binding.etComment.text?.clear()
-                            
-                            // Hacer scroll al nuevo comentario
-                            binding.rvComments.smoothScrollToPosition(0)
-                            
-                            // Ocultar estado vacío si estaba visible
-                            binding.emptyState.visibility = View.GONE
-                            binding.rvComments.visibility = View.VISIBLE
-
-                        }
-                    } else {
-                        showError("Error al enviar comentario")
-                    }
-                } else {
-                    showError("Error de autenticación")
-                }
-            } catch (e: Exception) {
-                showError("Error de conexión")
-            } finally {
-                binding.btnSendComment.isEnabled = true
+                // Recargar comentarios para mostrar el nuevo
+                loadComments()
+                
+               
             }
+            // Los errores ya se manejan en CommentManager
         }
     }
 
@@ -241,19 +218,96 @@ class CommentsBottomSheetFragment : BottomSheetDialogFragment() {
     private fun showError(message: String) {
         binding.loadingState.visibility = View.GONE
         Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
-        
+
         // Mostrar estado vacío en caso de error
         binding.emptyState.visibility = View.VISIBLE
         binding.rvComments.visibility = View.GONE
     }
 
-    private fun showCommentOptions(comentario: ComentarioResponse) {
-        // TODO: Implementar menú de opciones (editar/eliminar comentario)
-        Toast.makeText(requireContext(), "Opciones para comentario #${comentario.id}", Toast.LENGTH_SHORT).show()
+    private fun showCommentOptions(anchor: View, comentario: ComentarioResponse) {
+        // Popup limpio usando widget Material Light (fondo blanco y sin contenedor rosado)
+        val popup = androidx.appcompat.widget.PopupMenu(
+            requireContext(),
+            anchor,
+            android.view.Gravity.END,
+            0,
+            androidx.appcompat.R.style.ThemeOverlay_AppCompat_Light
+        )
+
+        popup.menu.add(0, MENU_DELETE_ID, 0, "Eliminar")
+
+        popup.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                MENU_DELETE_ID -> {
+                    confirmAndDeleteComment(comentario)
+                    true
+                }
+                else -> false
+            }
+        }
+
+        popup.show()
+        
+        // Ajustar fondo a gris claro y compactar, sin agregar contenedores extra
+        try {
+            val popupField = androidx.appcompat.widget.PopupMenu::class.java.getDeclaredField("mPopup")
+            popupField.isAccessible = true
+            val menuPopupHelper = popupField.get(popup)
+            val classPopupHelper = Class.forName(menuPopupHelper.javaClass.name)
+            val getListView = classPopupHelper.getMethod("getListView")
+            val listView = getListView.invoke(menuPopupHelper) as? android.widget.ListView
+            listView?.apply {
+                setBackgroundColor(android.graphics.Color.parseColor("#F2F2F2"))
+                //setBackgroundColor(ContextCompat.getColor(context, R.color.text_hint))
+                setPadding(12, 8, 12, 8)
+                divider = null
+                dividerHeight = 0
+            }
+        } catch (_: Exception) { }
+    }
+
+    private fun confirmAndDeleteComment(comentario: ComentarioResponse) {
+        // Diálogo más compacto y moderno
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("Eliminar comentario")
+            .setMessage("¿Eliminar este comentario?")
+            .setPositiveButton("Eliminar") { dialog, _ ->
+                dialog.dismiss()
+                deleteComment(comentario)
+            }
+            .setNegativeButton("Cancelar") { dialog, _ -> dialog.dismiss() }
+            .show()
+    }
+
+    private fun deleteComment(comentario: ComentarioResponse) {
+        // Usar CommentManager para eliminar el comentario y actualizar contadores automáticamente
+        com.tecsup.aquanqa.utils.CommentManager.deleteComment(
+            context = requireContext(),
+            eventoId = anuncio.id,
+            comentarioId = comentario.id,
+            lifecycleScope = lifecycleScope
+        ) { success, newCount ->
+            if (success) {
+                // Remover comentario de la lista local
+                commentsAdapter.removeComment(comentario.id)
+                
+                // Si la lista queda vacía, mostrar estado vacío
+                if (commentsAdapter.getComentarios().isEmpty()) {
+                    binding.emptyState.visibility = View.VISIBLE
+                    binding.rvComments.visibility = View.GONE
+                }
+                
+                // El contador se actualiza automáticamente via CommentManager
+                Toast.makeText(requireContext(), "Comentario eliminado", Toast.LENGTH_SHORT).show()
+            }
+            // Los errores ya se manejan en CommentManager
+        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        // Limpiar callbacks para evitar memory leaks
+        com.tecsup.aquanqa.utils.CommentManager.clearCallbacks(anuncio.id)
         _binding = null
     }
 }

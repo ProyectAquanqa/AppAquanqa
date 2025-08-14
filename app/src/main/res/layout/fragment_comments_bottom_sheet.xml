@@ -41,7 +41,7 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:maxHeight="400dp"
-        android:padding="16dp"
+        android:padding="8dp"
         tools:listitem="@layout/item_comment" />
 
     <!-- Estado vacío -->
@@ -114,52 +114,40 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="16dp"
-        android:gravity="center_vertical">
+        android:padding="12dp"
+        android:gravity="center_vertical"
+        android:background="@color/white">
 
-        <!-- Foto de perfil del usuario actual -->
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/iv_user_photo"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:scaleType="centerCrop"
-            android:layout_marginEnd="12dp"
-            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CircleImageView"
-            tools:src="@tools:sample/avatars" />
-
-        <!-- Campo de texto para comentario -->
-        <com.google.android.material.textfield.TextInputLayout
+        <!-- Campo de texto mejorado -->
+        <EditText
+            android:id="@+id/et_comment"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            app:boxStrokeColor="@color/aquanqa_blue"
-            app:hintTextColor="@color/aquanqa_blue">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_comment"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Escribe un comentario..."
-                android:maxLines="3"
-                android:fontFamily="@font/montserrat"
-                android:textSize="14sp"
-                android:inputType="textMultiLine|textCapSentences" />
-
-        </com.google.android.material.textfield.TextInputLayout>
+            android:layout_marginEnd="12dp"
+            android:hint="Escribe un comentario..."
+            android:background="@drawable/bg_comment_input"
+            android:padding="12dp"
+            android:maxLines="3"
+            android:fontFamily="@font/montserrat"
+            android:textSize="14sp"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_hint"
+            android:inputType="textMultiLine|textCapSentences"
+            android:minHeight="44dp"
+            android:gravity="top|start" />
 
         <!-- Botón de enviar -->
-        <com.google.android.material.button.MaterialButton
+        <ImageView
             android:id="@+id/btn_send_comment"
-            style="@style/Widget.Material3.Button.IconButton.Filled"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            app:icon="@drawable/ic_send_modern"
-            app:iconSize="20dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@drawable/ic_send_modern"
+            android:background="@drawable/bg_send_button"
+            android:padding="10dp"
             android:enabled="false"
-            app:backgroundTint="@color/aquanqa_blue"
-            app:iconTint="@color/white" />
+            android:contentDescription="Enviar comentario"
+            app:tint="@color/white" />
 
     </LinearLayout>
 

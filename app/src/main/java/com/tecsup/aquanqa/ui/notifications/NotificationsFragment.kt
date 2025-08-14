@@ -98,7 +98,7 @@ class NotificationsFragment : BaseFragment<FragmentNotificationsBinding>() {
      */
     private fun setupRecyclerView() {
         notificationAdapter = NotificationAdapter { notification ->
-            android.util.Log.d("NotificationsFragment", "🎯 CLICK RECIBIDO desde adapter")
+            android.util.Log.d("NotificationsFragment", " CLICK RECIBIDO desde adapter")
             android.util.Log.d("NotificationsFragment", "Notification: ${notification.id} - '${notification.title}'")
             viewModel.onNotificationClicked(notification)
             // Navegar al detalle si la notificación tiene evento

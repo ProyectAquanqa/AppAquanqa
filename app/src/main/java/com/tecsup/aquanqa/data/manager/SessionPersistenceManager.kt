@@ -19,13 +19,7 @@ import java.util.UUID
 /**
  * Manager especializado en la persistencia robusta del estado de sesion
  * para garantizar que sobreviva a kills de proceso y reinicios del sistema.
- * 
- * Funcionalidades:
- * - Guarda estado critico de sesion de forma atomica
- * - Detecta recuperacion tras kill de proceso
- * - Restaura sesion automaticamente
- * - Maneja integridad de datos de sesion
- * - Tracking de salud de sesion
+
  */
 class SessionPersistenceManager private constructor(
     private val context: Context

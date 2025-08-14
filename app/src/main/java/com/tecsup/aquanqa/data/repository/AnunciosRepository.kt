@@ -72,7 +72,7 @@ class AnunciosRepository(
             val response = ApiClient.apiService.getEventosAndroid(
                 token = "Bearer $token",
                 categoriaNombre = "Anuncios",
-                ordering = "-fecha"
+                ordering = "-is_pinned,-fecha"
             )
             
             if (response.isSuccessful) {
@@ -175,7 +175,7 @@ class AnunciosRepository(
         Log.d(TAG, "Anuncios cache cleared")
     }
 
-    // ================= MÉTODOS PRIVADOS =================
+    //metodos privados
 
     /**
      * Obtiene el ID del usuario actual.

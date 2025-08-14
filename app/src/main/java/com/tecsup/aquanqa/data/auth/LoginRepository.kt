@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.map
 
 /**
  * Clase que solicita autenticación e información del usuario de la fuente de datos remota y
- * mantiene un caché en memoria con el estado de inicio de sesión y la información de las credenciales del usuario.
+ mantiene un caché en memoria con el estado de inicio de sesión y la información de las credenciales del usuario.
  */
 class LoginRepository(
     private val dataSource: LoginDataSource,

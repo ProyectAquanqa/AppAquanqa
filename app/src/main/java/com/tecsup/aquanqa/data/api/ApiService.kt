@@ -174,7 +174,7 @@ interface ApiService {
     suspend fun getEventosAndroid(
         @Header("Authorization") token: String,
         @Query("categoria__nombre") categoriaNombre: String? = null,
-        @Query("ordering") ordering: String? = "-created_at"
+        @Query("ordering") ordering: String? = "-is_pinned,-created_at"
     ): Response<List<Anuncio>>
 
     /**

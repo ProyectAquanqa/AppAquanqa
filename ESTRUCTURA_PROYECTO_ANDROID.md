@@ -7,7 +7,7 @@ Este es un proyecto Android desarrollado en Kotlin para la aplicación **Aquanqa
 
 ## Estructura de Directorios y Archivos
 
-### 📁 Directorio Raíz
+###  Directorio Raíz
 
 #### Archivos de Configuración Principal
 - **`build.gradle.kts`** - Archivo de configuración principal de Gradle para todo el proyecto. Define plugins globales y configuraciones compartidas.
@@ -54,7 +54,7 @@ Este es un proyecto Android desarrollado en Kotlin para la aplicación **Aquanqa
 - **`AquanqaApplication.kt`** - Clase Application personalizada, punto de entrada de la app.
 - **`MainActivity.kt`** - Actividad principal que contiene la navegación y estructura base.
 
-**📁 `data/` - Capa de Datos (Arquitectura MVVM)**
+** `data/` - Capa de Datos (Arquitectura MVVM)**
 - **`api/`** - Interfaces y configuración de API REST.
 - **`auth/`** - Manejo de autenticación y tokens.
 - **`common/`** - Clases comunes de datos.
@@ -64,10 +64,10 @@ Este es un proyecto Android desarrollado en Kotlin para la aplicación **Aquanqa
 - **`preferences/`** - Manejo de preferencias locales (SharedPreferences/DataStore).
 - **`repository/`** - Repositorios que abstraen las fuentes de datos.
 
-**📁 `services/` - Servicios de Android**
+** `services/` - Servicios de Android**
 - **`MyFirebaseMessagingService.kt`** - Servicio para manejar notificaciones push de Firebase.
 
-**📁 `ui/` - Capa de Presentación (UI)**
+** `ui/` - Capa de Presentación (UI)**
 - **`adapters/`** - Adaptadores para RecyclerView y otros componentes.
 - **`anuncios/`** - Fragmentos y ViewModels para la sección de anuncios.
 - **`base/`** - Clases base para Fragments y Activities.
@@ -78,7 +78,7 @@ Este es un proyecto Android desarrollado en Kotlin para la aplicación **Aquanqa
 - **`notifications/`** - Gestión y visualización de notificaciones.
 - **`profile/`** - Perfil de usuario y configuraciones.
 
-**📁 `utils/` - Utilidades y Helpers**
+** `utils/` - Utilidades y Helpers**
 - **`ChatSessionManager.kt`** - Gestión de sesiones de chat.
 - **`DateUtils.kt`** - Utilidades para manejo de fechas.
 - **`ImageDisplayHelper.kt`** - Helper para mostrar imágenes.

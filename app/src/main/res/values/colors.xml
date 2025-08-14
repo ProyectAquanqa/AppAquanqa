@@ -13,7 +13,6 @@
     <!-- ========== COLORES PRIMARIOS ALTERNATIVOS ========== -->
 
     <color name="primary_blue">#0C5892</color>
-    <color name="primary_blue_light">#CBE2F6</color>
 
     <!-- ========== FONDOS ========== -->
     <color name="background_primary">#FFFFFF</color>

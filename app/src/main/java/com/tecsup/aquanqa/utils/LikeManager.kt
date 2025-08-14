@@ -145,16 +145,7 @@ object LikeManager {
         comentariosCount: Int,
         onCommentClick: (Anuncio) -> Unit
     ) {
-        // Actualizar texto con contador (solo número si hay comentarios, vacío si no)
-        button.text = if (comentariosCount > 0) {
-            comentariosCount.toString()
-        } else {
-            ""
-        }
-        
-        // Configurar click para abrir modal
-        button.setOnClickListener {
-            onCommentClick(anuncio)
-        }
+        // Delegar al CommentManager para manejo completo de comentarios
+        CommentManager.setupCommentButton(button, anuncio, onCommentClick)
     }
 }

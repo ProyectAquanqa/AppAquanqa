@@ -9,8 +9,7 @@ import kotlinx.coroutines.flow.first
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * Manager que se encarga del refresh automático y proactivo de tokens
- * para evitar que expiren durante el uso de la aplicación.
+ * Manager que se encarga del refresh automático y proactivo de tokens para evitar que expiren durante el uso de la aplicación.
  * 
  * Características:
  * - Monitoreo periódico del estado de los tokens

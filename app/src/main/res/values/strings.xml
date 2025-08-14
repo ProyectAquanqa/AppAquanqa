@@ -68,4 +68,8 @@
     <string name="new_password_hint">Nueva contraseña (dejar en blanco para no cambiar)</string>
     <string name="password_updated">Contraseña actualizada correctamente</string>
     <string name="email_updated">Correo electrónico actualizado correctamente</string>
+    <string name="share">Compartir</string>
+    <string name="image_event">Imagen del evento</string>
+    <string name="comment">Comentario</string>
+    <string name="like">Like</string>
 </resources>

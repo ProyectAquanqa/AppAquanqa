@@ -114,6 +114,9 @@ class AnunciosAdapter(
             binding.tvPublishDate.text = "Publicado: ${dateFormat.format(anuncio.fecha)}"
             binding.tvAnnouncementTitle.text = anuncio.titulo
             
+            // Mostrar/ocultar ícono de pinned basado en isPinned
+            binding.pinned.visibility = if (anuncio.isPinned) View.VISIBLE else View.GONE
+            
             // Configurar la descripción expandible
             setupExpandableDescription(anuncio.descripcion)
 

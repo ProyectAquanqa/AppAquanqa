@@ -1,7 +1,7 @@
 package com.tecsup.aquanqa.data
 
 /**
- * Una clase genérica que contiene un valor con su estado de carga
+ *Clase genérica que contiene un valor con su estado de carga
  * @param <T>
  */
 sealed class Result<out T : Any> {

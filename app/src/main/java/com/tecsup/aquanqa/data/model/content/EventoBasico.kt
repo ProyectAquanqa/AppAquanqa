@@ -11,7 +11,8 @@ data class EventoBasico(
     val fecha: String, // Como string para evitar problemas de serialización
     val autorNombre: String,
     val categoriaNombre: String,
-    val createdAt: String? = null
+    val createdAt: String? = null,
+    val isPinned: Boolean = false // Agregar propiedad isPinned
 ) {
     /**
      * Convierte EventoBasico a Anuncio completo.
@@ -37,7 +38,7 @@ data class EventoBasico(
                 updated_at = null
             ),
             publicado = true,
-            isPinned = false,
+            isPinned = isPinned, // IMPORTANTE: usar el valor real de isPinned
             createdAt = createdAt,
             updatedAt = null
         )
@@ -55,6 +56,7 @@ fun Anuncio.toEventoBasico(): EventoBasico {
         fecha = createdAt ?: "",
         autorNombre = autor.fullName,
         categoriaNombre = categoria.nombre,
-        createdAt = createdAt
+        createdAt = createdAt,
+        isPinned = isPinned // IMPORTANTE: preservar el valor de isPinned
     )
 }

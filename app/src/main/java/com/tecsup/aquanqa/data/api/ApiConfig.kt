@@ -1,17 +1,21 @@
 package com.tecsup.aquanqa.data.api
 
 /**
- * Clase de utilidad para configurar la API
+ * Configuración centralizada para los endpoints y parámetros de la API.
  */
 object ApiConfig {
-    const val BASE_URL = "http://192.168.18.13:8000/"
+    /** URL base para todos los endpoints de la API */
+    const val BASE_URL = "http://172.16.11.29:8000/"
     
-    // Obtener la URL base para recursos como imágenes en la carpeta /media
+    /** URL base para recursos multimedia */
     const val MEDIA_URL = "${BASE_URL}media/"
-    // Espera en segundos para conexiones normales
+    
+    /** Tiempo de espera estándar en segundos */
     const val TIMEOUT = 30L
-    // Espera en segundos para subidas de archivos
+    
+    /** Tiempo de espera extendido para subida de archivos en segundos */
     const val UPLOAD_TIMEOUT = 60L
-    // Prefijo del token
+    
+    /** Prefijo para tokens de autenticación */
     const val TOKEN_PREFIX = "Bearer "
-} 
+}

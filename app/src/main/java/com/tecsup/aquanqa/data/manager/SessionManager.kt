@@ -26,8 +26,7 @@ class SessionManager(
     /**
      * Verifica si el usuario tiene una sesión activa válida.
      * Considera tanto la presencia de tokens como su estado de expiración.
-     * 
-     * @return true si la sesión es activa y los tokens son válidos
+     retorna true si la sesión es activa y los tokens son válidos
      */
     suspend fun isSessionActive(): Boolean {
         return try {

@@ -133,7 +133,7 @@ class EventDetailFragment : BaseFragment<FragmentEventDetailBinding>() {
                             imageUrl = evento.imagen
                         )
                         
-                        // ⭐ Configurar click para abrir pantalla completa con zoom
+                        //  Configurar click para abrir pantalla completa con zoom
                         setupFullScreenZoom(itemBinding.ivAnnouncementImage, evento.imagen!!, evento.titulo ?: "Evento")
                         
                         android.util.Log.d("EventDetailFragment", "Imagen cargada desde: '${evento.imagen}'")

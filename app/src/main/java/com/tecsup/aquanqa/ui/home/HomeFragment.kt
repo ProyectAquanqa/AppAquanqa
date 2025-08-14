@@ -359,6 +359,9 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
      */
     override fun onDestroy() {
         super.onDestroy()
+        // Limpiar callbacks de comentarios para evitar memory leaks
+        com.tecsup.aquanqa.utils.CommentManager.clearAllCallbacks()
+        
         // Limpiar cache de memoria de imágenes para liberar recursos
         try {
             com.tecsup.aquanqa.utils.ImageLoadingUtils.clearMemoryCache(requireContext())

@@ -13,7 +13,6 @@ import kotlinx.coroutines.launch
 
 /**
  * ViewModel refactorizado para anuncios con cache híbrido inteligente y paginación.
- * Ahora con persistencia que sobrevive al cierre de la app.
  */
 class AnunciosViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -49,7 +48,6 @@ class AnunciosViewModel(application: Application) : AndroidViewModel(application
 
     /**
      * Carga anuncios con cache híbrido inteligente y paginación simulada.
-     * Ahora con persistencia que sobrevive al cierre de la app.
      */
     fun cargarAnuncios(forceRefresh: Boolean = false, isLoadingMore: Boolean = false) {
         if (isLoadingPage) return // Evitar llamadas múltiples simultáneas

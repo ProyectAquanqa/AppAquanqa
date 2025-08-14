@@ -74,7 +74,7 @@ class LunchFragment : BaseFragment<FragmentLunchBinding>() {
 
     override fun onResume() {
         super.onResume()
-        // ❌ REMOVIDO: No llamar automáticamente onAppResumed en cada navegación
+        //  REMOVIDO: No llamar automáticamente onAppResumed en cada navegación
         // Solo debería llamarse cuando la app realmente vuelve del background
     }
 

@@ -70,6 +70,18 @@
 
             </LinearLayout>
 
+            <ImageView
+                android:id="@+id/pinned"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="8dp"
+                android:src="@drawable/ic_pinned"
+                android:adjustViewBounds="true"
+                android:scaleType="centerInside"
+                />
+
+
         </LinearLayout>
 
         <!-- Contenido del post -->
@@ -92,7 +104,6 @@
                 android:fontFamily="@font/montserrat_bold"
                 android:text="Nuevo evento de networking"
                 android:textColor="@android:color/black"
-
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:lineSpacingExtra="1dp" />
@@ -119,6 +130,7 @@
             android:layout_marginTop="8dp"
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
+            android:contentDescription="@string/image_event"
             android:maxHeight="400dp"
             android:minHeight="120dp"
             android:clickable="true"
@@ -144,13 +156,14 @@
                 android:id="@+id/btn_like"
                 style="@style/Widget.Material3.Button.TextButton.Icon"
                 android:layout_width="wrap_content"
-                android:layout_height="40dp"
+                android:layout_height="35dp"
                 android:layout_marginEnd="8dp"
                 android:minWidth="0dp"
+                android:contentDescription="@string/like"
                 android:paddingHorizontal="5dp"
                 app:icon="@drawable/ic_like_outline"
                 app:iconTint="@color/text_secondary"
-                app:iconSize="30dp"
+                app:iconSize="35dp"
                 android:backgroundTint="@android:color/transparent"
                 app:rippleColor="#1A000000" />
 
@@ -158,10 +171,10 @@
                 android:id="@+id/btn_comment"
                 style="@style/Widget.Material3.Button.TextButton.Icon"
                 android:layout_width="wrap_content"
-                android:layout_height="40dp"
+                android:layout_height="35dp"
                 android:layout_marginEnd="8dp"
                 android:minWidth="0dp"
-
+                android:contentDescription="@string/comment"
                 android:paddingHorizontal="5dp"
                 app:icon="@drawable/ic_comment"
                 app:iconTint="@color/text_secondary"
@@ -169,16 +182,19 @@
                 android:backgroundTint="@android:color/transparent"
                 app:rippleColor="#1A000000" />
 
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_share"
                 style="@style/Widget.Material3.Button.TextButton.Icon"
                 android:layout_width="wrap_content"
-                android:layout_height="40dp"
+                android:layout_height="35dp"
                 android:minWidth="0dp"
+
+                android:contentDescription="@string/share"
                 android:paddingHorizontal="5dp"
                 app:icon="@drawable/ic_share"
                 app:iconTint="@color/text_secondary"
-                app:iconSize="30dp"
+                app:iconSize="35dp"
                 android:backgroundTint="@android:color/transparent"
                 app:rippleColor="#1A000000" />
 

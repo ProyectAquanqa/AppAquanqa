@@ -6,6 +6,7 @@
         android:id="@+id/action_notifications"
         android:icon="@drawable/ic_notification"
         android:title="Notificaciones"
+
         app:showAsAction="always|withText" />
         
 </menu>

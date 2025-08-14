@@ -205,9 +205,9 @@ object ChatSessionManager {
     /**
      * Optimiza el uso de memoria eliminando mensajes antiguos cuando se alcanza el límite.
      * Mantiene siempre:
-     * 1. El mensaje de bienvenida (si existe)
-     * 2. Los últimos MESSAGES_TO_KEEP_WHEN_TRIMMING mensajes
-     * 
+     * El mensaje de bienvenida
+     * Los últimos MESSAGES_TO_KEEP_WHEN_TRIMMING mensajes
+     *
      * Esta función se llama automáticamente cuando se añaden nuevos mensajes.
      */
     private fun trimMessagesIfNeeded() {

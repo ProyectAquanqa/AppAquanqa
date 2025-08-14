@@ -177,12 +177,12 @@ class NotificationAdapter(
             val days = (diff / (1000 * 60 * 60 * 24)).toInt()
 
             return when {
-                minutes < 1 -> "hace 1 minuto"
-                minutes < 60 -> "hace $minutes minutos"
-                hours == 1 -> "hace 1 hora"
-                hours < 24 -> "hace $hours horas"
+                minutes < 1 -> "1 min"
+                minutes < 60 -> "$minutes min"
+                hours == 1 -> "1 hora"
+                hours < 24 -> "$hours h"
                 days == 1 -> "ayer"
-                days < 7 -> "hace $days días"
+                days < 7 -> "$days d"
                 else -> {
                     val calendar = java.util.Calendar.getInstance()
                     calendar.timeInMillis = timestamp

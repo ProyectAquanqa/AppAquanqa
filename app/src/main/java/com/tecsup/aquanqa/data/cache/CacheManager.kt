@@ -33,7 +33,7 @@ class CacheManager(
         private const val MAX_ENTRIES_PER_USER = 50
     }
     
-    // ================= CATEGORÍAS =================
+    // categorias
     
     /**
      * Guarda categorías en cache con duración extendida
@@ -66,7 +66,7 @@ class CacheManager(
         cache.invalidate(CATEGORIES_KEY, CacheStrategy.CacheType.CATEGORIES, userId)
     }
     
-    // ================= EVENTOS =================
+    // eventos
     
     /**
      * Guarda eventos generales en cache
@@ -166,7 +166,7 @@ class CacheManager(
         return CacheResult.Miss
     }
     
-    // ================= PERFIL DE USUARIO =================
+    //perfil de usuario
     
     /**
      * Guarda perfil de usuario en cache
@@ -201,7 +201,7 @@ class CacheManager(
         Log.d(TAG, "User profile cache invalidated for user: $userId")
     }
     
-    // ================= ALMUERZOS =================
+    //almuerzos
     
     /**
      * Guarda almuerzos en cache con duración específica
@@ -236,7 +236,7 @@ class CacheManager(
         Log.d(TAG, "Almuerzos cache invalidated for user: $userId")
     }
     
-    // ================= OPERACIONES GLOBALES =================
+    // operaciones globales
     
     /**
      * Invalida todo el cache de un usuario específico
@@ -335,7 +335,7 @@ class CacheManager(
         Log.d(TAG, "All cache cleared")
     }
     
-    // ================= MÉTODOS PRIVADOS =================
+    //metodos privados
     
     private fun estimateMemoryUsage(): Long {
         // Estimación simple basada en número de entradas

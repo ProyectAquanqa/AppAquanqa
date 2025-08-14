@@ -16,7 +16,7 @@ import com.tecsup.aquanqa.utils.ImageLoadingUtils
  */
 class CommentsAdapter(
     private var comentarios: List<ComentarioResponse>,
-    private val onOptionsClick: ((ComentarioResponse) -> Unit)? = null,
+    private val onOptionsClick: ((View, ComentarioResponse) -> Unit)? = null,
     private val currentUserId: Int? = null
 ) : RecyclerView.Adapter<CommentsAdapter.CommentViewHolder>() {
 
@@ -70,7 +70,7 @@ class CommentsAdapter(
 
         fun bind(
             comentario: ComentarioResponse,
-            onOptionsClick: ((ComentarioResponse) -> Unit)?,
+            onOptionsClick: ((View, ComentarioResponse) -> Unit)?,
             currentUserId: Int?
         ) {
             // Configurar nombre del usuario
@@ -95,8 +95,8 @@ class CommentsAdapter(
             binding.ivOptionsMenu.visibility = if (isOwnComment) View.VISIBLE else View.GONE
 
             if (isOwnComment) {
-                binding.ivOptionsMenu.setOnClickListener {
-                    onOptionsClick?.invoke(comentario)
+                binding.ivOptionsMenu.setOnClickListener { anchorView ->
+                    onOptionsClick?.invoke(anchorView, comentario)
                 }
             }
         }
